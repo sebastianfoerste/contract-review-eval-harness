@@ -1,0 +1,7 @@
+{
+  "clause_types": ["confidentiality", "definition", "term", "return_destruction", "governing_law"],
+  "risk_flags": {
+    "term": "high",
+    "definition": "medium"
+  }
+}

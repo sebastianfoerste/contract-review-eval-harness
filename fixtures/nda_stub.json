@@ -1,0 +1,23 @@
+{
+  "_comment": "Deterministic stub model output for the NDA case. Deliberately imperfect so the scorecard demonstrates errors being caught: one spurious clause (indemnification), one wrong severity (definition flagged low, expected medium), one over-flag (governing_law), and one fabricated citation.",
+  "clauses": [
+    { "clause_type": "definition", "text": "Defines Confidential Information broadly, including unmarked information." },
+    { "clause_type": "confidentiality", "text": "Receiving Party must keep information secret and not disclose without consent." },
+    { "clause_type": "term", "text": "Confidentiality obligations continue in perpetuity." },
+    { "clause_type": "return_destruction", "text": "Return or destroy on request within 30 days." },
+    { "clause_type": "governing_law", "text": "Governed by the laws of Germany." },
+    { "clause_type": "indemnification", "text": "Receiving Party indemnifies the Disclosing Party for any breach." }
+  ],
+  "risk_flags": [
+    { "clause_type": "term", "severity": "high", "rationale": "Perpetual confidentiality term is unusual and hard to enforce." },
+    { "clause_type": "definition", "severity": "low", "rationale": "Definition includes unmarked information." },
+    { "clause_type": "governing_law", "severity": "low", "rationale": "Standard German governing-law clause." }
+  ],
+  "citations": [
+    { "quote": "whether or not marked as confidential", "clause_type": "definition" },
+    { "quote": "shall keep all Confidential Information secret", "clause_type": "confidentiality" },
+    { "quote": "shall remain in effect in perpetuity", "clause_type": "term" },
+    { "quote": "return or destroy all Confidential Information in its possession within thirty (30) days", "clause_type": "return_destruction" },
+    { "quote": "automatically renews for successive twelve (12) month periods", "clause_type": "term" }
+  ]
+}
