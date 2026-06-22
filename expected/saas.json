@@ -1,0 +1,7 @@
+{
+  "clause_types": ["service_levels", "data_protection", "limitation_of_liability", "term", "auto_renewal"],
+  "risk_flags": {
+    "auto_renewal": "high",
+    "limitation_of_liability": "medium"
+  }
+}

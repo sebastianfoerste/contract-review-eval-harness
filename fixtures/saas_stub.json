@@ -1,0 +1,23 @@
+{
+  "_comment": "Deterministic stub model output for the SaaS case. Same deliberate-error pattern as the NDA: one spurious clause (indemnification), one wrong severity (limitation_of_liability flagged low, expected medium), one over-flag (service_levels), one fabricated citation.",
+  "clauses": [
+    { "clause_type": "service_levels", "text": "99.5% monthly uptime target on commercially reasonable efforts." },
+    { "clause_type": "data_protection", "text": "Processes personal data only on documented instructions." },
+    { "clause_type": "limitation_of_liability", "text": "Liability capped at trailing twelve months of fees." },
+    { "clause_type": "term", "text": "Initial term of twelve months." },
+    { "clause_type": "auto_renewal", "text": "Auto-renews for twelve-month terms; 90 days notice to stop." },
+    { "clause_type": "indemnification", "text": "Customer indemnifies Provider against third-party claims." }
+  ],
+  "risk_flags": [
+    { "clause_type": "auto_renewal", "severity": "high", "rationale": "90-day notice window makes the renewal easy to miss." },
+    { "clause_type": "limitation_of_liability", "severity": "low", "rationale": "Liability cap is present." },
+    { "clause_type": "service_levels", "severity": "low", "rationale": "Standard uptime commitment." }
+  ],
+  "citations": [
+    { "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime", "clause_type": "service_levels" },
+    { "quote": "process Customer Personal Data only on documented instructions", "clause_type": "data_protection" },
+    { "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim", "clause_type": "limitation_of_liability" },
+    { "quote": "ninety (90) days written notice prior to the end of the then-current term", "clause_type": "auto_renewal" },
+    { "quote": "Provider may terminate immediately for any reason without notice", "clause_type": "term" }
+  ]
+}

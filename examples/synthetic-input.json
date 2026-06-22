@@ -1,0 +1,12 @@
+{
+  "_comment": "Example harness input for the NDA case: the hand-authored answer set the model output is scored against. The paired contract is data/nda_sample.md. All synthetic.",
+  "case": "nda",
+  "contract": "data/nda_sample.md",
+  "expected": {
+    "clause_types": ["confidentiality", "definition", "term", "return_destruction", "governing_law"],
+    "risk_flags": {
+      "term": "high",
+      "definition": "medium"
+    }
+  }
+}
