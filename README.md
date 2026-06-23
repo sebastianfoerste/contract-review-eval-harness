@@ -42,6 +42,8 @@ The NDA stub is deliberately imperfect — it extracts a clause that is not in t
 flags one clause at the wrong severity, and cites one quote that does not appear in the
 source. The harness catches all three:
 
+![Scorecard: the harness scores clause F1 0.91, citation grounding 4/5, and flags one fabricated citation for rejection](docs/scorecard.svg)
+
 | Dimension | Score | Notes |
 |---|---:|---|
 | Clause precision | 0.83 | extracted a spurious `indemnification` clause |
