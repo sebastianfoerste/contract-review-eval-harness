@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-06-23T00:34:16.649283",
+  "case": "temp_test_case",
+  "scores": {
+    "temp_test_case": {
+      "clause_precision": 0.8333333333333334,
+      "clause_recall": 1.0,
+      "clause_f1": 0.9090909090909091,
+      "risk_flag_accuracy": 0.5,
+      "citation_grounding": 0.8,
+      "hallucination_count": 1,
+      "thresholds": {
+        "f1": 0.99,
+        "risk_accuracy": 0.45,
+        "grounding_rate": 0.75,
+        "hallucinations": 1.0
+      }
+    }
+  }
+}

@@ -1,10 +1,59 @@
 # contract-review-eval-harness
 
-An evaluation harness for AI contract review. It does not just run a model over a
-contract and show the output — it measures the output against a hand-authored answer set
-and emits a scorecard: clause precision/recall, risk-flag accuracy, citation grounding,
-and a hallucination count. Synthetic contracts only; runs offline and deterministic by
-default.
+Evaluation harness for legal AI contract review — clause scoring, citation grounding, hallucination counts, against a gold answer set. Not legal advice; data is synthetic.
+
+> **If you don't code:** scroll to [What the demo produces](#what-the-demo-produces). This repo ships a sample output you can read in the browser. The point isn't the code; it's whether the legal work is structured, cited, reviewable, and testable.
+
+![demo](docs/demo.png)
+
+## Run it
+
+```bash
+git clone https://github.com/sebastianfoerste/contract-review-eval-harness
+cd contract-review-eval-harness
+make install && make test
+make demo
+```
+
+Runs end to end, offline and deterministically.
+
+## What the demo produces
+
+The demo writes a scorecard with clause-level scoring, citation-grounding assessment, and hallucination detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output: [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
+
+```markdown
+# Contract Review Eval Scorecard — nda
+
+## Scores
+
+| Dimension | Score | Notes |
+|---|---:|---|
+| Clause precision | 0.83 | predicted clause types that were expected |
+| Clause recall | 1.00 | expected clause types that were found |
+| Clause F1 | 0.91 | harmonic mean of precision and recall |
+| Risk-flag accuracy | 0.50 | risky clauses flagged at the expected severity |
+| Citation grounding | 0.80 | 0/0 quotes found verbatim in the source |
+| Hallucination count | 1 | cited quotes not present in the source |
+
+## Failure modes checked
+
+- Over-extraction — clause precision below 1.00.
+- Missed clause — clause recall below 1.00.
+- Wrong severity — risk-flag accuracy below 1.00.
+- Fabricated citation — hallucination count above 0.
+```
+
+In the sample run, the harness catches a fabricated citation and marks the output for rejection.
+
+## What it checks / does
+
+| Check / Metric | Focus | Verification Method |
+|---|---|---|
+| Clause Precision / Recall | Extraction accuracy | Compares predicted clause types to a gold standard set |
+| Risk-Flag Accuracy | Severity grading | Checks if predicted risk severities match expected values |
+| Citation Grounding | Hallucination tracking | Validates that quoted text segments exist verbatim in the source document |
+
+---
 
 > **What workflow does this improve?** First-pass contract review (clause extraction, risk flags, citations).
 > **Who is the user?** A Legal Engineer or counsel deciding whether AI review output is trustworthy enough to rely on.

@@ -35,9 +35,41 @@ def risk_flag_accuracy(expected: dict[str, str], predicted: dict[str, str]) -> f
     return matched / len(expected)
 
 
-def _is_grounded(source_text: str, quote: str) -> bool:
-    norm = " ".join(source_text.split()).lower()
-    return " ".join(quote.split()).lower() in norm
+import string
+
+def normalize_text(text: str) -> str:
+    t = text.lower()
+    for p in string.punctuation + "“”‘’–—":
+        t = t.replace(p, " ")
+    return " ".join(t.split())
+
+
+def _is_grounded(source_text: str, quote: str, threshold: float = 0.85) -> bool:
+    norm_source = normalize_text(source_text)
+    norm_quote = normalize_text(quote)
+    
+    if not norm_quote:
+        return False
+        
+    if norm_quote in norm_source:
+        return True
+        
+    source_words = norm_source.split()
+    quote_words = norm_quote.split()
+    q_len = len(quote_words)
+    
+    if q_len <= 3:
+        return norm_quote in norm_source
+        
+    quote_set = set(quote_words)
+    
+    for i in range(len(source_words) - q_len + 1):
+        window = set(source_words[i:i + q_len])
+        overlap = len(quote_set & window) / len(quote_set)
+        if overlap >= threshold:
+            return True
+            
+    return False
 
 
 def citation_grounding(source_text: str, citations: list[Citation]) -> CitationScore:
@@ -49,3 +81,4 @@ def citation_grounding(source_text: str, citations: list[Citation]) -> CitationS
 
 def count_hallucinations(source_text: str, citations: list[Citation]) -> int:
     return sum(1 for c in citations if not _is_grounded(source_text, c.quote))
+

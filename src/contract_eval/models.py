@@ -36,3 +36,5 @@ class ExpectedAnswer(BaseModel):
 
     clause_types: list[str]
     risk_flags: dict[str, str]  # clause_type -> severity
+    thresholds: dict[str, float] = {}
+

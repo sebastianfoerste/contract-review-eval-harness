@@ -1,0 +1,19 @@
+{
+  "case": "nda",
+  "scores": {
+    "nda": {
+      "clause_precision": 0.8333333333333334,
+      "clause_recall": 1.0,
+      "clause_f1": 0.9090909090909091,
+      "risk_flag_accuracy": 0.5,
+      "citation_grounding": 0.8,
+      "hallucination_count": 1,
+      "thresholds": {
+        "f1": 0.85,
+        "risk_accuracy": 0.45,
+        "grounding_rate": 0.75,
+        "hallucinations": 1.0
+      }
+    }
+  }
+}
