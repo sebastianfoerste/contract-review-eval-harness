@@ -159,3 +159,29 @@ client, or personal data. See [`data/README.md`](data/README.md).
 
 Python 3.12+, Pydantic v2, pytest, managed with `uv`. Optional live adapter uses the
 Anthropic SDK behind a flag.
+
+## Human-authored legal judgment
+AI tools assisted the implementation, but the parts that carry the value are
+human-authored: the legal answer sets, risk taxonomy, escalation logic, citations,
+and review states. The point of this repository is not code volume — it is showing
+how legal judgment can be made structured, testable, and reviewable.
+
+## Why lawyers should care
+The harness makes review quality visible. It doesn't ask whether the answer sounds
+plausible; it checks whether it matches a known answer set, cites the right text, and
+avoids unsupported claims.
+
+## Why product teams should care
+It turns subjective review quality into measurable failure modes — missed issues,
+wrong severity, ungrounded citations, hallucinated text — so it can drive regression
+testing, model comparison, product QA, and reviewer-escalation logic.
+
+## Known limitations
+A public-safe prototype, not a production benchmark.
+1. The answer set is synthetic and intentionally small.
+2. It evaluates one contract type (a synthetic NDA).
+3. It does not yet compare multiple model families.
+4. It does not model human-reviewer disagreement.
+5. It excludes privilege, confidentiality, and customer-data workflows.
+Next production step: a larger answer set, reviewer calibration, versioned benchmark
+runs, and model comparison across contract types.
