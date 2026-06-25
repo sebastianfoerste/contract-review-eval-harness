@@ -1,5 +1,7 @@
 # contract-review-eval-harness
 
+[![CI](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml)
+
 See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
 Evaluation harness for legal AI contract review — clause scoring, citation grounding, hallucination counts, against a gold answer set. Not legal advice; data is synthetic.
@@ -24,7 +26,7 @@ Runs end to end, offline and deterministically.
 The demo writes a scorecard with clause-level scoring, citation-grounding assessment, and hallucination detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output: [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
 
 ```markdown
-# Contract Review Eval Scorecard — nda
+# Contract Review Eval Scorecard: nda
 
 ## Scores
 
@@ -34,15 +36,15 @@ The demo writes a scorecard with clause-level scoring, citation-grounding assess
 | Clause recall | 1.00 | expected clause types that were found |
 | Clause F1 | 0.91 | harmonic mean of precision and recall |
 | Risk-flag accuracy | 0.50 | risky clauses flagged at the expected severity |
-| Citation grounding | 0.80 | 0/0 quotes found verbatim in the source |
-| Hallucination count | 1 | cited quotes not present in the source |
+| Citation grounding | 0.80 | 4/5 quotes grounded in the source (exact match or 85%+ token overlap) |
+| Hallucination count | 1 | cited quotes not grounded in the source |
 
 ## Failure modes checked
 
-- Over-extraction — clause precision below 1.00.
-- Missed clause — clause recall below 1.00.
-- Wrong severity — risk-flag accuracy below 1.00.
-- Fabricated citation — hallucination count above 0.
+- Over-extraction: clause precision below 1.00.
+- Missed clause: clause recall below 1.00.
+- Wrong severity: risk-flag accuracy below 1.00.
+- Fabricated citation: hallucination count above 0.
 ```
 
 In the sample run, the harness catches a fabricated citation and marks the output for rejection.
@@ -53,7 +55,7 @@ In the sample run, the harness catches a fabricated citation and marks the outpu
 |---|---|---|
 | Clause Precision / Recall | Extraction accuracy | Compares predicted clause types to a gold standard set |
 | Risk-Flag Accuracy | Severity grading | Checks if predicted risk severities match expected values |
-| Citation Grounding | Hallucination tracking | Validates that quoted text segments exist verbatim in the source document |
+| Citation Grounding | Hallucination tracking | Validates quoted text segments by exact match or 85%+ token overlap against the source document |
 
 ---
 
@@ -89,23 +91,11 @@ uv run python -m contract_eval evaluate --case saas   # the SaaS case
 
 ## Sample scorecard (NDA)
 
-The NDA stub is deliberately imperfect — it extracts a clause that is not in the contract,
-flags one clause at the wrong severity, and cites one quote that does not appear in the
-source. The harness catches all three:
-
-![Scorecard: the harness scores clause F1 0.91, citation grounding 4/5, and flags one fabricated citation for rejection](docs/scorecard.svg)
-
-| Dimension | Score | Notes |
-|---|---:|---|
-| Clause precision | 0.83 | extracted a spurious `indemnification` clause |
-| Clause recall | 1.00 | found all five expected clause types |
-| Clause F1 | 0.91 | |
-| Risk-flag accuracy | 0.50 | flagged `definition` low; expected medium |
-| Citation grounding | 0.80 | 4 of 5 quotes found verbatim |
-| Hallucination count | 1 | one cited quote is not in the contract |
-
-A perfect-looking model would score 1.00 across the board. The point of the harness is
-that this one does not, and you can see exactly why.
+The NDA stub is deliberately imperfect: it extracts a clause that is not in the
+contract, flags one clause at the wrong severity, and cites one quote that is not in the
+source. The harness catches all three (see the scorecard above). A perfect-looking model
+would score 1.00 across the board; the point is that this one does not, and you can see
+exactly why.
 
 ## Use cases
 
@@ -151,9 +141,20 @@ client, or personal data. See [`data/README.md`](data/README.md).
 
 ## Limitations
 
-- The harness measures the review *method*, not a public-benchmark score. It is not a leaderboard.
-- Clause matching is by type, and citation grounding is a verbatim-substring check — deliberately simple and transparent, not semantic.
-- The shipped fixtures are stubs. Real evaluation depth comes from expanding `expected/` and running `--live`.
+A public-safe prototype, not a production benchmark or a leaderboard; it measures the
+review *method*, not a public score.
+
+- The answer sets are synthetic and intentionally small.
+- It covers two contract types today (NDA and SaaS); broader coverage comes from
+  expanding `expected/` and running `--live`.
+- Clause matching is by type. Citation grounding uses exact matches plus a simple
+  85% token-overlap fallback. It is transparent and intentionally shallow; it does not
+  assess legal-semantic equivalence.
+- It does not yet compare multiple model families or model human-reviewer disagreement.
+- It excludes privilege, confidentiality, and customer-data workflows.
+
+Next production step: larger, reviewer-calibrated answer sets, versioned benchmark
+runs, and model comparison across contract types.
 
 ## Stack
 
@@ -162,8 +163,8 @@ Anthropic SDK behind a flag.
 
 ## Human-authored legal judgment
 AI tools assisted the implementation, but the parts that carry the value are
-human-authored: the legal answer sets, risk taxonomy, escalation logic, citations,
-and review states. The point of this repository is not code volume — it is showing
+human-authored: the gold answer sets, the risk taxonomy, the clause types, and the
+citation-grounding rules. The point of this repository is not code volume; it is showing
 how legal judgment can be made structured, testable, and reviewable.
 
 ## Why lawyers should care
@@ -175,13 +176,3 @@ avoids unsupported claims.
 It turns subjective review quality into measurable failure modes — missed issues,
 wrong severity, ungrounded citations, hallucinated text — so it can drive regression
 testing, model comparison, product QA, and reviewer-escalation logic.
-
-## Known limitations
-A public-safe prototype, not a production benchmark.
-1. The answer set is synthetic and intentionally small.
-2. It evaluates one contract type (a synthetic NDA).
-3. It does not yet compare multiple model families.
-4. It does not model human-reviewer disagreement.
-5. It excludes privilege, confidentiality, and customer-data workflows.
-Next production step: a larger answer set, reviewer calibration, versioned benchmark
-runs, and model comparison across contract types.
