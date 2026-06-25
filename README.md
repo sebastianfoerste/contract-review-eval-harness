@@ -1,5 +1,9 @@
 # contract-review-eval-harness
 
+[![CI](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml)
+
+CI: passing. Deterministic test suite: 16 checks.
+
 See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
 Evaluation harness for legal AI contract review — clause scoring, citation grounding, hallucination counts, against a gold answer set. Not legal advice; data is synthetic.
@@ -18,6 +22,17 @@ make demo
 ```
 
 Runs end to end, offline and deterministically.
+
+## Architecture flow
+
+1. `data/<case>_sample.md` supplies a synthetic contract.
+2. `expected/<case>.json` supplies the human-authored answer set.
+3. `StubAdapter` loads deterministic fixture output by default.
+4. `LiveAdapter` is opt-in behind `--live` and imports the SDK lazily.
+5. `ReviewOutput` validates model output with Pydantic before scoring.
+6. `scorer.py` computes clause precision, recall, F1, risk severity, citation grounding and hallucination count.
+7. `scorecard.py` renders Markdown and JSON proof artifacts.
+8. A non-zero hallucination count keeps reliance in lawyer review.
 
 ## What the demo produces
 

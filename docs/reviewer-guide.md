@@ -9,7 +9,8 @@ A five-minute path for a reviewer.
    that is not in the contract (`indemnification`), flags `definition` at the wrong severity,
    and cites a quote (`automatically renews...`) that does not appear in `data/nda_sample.md`.
 4. **See how it is measured.** Open `src/contract_eval/scorer.py`. Four small pure
-   functions. Citation grounding is a verbatim substring check — transparent, not magic.
+   functions. Citation grounding uses exact matches plus a simple 85% token-overlap
+   fallback. It is transparent, intentionally shallow, and not magic.
 5. **Run the second case.** `uv run python -m contract_eval evaluate --case saas`.
 6. **The tests.** `make test` runs the scorer and CLI unit tests, including one that
    asserts the seeded errors are caught end to end.

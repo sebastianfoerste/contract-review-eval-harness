@@ -1,10 +1,10 @@
-# Sample output — NDA scorecard
+# Sample output: NDA scorecard
 
 Produced by `make demo` (`uv run python -m contract_eval evaluate --case nda`). The stub
 model output is deliberately imperfect; this is the harness catching it.
 
 ```
-# Contract Review Eval Scorecard — nda
+# Contract Review Eval Scorecard: nda
 
 ## Scores
 
@@ -14,8 +14,8 @@ model output is deliberately imperfect; this is the harness catching it.
 | Clause recall | 1.00 | expected clause types that were found |
 | Clause F1 | 0.91 | harmonic mean of precision and recall |
 | Risk-flag accuracy | 0.50 | risky clauses flagged at the expected severity |
-| Citation grounding | 0.80 | 4/5 quotes found verbatim in the source |
-| Hallucination count | 1 | cited quotes not present in the source |
+| Citation grounding | 0.80 | 4/5 quotes grounded in the source (exact match or 85%+ token overlap) |
+| Hallucination count | 1 | cited quotes not grounded in the source |
 ```
 
 Reading it: the model found every required clause (recall 1.00) but invented a sixth
