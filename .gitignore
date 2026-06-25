@@ -12,3 +12,8 @@ wheels/
 # Generated scorecard (run output; see examples/sample-output.md for a committed copy)
 /scorecard.md
 /scorecard.json
+
+# SQLite / local databases
+*.db
+*.sqlite
+*.sqlite3
