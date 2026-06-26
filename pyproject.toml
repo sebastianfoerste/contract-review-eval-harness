@@ -11,6 +11,12 @@ dependencies = [
     "pydantic>=2.13.4",
 ]
 
+[project.optional-dependencies]
+# Optional: only needed for the --live adapter. The default offline path needs none of this.
+live = [
+    "anthropic>=0.40.0",
+]
+
 [project.scripts]
 contract-eval = "contract_eval.cli:main"
 
