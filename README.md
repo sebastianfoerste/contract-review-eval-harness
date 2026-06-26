@@ -89,6 +89,24 @@ make demo               # writes scorecard.md for the NDA case
 uv run python -m contract_eval evaluate --case saas   # the SaaS case
 ```
 
+## Live run against a real frontier model (optional)
+
+The default path is a deterministic stub so a reviewer needs no key. To score an
+actual model's output instead, install the optional adapter and point it at Anthropic:
+
+```bash
+uv sync --extra live          # pulls the Anthropic SDK; the default path never needs it
+export ANTHROPIC_API_KEY=...   # your own key
+make demo-live                 # runs the live adapter on the NDA and SaaS cases
+```
+
+`make demo-live` sends each synthetic contract to the model, parses the structured
+review it returns, and scores that real output against the same gold answer set — clause
+P/R/F1, risk-flag accuracy, citation grounding, hallucination count. The point is that the
+harness grades a *real* model the same way it grades the stub: nothing is asserted, every
+number is checked against a known answer — including whether a frontier model invents a
+citation that is not in the contract.
+
 ## Sample scorecard (NDA)
 
 The NDA stub is deliberately imperfect: it extracts a clause that is not in the
