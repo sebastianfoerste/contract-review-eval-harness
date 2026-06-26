@@ -43,6 +43,8 @@ def evaluate_case(case: str, live: bool) -> dict:
         "clause_recall": clause.recall,
         "clause_f1": clause.f1,
         "risk_flag_accuracy": risk_accuracy,
+        "citation_grounded": citation.grounded,
+        "citation_total": citation.total,
         "citation_grounding": citation.grounding_rate,
         "hallucination_count": hallucinations,
         "thresholds": thresholds,
@@ -50,7 +52,7 @@ def evaluate_case(case: str, live: bool) -> dict:
 
 
 def render_multi(scores: dict) -> str:
-    parts = ["# Contract Review Eval Scorecard — ALL CASES\n"]
+    parts = ["# Contract Review Eval Scorecard: ALL CASES\n"]
     for case, s in scores.items():
         parts.append(f"## Case: {case}")
         parts.append(
@@ -60,8 +62,8 @@ def render_multi(scores: dict) -> str:
             f"| Clause recall | {s['clause_recall']:.2f} | expected clause types that were found |\n"
             f"| Clause F1 | {s['clause_f1']:.2f} | harmonic mean of precision and recall |\n"
             f"| Risk-flag accuracy | {s['risk_flag_accuracy']:.2f} | risky clauses flagged at the expected severity |\n"
-            f"| Citation grounding | {s['citation_grounding']:.2f} | quotes found in the source |\n"
-            f"| Hallucination count | {s['hallucination_count']} | cited quotes not present in the source |\n"
+            f"| Citation grounding | {s['citation_grounding']:.2f} | {s['citation_grounded']}/{s['citation_total']} quotes grounded in the source (exact match or 85%+ token overlap) |\n"
+            f"| Hallucination count | {s['hallucination_count']} | cited quotes not grounded in the source |\n"
         )
     return "\n".join(parts)
 
@@ -87,7 +89,7 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
             # Reconstruct score structures for existing render method
             from contract_eval.scorer import CitationScore, ClauseScore
             clause = ClauseScore(s["clause_precision"], s["clause_recall"], s["clause_f1"])
-            citation = CitationScore(0, 0, s["citation_grounding"]) # render only displays the rate
+            citation = CitationScore(s["citation_grounded"], s["citation_total"], s["citation_grounding"])
             path.write_text(render(case, clause, s["risk_flag_accuracy"], citation, s["hallucination_count"]))
 
     # Save run to history

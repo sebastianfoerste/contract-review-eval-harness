@@ -10,7 +10,7 @@ def render(
     citation: CitationScore,
     hallucinations: int,
 ) -> str:
-    return f"""# Contract Review Eval Scorecard — {case}
+    return f"""# Contract Review Eval Scorecard: {case}
 
 ## System under review
 
@@ -24,8 +24,8 @@ Adapter output for the `{case}` case, scored against `expected/{case}.json`.
 | Clause recall | {clause.recall:.2f} | expected clause types that were found |
 | Clause F1 | {clause.f1:.2f} | harmonic mean of precision and recall |
 | Risk-flag accuracy | {risk_accuracy:.2f} | risky clauses flagged at the expected severity |
-| Citation grounding | {citation.grounding_rate:.2f} | {citation.grounded}/{citation.total} quotes found verbatim in the source |
-| Hallucination count | {hallucinations} | cited quotes not present in the source |
+| Citation grounding | {citation.grounding_rate:.2f} | {citation.grounded}/{citation.total} quotes grounded in the source (exact match or 85%+ token overlap) |
+| Hallucination count | {hallucinations} | cited quotes not grounded in the source |
 
 ## Human review required
 
@@ -36,8 +36,8 @@ must be rejected outright.
 
 ## Failure modes checked
 
-- Over-extraction — clause precision below 1.00.
-- Missed clause — clause recall below 1.00.
-- Wrong severity — risk-flag accuracy below 1.00.
-- Fabricated citation — hallucination count above 0.
+- Over-extraction: clause precision below 1.00.
+- Missed clause: clause recall below 1.00.
+- Wrong severity: risk-flag accuracy below 1.00.
+- Fabricated citation: hallucination count above 0.
 """
