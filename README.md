@@ -4,7 +4,9 @@
 
 See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
-Evaluation harness for legal AI contract review — clause scoring, citation grounding, hallucination counts, against a gold answer set. Not legal advice; data is synthetic.
+Evaluation harness for legal AI contract review: clause scoring, citation grounding, hallucination counts, against a gold answer set. Not legal advice; data is synthetic.
+
+**Public-safety posture:** synthetic contracts only, visible source provenance in every citation check, an explicit human review gate before reliance, and no legal advice.
 
 > **If you don't code:** scroll to [What the demo produces](#what-the-demo-produces). This repo ships a sample output you can read in the browser. The point isn't the code; it's whether the legal work is structured, cited, reviewable, and testable.
 
@@ -63,20 +65,20 @@ In the sample run, the harness catches a fabricated citation and marks the outpu
 > **Who is the user?** A Legal Engineer or counsel deciding whether AI review output is trustworthy enough to rely on.
 > **Where does human review happen?** Always. The scorecard tells a lawyer where to look; it never replaces sign-off.
 > **What is blocked until approval?** Reliance. A non-zero hallucination count means a citation must be rejected before use.
-> **What would I tell Product?** Which failure mode dominates — over-extraction, wrong severity, or fabricated citations — so Engineering knows what to fix first.
+> **What would I tell Product?** Which failure mode dominates: over-extraction, wrong severity, or fabricated citations, so Engineering knows what to fix first.
 
 ## Problem
 
 "The AI reviews contracts" is a demo, not a claim you can take to a top firm. The question
 that earns trust is: *how do you know the review is any good?* This harness answers that.
 It scores AI review output against an expected answer set and counts the failures that
-matter most in legal work — a flagged risk at the wrong severity, a citation that is not
+matter most in legal work: a flagged risk at the wrong severity, a citation that is not
 actually in the document.
 
 ## What this proves
 
 - I measure quality, I do not assert it: every dimension is a number against a gold set.
-- I treat hallucination as a first-class metric, not an afterthought — a fabricated citation is counted and called out.
+- I treat hallucination as a first-class metric, not an afterthought: a fabricated citation is counted and called out.
 - I keep a human-review gate explicit: the scorecard ends with what a lawyer must confirm.
 - I build for reproducibility: the default path is offline and deterministic, so a reviewer runs the demo with no API key.
 
@@ -101,10 +103,10 @@ make demo-live                 # runs the live adapter on the NDA and SaaS cases
 ```
 
 `make demo-live` sends each synthetic contract to the model, parses the structured
-review it returns, and scores that real output against the same gold answer set — clause
+review it returns, and scores that real output against the same gold answer set: clause
 P/R/F1, risk-flag accuracy, citation grounding, hallucination count. The point is that the
 harness grades a *real* model the same way it grades the stub: nothing is asserted, every
-number is checked against a known answer — including whether a frontier model invents a
+number is checked against a known answer, including whether a frontier model invents a
 citation that is not in the contract.
 
 ## Sample scorecard (NDA)
@@ -117,15 +119,15 @@ exactly why.
 
 ## Use cases
 
-- **NDA** (`--case nda`) — confidentiality, definition, term, return/destruction, governing law.
-- **SaaS agreement** (`--case saas`) — service levels, data protection, limitation of liability, term, auto-renewal.
+- **NDA** (`--case nda`): confidentiality, definition, term, return/destruction, governing law.
+- **SaaS agreement** (`--case saas`): service levels, data protection, limitation of liability, term, auto-renewal.
 
 Both generalize beyond any single regulatory regime, which is why they sit ahead of
 domain-specific contracts here.
 
 ## How a Legal Engineer would use this in a customer meeting
 
-A firm asks whether they can trust the tool on their NDAs. You do not argue — you run the
+A firm asks whether they can trust the tool on their NDAs. You do not argue. You run the
 harness on a representative NDA and put the scorecard on screen. The conversation moves
 from "is AI safe" to "here is the citation-grounding rate, here is the one hallucination we
 caught, and here is the human-review step that gates reliance." That is a procurement
@@ -191,6 +193,6 @@ plausible; it checks whether it matches a known answer set, cites the right text
 avoids unsupported claims.
 
 ## Why product teams should care
-It turns subjective review quality into measurable failure modes — missed issues,
-wrong severity, ungrounded citations, hallucinated text — so it can drive regression
+It turns subjective review quality into measurable failure modes: missed issues,
+wrong severity, ungrounded citations, hallucinated text, so it can drive regression
 testing, model comparison, product QA, and reviewer-escalation logic.
