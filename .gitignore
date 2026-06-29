@@ -13,6 +13,9 @@ wheels/
 /scorecard.md
 /scorecard.json
 
+# Generated run history; committed snapshots remain tracked
+/history/run_*.json
+
 # SQLite / local databases
 *.db
 *.sqlite
