@@ -17,3 +17,6 @@ wheels/
 *.db
 *.sqlite
 *.sqlite3
+
+# Environment files
+.env
