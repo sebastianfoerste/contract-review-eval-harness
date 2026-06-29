@@ -4,7 +4,7 @@ import os
 
 from contract_eval.models import ReviewOutput
 
-_MODEL = "claude-sonnet-4-6"
+_MODEL = "claude-opus-4-8"
 
 _PROMPT = """You are a contract review assistant. Read the contract below and return ONLY valid JSON of this shape:
 {{
@@ -29,6 +29,21 @@ def _extract_json(text: str) -> str:
 
 class LiveAdapter:
     def __init__(self) -> None:
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            try:
+                from pathlib import Path
+                env_path = Path(__file__).resolve().parents[3] / ".env"
+                if env_path.exists():
+                    for line in env_path.read_text().splitlines():
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            if k.strip() == "ANTHROPIC_API_KEY":
+                                os.environ["ANTHROPIC_API_KEY"] = v.strip().strip('"').strip("'")
+                                break
+            except Exception:
+                pass
+
         if not os.environ.get("ANTHROPIC_API_KEY"):
             raise RuntimeError(
                 "ANTHROPIC_API_KEY is not set. Live mode needs it; "

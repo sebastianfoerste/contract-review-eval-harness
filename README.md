@@ -109,6 +109,13 @@ harness grades a *real* model the same way it grades the stub: nothing is assert
 number is checked against a known answer, including whether a frontier model invents a
 citation that is not in the contract.
 
+A captured run against `claude-opus-4-8` is committed here: [`examples/live-run-claude-opus-4-8-2026-06-29.md`](examples/live-run-claude-opus-4-8-2026-06-29.md).
+
+![Live frontier-model scorecard](examples/live-run-claude-opus-4-8-2026-06-29.svg)
+
+Live output is non-deterministic; the committed file is a dated snapshot, not a stable
+benchmark.
+
 ## Sample scorecard (NDA)
 
 The NDA stub is deliberately imperfect: it extracts a clause that is not in the
