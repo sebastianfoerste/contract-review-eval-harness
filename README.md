@@ -7,7 +7,7 @@ See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 Evaluation harness for legal AI contract review: clause scoring, citation grounding and hallucination counts against a gold answer set. Not legal advice; data is synthetic.
 
 **Public-safety posture:** synthetic contracts only, visible source provenance in every citation check, an explicit human review gate before reliance, and no legal advice.
-Portfolio proof contract: [`docs/portfolio-proof.json`](docs/portfolio-proof.json).
+Verification manifest: [`docs/verification-manifest.json`](docs/verification-manifest.json).
 
 ![demo](docs/demo.png)
 
@@ -82,12 +82,12 @@ baseline release-certificate rejection.
 
 "The AI reviews contracts" is a demo, not a claim a serious reviewer can rely on. The useful question is: how do you know the review is any good? This harness scores AI review output against an expected answer set and counts the failures that matter most in legal work.
 
-## What this proves
+## Verified behavior
 
 - Quality is measured, not asserted.
 - Unsupported citations are treated as first-class failures.
 - The scorecard ends with human-review instructions.
-- The default path is offline and deterministic, so a reviewer runs the demo with no API key.
+- The default path is offline and deterministic, so the demo runs with no API key.
 
 ## Demo path
 
