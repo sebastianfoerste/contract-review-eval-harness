@@ -1,0 +1,39 @@
+{
+  "schema_version": "verification-manifest.v1",
+  "repository": "contract-review-eval-harness",
+  "repository_url": "https://github.com/sebastianfoerste/contract-review-eval-harness",
+  "quickstart": [
+    "README.md",
+    "examples/scorecard.md",
+    "examples/live-run-claude-opus-4-8-2026-06-29.md"
+  ],
+  "verification_artifacts": [
+    {
+      "path": "docs/demo.png",
+      "label": "Demo screenshot"
+    },
+    {
+      "path": "examples/scorecard.json",
+      "label": "Deterministic scorecard"
+    },
+    {
+      "path": "examples/live-run-claude-opus-4-8-2026-06-29.md",
+      "label": "Dated optional live-model run"
+    }
+  ],
+  "validation_commands": [
+    "make test",
+    "make demo"
+  ],
+  "data_boundary": "Synthetic contracts and human-authored expected answers only.",
+  "safety_controls": [
+    "offline deterministic fixture path",
+    "citation grounding and unsupported-citation counts",
+    "human review required before reliance"
+  ],
+  "blocked_actions": [
+    "no client contracts",
+    "no external API call in the fixture benchmark",
+    "no representation that a non-deterministic live run is a stable benchmark"
+  ]
+}
