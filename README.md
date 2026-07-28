@@ -26,6 +26,11 @@ Runs end to end, offline and deterministically.
 
 The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
 
+The [release certificate](examples/release-certificate.md) evaluates all bundled
+cases under a stricter legal-review policy. It hashes the source contract, gold
+answer, and adapter output for each case, rejects any unsupported citation, and
+binds the suite decision to a reproducible integrity digest.
+
 ```markdown
 # Contract Review Eval Scorecard: nda
 
@@ -45,6 +50,7 @@ The demo writes a scorecard with clause-level scoring, citation-grounding assess
 - Risk-flag accuracy.
 - Citation grounding.
 - Unsupported or fabricated citations.
+- Input drift and suite-level release eligibility.
 
 ## Problem
 
@@ -64,6 +70,7 @@ make install
 make test
 make demo
 uv run python -m contract_eval evaluate --case saas
+make certificate
 ```
 
 ## Optional live-model run

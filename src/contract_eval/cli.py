@@ -9,6 +9,10 @@ from pathlib import Path
 from contract_eval.adapters import get_adapter
 from contract_eval.models import ExpectedAnswer
 from contract_eval.scorecard import render
+from contract_eval.release_certificate import (
+    build_release_certificate,
+    render_release_certificate,
+)
 from contract_eval.scorer import (
     citation_grounding,
     clause_scores,
@@ -190,6 +194,22 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
         print("\nSuccess: No regressions detected!")
 
 
+def certify(case: str, out_dir: Path) -> tuple[Path, Path]:
+    cases_to_eval = ["nda", "saas"] if case == "all" else [case]
+    certificate = build_release_certificate(
+        {name: evaluate_case(name, live=False) for name in cases_to_eval}
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "release-certificate.json"
+    markdown_path = out_dir / "release-certificate.md"
+    json_path.write_text(json.dumps(certificate, indent=2) + "\n", encoding="utf-8")
+    markdown_path.write_text(
+        render_release_certificate(certificate),
+        encoding="utf-8",
+    )
+    return markdown_path, json_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="contract-eval")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -202,6 +222,12 @@ def main() -> None:
     ev.add_argument("--format", default="markdown", choices=["markdown", "json"], help="output format (markdown, json)")
     
     sub.add_parser("compare", help="compare the current scores against the latest saved run in history")
+    cert = sub.add_parser(
+        "certify",
+        help="issue an input-bound release decision over the synthetic benchmark suite",
+    )
+    cert.add_argument("--case", default="all", help="case name (nda, saas, all)")
+    cert.add_argument("--out", default="examples", type=Path, help="certificate output directory")
     
     args = parser.parse_args()
 
@@ -214,6 +240,9 @@ def main() -> None:
             sys.exit(1)
     elif args.cmd == "compare":
         compare_runs()
+    elif args.cmd == "certify":
+        markdown_path, json_path = certify(case=args.case, out_dir=args.out)
+        print(f"wrote {markdown_path} and {json_path}")
 
 
 if __name__ == "__main__":
