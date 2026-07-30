@@ -20,6 +20,11 @@ from contract_eval.scorer import (
     count_hallucinations,
     risk_flag_accuracy,
 )
+from contract_eval.robustness import (
+    build_robustness_report,
+    verify_robustness_report,
+    write_robustness_report,
+)
 
 
 def evaluate_case(case: str, live: bool) -> dict:
@@ -220,6 +225,45 @@ def verify_certificate(certificate_path: Path) -> dict:
     return verify_release_certificate(certificate, scores)
 
 
+def robustness(
+    campaign_path: Path,
+    out_dir: Path,
+    *,
+    live: bool,
+    runs: int,
+) -> dict:
+    scores = {
+        case: evaluate_case(case, live=False)
+        for case in ("nda", "saas")
+    }
+    certificate = build_release_certificate(scores)
+    report = build_robustness_report(
+        campaign_path,
+        get_adapter(live),
+        certificate,
+        runs=runs,
+    )
+    write_robustness_report(report, out_dir)
+    return report
+
+
+def verify_robustness(
+    report_path: Path,
+    campaign_path: Path,
+) -> dict:
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    scores = {
+        case: evaluate_case(case, live=False)
+        for case in ("nda", "saas")
+    }
+    expected = build_robustness_report(
+        campaign_path,
+        get_adapter(False),
+        build_release_certificate(scores),
+    )
+    return verify_robustness_report(report, expected)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="contract-eval")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -248,6 +292,49 @@ def main() -> None:
         type=Path,
         help="release certificate JSON to verify",
     )
+    robust = sub.add_parser(
+        "robustness",
+        help="run the adversarial minimal-pair contract review campaign",
+    )
+    robust.add_argument(
+        "--campaign",
+        default="robustness/campaign.v1.json",
+        type=Path,
+        help="versioned robustness campaign JSON",
+    )
+    robust.add_argument(
+        "--out",
+        default="examples",
+        type=Path,
+        help="robustness report output directory",
+    )
+    robust.add_argument(
+        "--live",
+        action="store_true",
+        help="use the optional live adapter",
+    )
+    robust.add_argument(
+        "--runs",
+        default=1,
+        type=int,
+        choices=range(1, 6),
+        metavar="1..5",
+        help="adapter runs per original and mutated contract",
+    )
+    verify_robust = sub.add_parser(
+        "verify-robustness",
+        help="rebuild the offline campaign and verify its input-bound report",
+    )
+    verify_robust.add_argument(
+        "--report",
+        default="examples/adversarial-robustness-report.json",
+        type=Path,
+    )
+    verify_robust.add_argument(
+        "--campaign",
+        default="robustness/campaign.v1.json",
+        type=Path,
+    )
     
     args = parser.parse_args()
 
@@ -265,6 +352,26 @@ def main() -> None:
         print(f"wrote {markdown_path} and {json_path}")
     elif args.cmd == "verify-certificate":
         verification = verify_certificate(args.certificate)
+        print(json.dumps(verification, indent=2))
+        if verification["status"] != "VALID":
+            sys.exit(1)
+    elif args.cmd == "robustness":
+        try:
+            report = robustness(
+                args.campaign,
+                args.out,
+                live=args.live,
+                runs=args.runs,
+            )
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"Error: {exc}")
+            sys.exit(1)
+        print(
+            f"wrote {args.out / 'adversarial-robustness-report.md'} "
+            f"({report['suite_decision']})"
+        )
+    elif args.cmd == "verify-robustness":
+        verification = verify_robustness(args.report, args.campaign)
         print(json.dumps(verification, indent=2))
         if verification["status"] != "VALID":
             sys.exit(1)
