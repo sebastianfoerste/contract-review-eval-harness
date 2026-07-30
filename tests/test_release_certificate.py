@@ -5,6 +5,7 @@ from contract_eval.cli import evaluate_case
 from contract_eval.release_certificate import (
     build_release_certificate,
     render_release_certificate,
+    verify_release_certificate,
 )
 
 
@@ -67,3 +68,28 @@ def test_markdown_surfaces_policy_and_failure_register():
     assert "Contract Review Release Certificate" in markdown
     assert "Suite decision: REJECT" in markdown
     assert "Failure register" in markdown
+
+
+def test_release_certificate_verifier_reproduces_the_suite():
+    scores = _scores()
+    certificate = build_release_certificate(scores)
+
+    verification = verify_release_certificate(certificate, scores)
+
+    assert verification["status"] == "VALID"
+    assert verification["errors"] == []
+    assert verification["verified_cases"] == ["nda", "saas"]
+    assert len(verification["verification_sha256"]) == 64
+
+
+def test_release_certificate_verifier_detects_tampering_and_score_drift():
+    scores = _scores()
+    certificate = build_release_certificate(scores)
+    tampered = deepcopy(certificate)
+    tampered["cases"][0]["scores"]["clause_recall"] = 0.0
+
+    verification = verify_release_certificate(tampered, scores)
+
+    assert verification["status"] == "INVALID"
+    assert "certificate_integrity_mismatch" in verification["errors"]
+    assert "nda:score_reproduction_mismatch" in verification["errors"]

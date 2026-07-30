@@ -29,7 +29,9 @@ The demo writes a scorecard with clause-level scoring, citation-grounding assess
 The [release certificate](examples/release-certificate.md) evaluates all bundled
 cases under a stricter legal-review policy. It hashes the source contract, gold
 answer, and adapter output for each case, rejects any unsupported citation, and
-binds the suite decision to a reproducible integrity digest.
+binds the suite decision to a reproducible integrity digest. `make
+certificate-verify` re-runs the offline adapter, recomputes every score and input
+digest, and fails on certificate tampering or benchmark drift.
 
 ```markdown
 # Contract Review Eval Scorecard: nda
@@ -71,6 +73,7 @@ make test
 make demo
 uv run python -m contract_eval evaluate --case saas
 make certificate
+make certificate-verify
 ```
 
 ## Optional live-model run

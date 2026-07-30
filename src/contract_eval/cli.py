@@ -12,6 +12,7 @@ from contract_eval.scorecard import render
 from contract_eval.release_certificate import (
     build_release_certificate,
     render_release_certificate,
+    verify_release_certificate,
 )
 from contract_eval.scorer import (
     citation_grounding,
@@ -210,6 +211,15 @@ def certify(case: str, out_dir: Path) -> tuple[Path, Path]:
     return markdown_path, json_path
 
 
+def verify_certificate(certificate_path: Path) -> dict:
+    certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    scores = {
+        case: evaluate_case(case, live=False)
+        for case in ("nda", "saas")
+    }
+    return verify_release_certificate(certificate, scores)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="contract-eval")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -228,6 +238,16 @@ def main() -> None:
     )
     cert.add_argument("--case", default="all", help="case name (nda, saas, all)")
     cert.add_argument("--out", default="examples", type=Path, help="certificate output directory")
+    verify = sub.add_parser(
+        "verify-certificate",
+        help="re-run the offline benchmark and verify a release certificate",
+    )
+    verify.add_argument(
+        "--certificate",
+        default="examples/release-certificate.json",
+        type=Path,
+        help="release certificate JSON to verify",
+    )
     
     args = parser.parse_args()
 
@@ -243,6 +263,11 @@ def main() -> None:
     elif args.cmd == "certify":
         markdown_path, json_path = certify(case=args.case, out_dir=args.out)
         print(f"wrote {markdown_path} and {json_path}")
+    elif args.cmd == "verify-certificate":
+        verification = verify_certificate(args.certificate)
+        print(json.dumps(verification, indent=2))
+        if verification["status"] != "VALID":
+            sys.exit(1)
 
 
 if __name__ == "__main__":

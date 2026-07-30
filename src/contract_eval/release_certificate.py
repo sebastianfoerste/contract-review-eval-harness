@@ -9,6 +9,7 @@ from typing import Any
 
 SCHEMA = "contract-review-eval.release-certificate.v1"
 POLICY_ID = "contract-review-eval.strict-legal-release-policy.v1"
+VERIFICATION_SCHEMA = "contract-review-eval.release-certificate-verification.v1"
 
 
 def _sha256(path: Path) -> str:
@@ -133,6 +134,81 @@ def build_release_certificate(
         "external_actions_allowed": False,
     }
     return {**payload, "integrity_sha256": _canonical_sha256(payload)}
+
+
+def verify_release_certificate(
+    certificate: dict[str, Any],
+    case_scores: dict[str, dict[str, Any]],
+    *,
+    root: Path = Path("."),
+) -> dict[str, Any]:
+    """Re-evaluate the deterministic suite and verify every certificate field."""
+
+    errors: list[str] = []
+    submitted_payload = {
+        key: value
+        for key, value in certificate.items()
+        if key != "integrity_sha256"
+    }
+    submitted_integrity = str(certificate.get("integrity_sha256", ""))
+    if certificate.get("schema") != SCHEMA:
+        errors.append("certificate_schema_mismatch")
+    if submitted_integrity != _canonical_sha256(submitted_payload):
+        errors.append("certificate_integrity_mismatch")
+
+    expected = build_release_certificate(case_scores, root=root)
+    submitted_cases = {
+        str(result.get("case")): result
+        for result in certificate.get("cases", [])
+        if isinstance(result, dict)
+    }
+    expected_cases = {
+        result["case"]: result
+        for result in expected["cases"]
+    }
+    if sorted(submitted_cases) != sorted(expected_cases):
+        errors.append("evaluated_case_set_mismatch")
+    for case, expected_result in expected_cases.items():
+        submitted_result = submitted_cases.get(case)
+        if submitted_result is None:
+            continue
+        if submitted_result.get("input_manifest") != expected_result["input_manifest"]:
+            errors.append(f"{case}:input_manifest_mismatch")
+        if (
+            submitted_result.get("input_manifest_sha256")
+            != expected_result["input_manifest_sha256"]
+        ):
+            errors.append(f"{case}:input_manifest_integrity_mismatch")
+        if submitted_result.get("scores") != expected_result["scores"]:
+            errors.append(f"{case}:score_reproduction_mismatch")
+        if submitted_result.get("decision") != expected_result["decision"]:
+            errors.append(f"{case}:decision_mismatch")
+        if submitted_result.get("blockers") != expected_result["blockers"]:
+            errors.append(f"{case}:blocker_register_mismatch")
+        if submitted_result.get("review_items") != expected_result["review_items"]:
+            errors.append(f"{case}:review_register_mismatch")
+
+    for field in (
+        "policy",
+        "suite_decision",
+        "summary",
+        "review_gate",
+        "external_actions_allowed",
+    ):
+        if certificate.get(field) != expected[field]:
+            errors.append(f"{field}_mismatch")
+
+    errors = sorted(set(errors))
+    payload = {
+        "schema": VERIFICATION_SCHEMA,
+        "status": "VALID" if not errors else "INVALID",
+        "errors": errors,
+        "verified_cases": sorted(expected_cases),
+        "certificate_integrity_sha256": submitted_integrity,
+        "expected_integrity_sha256": expected["integrity_sha256"],
+        "external_actions_allowed": False,
+    }
+    return {**payload, "verification_sha256": _canonical_sha256(payload)}
 
 
 def render_release_certificate(certificate: dict[str, Any]) -> str:
