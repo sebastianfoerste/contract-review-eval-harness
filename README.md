@@ -137,7 +137,9 @@ Chapter V defects. A reviewer reading only the coverage number would not see the
 
 Adding a fourth contract type means adding four files and one entry in
 [`src/contract_eval/cases.py`](src/contract_eval/cases.py); no consumer hardcodes
-the case set.
+the case set. The [annotation guideline](docs/ANNOTATION_GUIDELINE.md) records how
+clause types are chosen, how severities are calibrated, and why a stub fixture is
+never tuned to clear a threshold.
 
 ## Synthetic data statement
 
