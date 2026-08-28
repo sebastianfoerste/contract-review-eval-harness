@@ -28,6 +28,10 @@
     {
       "path": "examples/live-run-claude-opus-4-8-2026-06-29.md",
       "label": "Dated optional live-model run"
+    },
+    {
+      "path": "docs/ANNOTATION_GUIDELINE.md",
+      "label": "Gold answer set annotation guideline"
     }
   ],
   "validation_commands": [
