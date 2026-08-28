@@ -4,7 +4,9 @@ import os
 
 from contract_eval.models import ReviewOutput
 
-_MODEL = "claude-opus-4-8"
+# Every published run records the model it used. Comparing scorecards across model
+# versions is only meaningful when the identifier travels with the result.
+DEFAULT_MODEL = "claude-opus-4-8"
 
 _PROMPT = """You are a contract review assistant. Read the contract below and return ONLY valid JSON of this shape:
 {{
@@ -32,7 +34,8 @@ def _extract_json(text: str) -> str:
 
 
 class LiveAdapter:
-    def __init__(self) -> None:
+    def __init__(self, model: str | None = None) -> None:
+        self.model = model or os.environ.get("CONTRACT_EVAL_MODEL") or DEFAULT_MODEL
         if not os.environ.get("ANTHROPIC_API_KEY"):
             try:
                 from pathlib import Path
@@ -65,7 +68,7 @@ class LiveAdapter:
 
         client = anthropic.Anthropic()
         message = client.messages.create(
-            model=_MODEL,
+            model=self.model,
             max_tokens=2000,
             messages=[{"role": "user", "content": _PROMPT.format(source=source_text)}],
         )

@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from contract_eval.cases import ALL_CASES
 from contract_eval.cli import evaluate_case
 from contract_eval.release_certificate import verify_release_certificate
 
@@ -10,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
-    scores = {case: evaluate_case(case, live=False) for case in ("nda", "saas")}
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
     path = ROOT / "examples" / "release-certificate.json"
     if not path.is_file():
         print("missing committed artifact: examples/release-certificate.json")

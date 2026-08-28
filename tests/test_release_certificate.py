@@ -1,6 +1,7 @@
 from copy import deepcopy
 from pathlib import Path
 
+from contract_eval.cases import ALL_CASES
 from contract_eval.cli import evaluate_case
 from contract_eval.release_certificate import (
     build_release_certificate,
@@ -12,7 +13,7 @@ from contract_eval.release_certificate import (
 def _scores():
     return {
         case: evaluate_case(case, live=False)
-        for case in ("nda", "saas")
+        for case in ALL_CASES
     }
 
 
@@ -21,8 +22,9 @@ def test_release_certificate_rejects_seeded_unsupported_citations():
 
     assert certificate["schema"] == "contract-review-eval.release-certificate.v1"
     assert certificate["suite_decision"] == "REJECT"
-    assert certificate["summary"]["rejected"] == 2
-    assert certificate["summary"]["total_unsupported_citations"] == 2
+    # Every case fixture seeds exactly one fabricated citation, so each is rejected.
+    assert certificate["summary"]["rejected"] == len(ALL_CASES)
+    assert certificate["summary"]["total_unsupported_citations"] == len(ALL_CASES)
     assert all(
         "unsupported_citation_detected" in result["blockers"]
         for result in certificate["cases"]
@@ -78,7 +80,7 @@ def test_release_certificate_verifier_reproduces_the_suite():
 
     assert verification["status"] == "VALID"
     assert verification["errors"] == []
-    assert verification["verified_cases"] == ["nda", "saas"]
+    assert verification["verified_cases"] == sorted(ALL_CASES)
     assert len(verification["verification_sha256"]) == 64
 
 
@@ -86,7 +88,10 @@ def test_release_certificate_verifier_detects_tampering_and_score_drift():
     scores = _scores()
     certificate = build_release_certificate(scores)
     tampered = deepcopy(certificate)
-    tampered["cases"][0]["scores"]["clause_recall"] = 0.0
+    target = next(
+        result for result in tampered["cases"] if result["case"] == "nda"
+    )
+    target["scores"]["clause_recall"] = 0.0
 
     verification = verify_release_certificate(tampered, scores)
 
