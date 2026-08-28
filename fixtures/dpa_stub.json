@@ -1,0 +1,34 @@
+{
+  "_comment": "Deterministic stub model output for the DPA case. Deliberately imperfect in the way that matters most for data protection review: clause coverage is near perfect (F1 0.95) while risk severity is not, which is the failure mode aggregate scores hide. It catches the obvious lit. g indefinite-retention defect but rates the lit. h exclusion of on-site inspections as low, and rates a transfer clause carrying no Chapter V mechanism as low. It also invents a 'data_localisation' clause the agreement does not contain and fabricates the citation supporting it.",
+  "clauses": [
+    { "clause_type": "documented_instructions", "text": "Processing only on documented instructions from the controller, including transfers." },
+    { "clause_type": "confidentiality", "text": "Authorised persons are committed to confidentiality." },
+    { "clause_type": "security_measures", "text": "Appropriate technical and organisational measures, summary available on request." },
+    { "clause_type": "subprocessor_authorization", "text": "Processor may engage sub-processors at its own discretion." },
+    { "clause_type": "data_subject_rights_assistance", "text": "Assistance with Chapter III data subject requests." },
+    { "clause_type": "breach_and_dpia_assistance", "text": "Breach notification within fourteen days; DPIA assistance where commercially agreed." },
+    { "clause_type": "deletion_return", "text": "Processor may retain personal data after termination." },
+    { "clause_type": "audit_rights", "text": "Annual third-party audit certificate provided to the controller." },
+    { "clause_type": "international_transfers", "text": "Transfers to affiliates in third countries as necessary." },
+    { "clause_type": "governing_law", "text": "Governed by the laws of Germany." },
+    { "clause_type": "data_localisation", "text": "Personal data is stored within the European Economic Area." }
+  ],
+  "risk_flags": [
+    { "clause_type": "subprocessor_authorization", "severity": "high", "rationale": "Sub-processors appointed at the processor's discretion and the controller waives its right to object, which does not meet Art. 28(3)(d) GDPR." },
+    { "clause_type": "deletion_return", "severity": "high", "rationale": "Indefinite retention for the processor's own purposes after termination conflicts with Art. 28(3)(g) GDPR, which requires deletion or return at the controller's choice." },
+    { "clause_type": "breach_and_dpia_assistance", "severity": "medium", "rationale": "A fourteen day breach notification period is long relative to the controller's own 72 hour obligation." },
+    { "clause_type": "audit_rights", "severity": "low", "rationale": "An annual third-party certificate is a common market position." },
+    { "clause_type": "international_transfers", "severity": "low", "rationale": "Transfers are limited to affiliates for service provision." }
+  ],
+  "citations": [
+    { "quote": "only on documented instructions from the Controller", "clause_type": "documented_instructions" },
+    { "quote": "committed themselves to confidentiality", "clause_type": "confidentiality" },
+    { "quote": "appropriate technical and organisational measures", "clause_type": "security_measures" },
+    { "quote": "may engage sub-processors at its own discretion", "clause_type": "subprocessor_authorization" },
+    { "quote": "the data subject's rights laid down in Chapter III", "clause_type": "data_subject_rights_assistance" },
+    { "quote": "within\nfourteen (14) days of becoming aware of it", "clause_type": "breach_and_dpia_assistance" },
+    { "quote": "for its own legitimate business purposes", "clause_type": "deletion_return" },
+    { "quote": "all personal data shall be stored exclusively within the European Economic Area", "clause_type": "data_localisation" }
+  ],
+  "abstentions": []
+}

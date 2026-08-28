@@ -16,13 +16,48 @@
   },
   "suite_decision": "REJECT",
   "summary": {
-    "cases": 2,
-    "rejected": 2,
+    "cases": 3,
+    "rejected": 3,
     "human_review_required": 0,
     "pilot_eligible": 0,
-    "total_unsupported_citations": 2
+    "total_unsupported_citations": 3
   },
   "cases": [
+    {
+      "case": "dpa",
+      "decision": "REJECT",
+      "blockers": [
+        "unsupported_citation_detected",
+        "citation_grounding_below_100_percent"
+      ],
+      "review_items": [
+        "unexpected_clause_extracted",
+        "risk_severity_mismatch"
+      ],
+      "scores": {
+        "clause_precision": 0.9090909090909091,
+        "clause_recall": 1.0,
+        "clause_f1": 0.9523809523809523,
+        "risk_flag_accuracy": 0.6,
+        "citation_grounding": 0.875,
+        "hallucination_count": 1
+      },
+      "input_manifest": {
+        "source_contract": {
+          "path": "data/dpa_sample.md",
+          "sha256": "17a0c7b0dc7e74fe23fda6fcb394d331ada6e7286c2fb6a9497a9e58ed96f79e"
+        },
+        "expected_answer": {
+          "path": "expected/dpa.json",
+          "sha256": "c0063829f49446545b4d0dcaee489d88b18b3885e4de631ec0d59fa6dd43f2e1"
+        },
+        "adapter_output": {
+          "path": "fixtures/dpa_stub.json",
+          "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe"
+        }
+      },
+      "input_manifest_sha256": "a6afb87c2794dc31870aecb19b352c306635e20876f53c0023b0af262cc28ad0"
+    },
     {
       "case": "nda",
       "decision": "REJECT",
@@ -96,5 +131,5 @@
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "9e17c8a61c64ea145e02482c773477d426931b987996a79bb8695a412a149fa1"
+  "integrity_sha256": "7dcead089cdd63fed886fb71dffd08de1967a15a141a5ce43d227e16b7272011"
 }

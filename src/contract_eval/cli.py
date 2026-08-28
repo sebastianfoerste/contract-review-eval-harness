@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from contract_eval.adapters import get_adapter
+from contract_eval.cases import ALL_CASES
 from contract_eval.models import ExpectedAnswer
 from contract_eval.scorecard import render
 from contract_eval.release_certificate import (
@@ -27,10 +28,10 @@ from contract_eval.robustness import (
 )
 
 
-def evaluate_case(case: str, live: bool) -> dict:
+def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
     source = Path(f"data/{case}_sample.md").read_text()
     expected = ExpectedAnswer.model_validate(json.loads(Path(f"expected/{case}.json").read_text()))
-    output = get_adapter(live).review(source_text=source, case=case)
+    output = get_adapter(live, model=model).review(source_text=source, case=case)
 
     clause = clause_scores(expected.clause_types, [c.clause_type for c in output.clauses])
     predicted_flags = {f.clause_type: f.severity for f in output.risk_flags}
@@ -78,12 +79,12 @@ def render_multi(scores: dict) -> str:
     return "\n".join(parts)
 
 
-def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format_type: str = "markdown") -> Path:
-    cases_to_eval = ["nda", "saas"] if case == "all" else [case]
+def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format_type: str = "markdown", model: str | None = None) -> Path:
+    cases_to_eval = ALL_CASES if case == "all" else [case]
     run_scores = {}
 
     for c in cases_to_eval:
-        run_scores[c] = evaluate_case(c, live)
+        run_scores[c] = evaluate_case(c, live, model=model)
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -155,7 +156,7 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
     past_case = latest_data["case"]
     past_scores = latest_data["scores"]
 
-    cases_to_eval = ["nda", "saas"] if past_case == "all" else [past_case]
+    cases_to_eval = ALL_CASES if past_case == "all" else [past_case]
 
     current_scores = {}
     for c in cases_to_eval:
@@ -201,7 +202,7 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
 
 
 def certify(case: str, out_dir: Path) -> tuple[Path, Path]:
-    cases_to_eval = ["nda", "saas"] if case == "all" else [case]
+    cases_to_eval = ALL_CASES if case == "all" else [case]
     certificate = build_release_certificate(
         {name: evaluate_case(name, live=False) for name in cases_to_eval}
     )
@@ -220,7 +221,7 @@ def verify_certificate(certificate_path: Path) -> dict:
     certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
     scores = {
         case: evaluate_case(case, live=False)
-        for case in ("nda", "saas")
+        for case in ALL_CASES
     }
     return verify_release_certificate(certificate, scores)
 
@@ -231,15 +232,16 @@ def robustness(
     *,
     live: bool,
     runs: int,
+    model: str | None = None,
 ) -> dict:
     scores = {
         case: evaluate_case(case, live=False)
-        for case in ("nda", "saas")
+        for case in ALL_CASES
     }
     certificate = build_release_certificate(scores)
     report = build_robustness_report(
         campaign_path,
-        get_adapter(live),
+        get_adapter(live, model=model),
         certificate,
         runs=runs,
     )
@@ -254,7 +256,7 @@ def verify_robustness(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     scores = {
         case: evaluate_case(case, live=False)
-        for case in ("nda", "saas")
+        for case in ALL_CASES
     }
     expected = build_robustness_report(
         campaign_path,
@@ -271,6 +273,11 @@ def main() -> None:
     ev = sub.add_parser("evaluate", help="score an adapter's review against the expected answers")
     ev.add_argument("--case", default="nda", help="case name (nda, saas, all)")
     ev.add_argument("--live", action="store_true", help="use the live adapter instead of the stub")
+    ev.add_argument(
+        "--model",
+        default=None,
+        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-4-8)",
+    )
     ev.add_argument("--out", default=".", type=Path, help="output directory for scorecard.md")
     ev.add_argument("--no-gate", action="store_true", help="do not exit with code 1 on regression/failure")
     ev.add_argument("--format", default="markdown", choices=["markdown", "json"], help="output format (markdown, json)")
@@ -314,6 +321,11 @@ def main() -> None:
         help="use the optional live adapter",
     )
     robust.add_argument(
+        "--model",
+        default=None,
+        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-4-8)",
+    )
+    robust.add_argument(
         "--runs",
         default=1,
         type=int,
@@ -340,7 +352,14 @@ def main() -> None:
 
     if args.cmd == "evaluate":
         try:
-            path = evaluate(case=args.case, live=args.live, out_dir=args.out, no_gate=args.no_gate, format_type=args.format)
+            path = evaluate(
+                case=args.case,
+                live=args.live,
+                out_dir=args.out,
+                no_gate=args.no_gate,
+                format_type=args.format,
+                model=args.model,
+            )
             print(f"wrote {path}")
         except ValueError as e:
             print(f"Error: {e}")
@@ -362,6 +381,7 @@ def main() -> None:
                 args.out,
                 live=args.live,
                 runs=args.runs,
+                model=args.model,
             )
         except (OSError, ValueError, KeyError) as exc:
             print(f"Error: {exc}")

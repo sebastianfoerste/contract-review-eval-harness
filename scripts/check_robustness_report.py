@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from contract_eval.adapters import get_adapter
+from contract_eval.cases import ALL_CASES
 from contract_eval.cli import evaluate_case
 from contract_eval.release_certificate import build_release_certificate
 from contract_eval.robustness import (
@@ -20,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main() -> int:
     scores = {
         case: evaluate_case(case, live=False)
-        for case in ("nda", "saas")
+        for case in ALL_CASES
     }
     report = build_robustness_report(
         ROOT / "robustness" / "campaign.v1.json",

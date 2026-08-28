@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from contract_eval.adapters import get_adapter
+from contract_eval.cases import ALL_CASES
 from contract_eval.cli import evaluate_case
 from contract_eval.models import ReviewOutput
 from contract_eval.release_certificate import build_release_certificate
@@ -27,7 +28,7 @@ CAMPAIGN = ROOT / "robustness" / "campaign.v1.json"
 def _report() -> dict:
     scores = {
         case: evaluate_case(case, live=False)
-        for case in ("nda", "saas")
+        for case in ALL_CASES
     }
     return build_robustness_report(
         CAMPAIGN,
@@ -37,16 +38,18 @@ def _report() -> dict:
     )
 
 
-def test_campaign_has_twelve_exact_minimal_pair_scenarios() -> None:
+def test_campaign_covers_every_case_with_exact_minimal_pairs() -> None:
     campaign = load_campaign(CAMPAIGN)
-    assert len(campaign.scenarios) == 12
-    assert sum(
-        scenario.category == "semantic_control"
+    controls = [
+        scenario
         for scenario in campaign.scenarios
-    ) == 2
-    assert {
-        scenario.base_case for scenario in campaign.scenarios
-    } == {"nda", "saas"}
+        if scenario.category == "semantic_control"
+    ]
+    # Every evaluated contract type is stress-tested, and each one carries a
+    # semantic control so false positives stay separable from real findings.
+    assert {scenario.base_case for scenario in campaign.scenarios} == set(ALL_CASES)
+    assert {scenario.base_case for scenario in controls} == set(ALL_CASES)
+    assert len(controls) >= 2
 
     for scenario in campaign.scenarios:
         source = (ROOT / "data" / f"{scenario.base_case}_sample.md").read_text()
@@ -70,7 +73,7 @@ def test_report_catches_false_reassurance_citations_and_missing_abstention() -> 
     assert report["schema"] == REPORT_SCHEMA
     assert report["suite_decision"] == "REJECT"
     assert report["baseline_release_certificate"]["suite_decision"] == "REJECT"
-    assert metrics["scenarios"] == 12
+    assert metrics["scenarios"] == len(load_campaign(CAMPAIGN).scenarios)
     assert metrics["critical_false_reassurance"] > 0
     assert metrics["unsupported_citations"] > 0
     assert metrics["abstention_compliance"] == 0.0

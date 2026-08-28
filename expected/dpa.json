@@ -1,0 +1,22 @@
+{
+  "_comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h, plus Chapter V transfers and governing law. The severities encode where the synthetic draft departs from Art. 28(3): unrestricted sub-processing (lit. d), indefinite retention after termination (lit. g), and excluded inspections (lit. h) are the material defects; a transfer clause with no Chapter V mechanism is the fourth.",
+  "clause_types": [
+    "documented_instructions",
+    "confidentiality",
+    "security_measures",
+    "subprocessor_authorization",
+    "data_subject_rights_assistance",
+    "breach_and_dpia_assistance",
+    "deletion_return",
+    "audit_rights",
+    "international_transfers",
+    "governing_law"
+  ],
+  "risk_flags": {
+    "subprocessor_authorization": "high",
+    "deletion_return": "high",
+    "audit_rights": "high",
+    "international_transfers": "high",
+    "breach_and_dpia_assistance": "medium"
+  }
+}

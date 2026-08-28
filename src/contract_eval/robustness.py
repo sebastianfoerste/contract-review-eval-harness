@@ -8,9 +8,10 @@ import json
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from contract_eval.adapters.base import Adapter
+from contract_eval.cases import ALL_CASES
 from contract_eval.models import ReviewOutput
 from contract_eval.scorer import citation_grounding, count_hallucinations
 
@@ -51,13 +52,20 @@ class ExpectedBehavior(BaseModel):
 
 class RobustnessScenario(BaseModel):
     scenario_id: str
-    base_case: Literal["nda", "saas"]
+    base_case: str
     category: str
     severity: Literal["control", "medium", "high", "critical"]
     description: str
     expected_change: bool
     operations: list[MutationOperation] = Field(..., min_length=1)
     expected: ExpectedBehavior
+
+    @field_validator("base_case")
+    @classmethod
+    def _known_case(cls, value: str) -> str:
+        if value not in ALL_CASES:
+            raise ValueError(f"unknown base_case {value!r}; expected one of {list(ALL_CASES)}")
+        return value
 
 
 class RobustnessCampaign(BaseModel):
@@ -81,8 +89,18 @@ class RobustnessCampaign(BaseModel):
             for scenario in self.scenarios
             if scenario.category == "semantic_control"
         ]
-        if len(controls) != 2:
-            raise ValueError("robustness campaign requires exactly two semantic controls")
+        if len(controls) < 2:
+            raise ValueError("robustness campaign requires at least two semantic controls")
+        # A control isolates false positives for its own contract type, so a case
+        # cannot be stress-tested without one.
+        covered = {scenario.base_case for scenario in self.scenarios}
+        controlled = {scenario.base_case for scenario in controls}
+        uncontrolled = sorted(covered - controlled)
+        if uncontrolled:
+            raise ValueError(
+                "every case in the campaign needs a semantic control; missing for: "
+                + ", ".join(uncontrolled)
+            )
         return self
 
 
@@ -401,7 +419,7 @@ def _decision(
 
 def _input_manifest(root: Path, campaign_path: Path) -> dict[str, Any]:
     paths = [campaign_path]
-    for case in ("nda", "saas"):
+    for case in ALL_CASES:
         paths.extend(
             [
                 root / "data" / f"{case}_sample.md",

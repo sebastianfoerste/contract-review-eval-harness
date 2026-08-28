@@ -34,11 +34,12 @@ certificate-verify` re-runs the offline adapter, recomputes every score and inpu
 digest, and fails on certificate tampering or benchmark drift.
 
 The [Adversarial Contract Robustness Lab](examples/adversarial-robustness-report.md)
-adds twelve deterministic minimal-pair scenarios across the NDA and SaaS fixtures.
-It tests party-definition changes, residual-knowledge carve-outs, duration changes,
+adds eighteen deterministic minimal-pair scenarios across the NDA, SaaS and DPA
+fixtures: party-definition changes, residual-knowledge carve-outs, duration changes,
 conflicting governing law, instruction injection, uptime negation, model-training
-rights, liability-cap changes, renewal windows, missing schedules, and two
-semantic-preserving controls. The
+rights, liability-cap changes, renewal windows, missing schedules, processing-instruction
+carve-outs, discretionary confidentiality, extended breach windows, and one
+semantic-preserving control per contract type. The
 [local HTML campaign view](examples/adversarial-robustness-report.html) exposes
 critical recall, severity-weighted sensitivity, false reassurance, required
 abstention, citation grounding, injection resilience, repeated-run consistency,
@@ -112,12 +113,31 @@ export ANTHROPIC_API_KEY=...
 uv run python -m contract_eval robustness --live --runs 3 --out live-results
 ```
 
-A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark.
+The model is selectable, so the same gold set can be replayed across versions and
+compared. Pass `--model`, or set `CONTRACT_EVAL_MODEL`; the default is
+`claude-opus-4-8`.
+
+```bash
+uv run python -m contract_eval evaluate --case all --live --model claude-opus-4-8
+```
+
+A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark. Any published comparison must name the model, the date and the harness version, because a score without those three is not reproducible.
 
 ## Use cases
 
 - NDA: confidentiality, definition, term, return/destruction, governing law.
 - SaaS agreement: service levels, data protection, limitation of liability, term, auto-renewal.
+- Data processing agreement: Art. 28(3) lit. a to h GDPR, Chapter V transfers, governing law.
+
+The DPA case is where clause coverage and legal judgment come apart most clearly.
+The offline adapter scores 0.95 clause F1 on it — it finds every clause — while
+rating the exclusion of on-site inspections as low risk and a transfer clause
+carrying no Chapter V mechanism as low risk. Both are material Art. 28(3) and
+Chapter V defects. A reviewer reading only the coverage number would not see them.
+
+Adding a fourth contract type means adding four files and one entry in
+[`src/contract_eval/cases.py`](src/contract_eval/cases.py); no consumer hardcodes
+the case set.
 
 ## Synthetic data statement
 
@@ -126,10 +146,10 @@ Every contract under `data/` is synthetic and fabricated for evaluation. No real
 ## Limitations
 
 This is a public-safe prototype and a human-review evaluation artifact. The answer
-sets and twelve perturbations are synthetic and intentionally bounded to two
-contract types. Pilot eligibility from either certificate still requires legal,
-security, privacy, and product review. It never authorizes autonomous contract
-reliance.
+sets and the eighteen perturbations are synthetic and intentionally bounded to
+three contract types. Pilot eligibility from either certificate still requires
+legal, security, privacy, and product review. It never authorizes autonomous
+contract reliance.
 
 ## Stack
 
