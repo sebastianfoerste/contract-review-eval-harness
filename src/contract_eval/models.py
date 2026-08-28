@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 Severity = Literal["low", "medium", "high"]
 
@@ -23,12 +23,18 @@ class Clause(BaseModel):
     text: str
 
 
+class Abstention(BaseModel):
+    clause_type: str
+    reason: str
+
+
 class ReviewOutput(BaseModel):
     """What an adapter returns for a contract."""
 
     clauses: list[Clause]
     risk_flags: list[RiskFlag]
     citations: list[Citation]
+    abstentions: list[Abstention] = Field(default_factory=list)
 
 
 class ExpectedAnswer(BaseModel):
@@ -36,5 +42,4 @@ class ExpectedAnswer(BaseModel):
 
     clause_types: list[str]
     risk_flags: dict[str, str]  # clause_type -> severity
-    thresholds: dict[str, float] = {}
-
+    thresholds: dict[str, float] = Field(default_factory=dict)

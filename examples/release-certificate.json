@@ -1,0 +1,100 @@
+{
+  "schema": "contract-review-eval.release-certificate.v1",
+  "policy": {
+    "policy_id": "contract-review-eval.strict-legal-release-policy.v1",
+    "requirements": {
+      "citation_grounding_minimum": 1.0,
+      "hallucination_count_maximum": 0,
+      "clause_precision_target": 1.0,
+      "clause_recall_target": 1.0,
+      "risk_flag_accuracy_target": 1.0
+    },
+    "hard_blockers": [
+      "unsupported citation",
+      "citation grounding below 100 percent"
+    ]
+  },
+  "suite_decision": "REJECT",
+  "summary": {
+    "cases": 2,
+    "rejected": 2,
+    "human_review_required": 0,
+    "pilot_eligible": 0,
+    "total_unsupported_citations": 2
+  },
+  "cases": [
+    {
+      "case": "nda",
+      "decision": "REJECT",
+      "blockers": [
+        "unsupported_citation_detected",
+        "citation_grounding_below_100_percent"
+      ],
+      "review_items": [
+        "unexpected_clause_extracted",
+        "risk_severity_mismatch"
+      ],
+      "scores": {
+        "clause_precision": 0.8333333333333334,
+        "clause_recall": 1.0,
+        "clause_f1": 0.9090909090909091,
+        "risk_flag_accuracy": 0.5,
+        "citation_grounding": 0.8,
+        "hallucination_count": 1
+      },
+      "input_manifest": {
+        "source_contract": {
+          "path": "data/nda_sample.md",
+          "sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e"
+        },
+        "expected_answer": {
+          "path": "expected/nda.json",
+          "sha256": "3a78117ae1ee96f3ac1eeed6981ff8b7908a86631b08c3e2aefc5e1fe82e708e"
+        },
+        "adapter_output": {
+          "path": "fixtures/nda_stub.json",
+          "sha256": "6821a664ae5c66bb23066b2881225acc096352e851183bb9c84bfbb6bc7ddd48"
+        }
+      },
+      "input_manifest_sha256": "f1e6b215ea35720598d3719fa3ea023ef383038fce8a9a597fa1d4180bc3af6a"
+    },
+    {
+      "case": "saas",
+      "decision": "REJECT",
+      "blockers": [
+        "unsupported_citation_detected",
+        "citation_grounding_below_100_percent"
+      ],
+      "review_items": [
+        "unexpected_clause_extracted",
+        "risk_severity_mismatch"
+      ],
+      "scores": {
+        "clause_precision": 0.8333333333333334,
+        "clause_recall": 1.0,
+        "clause_f1": 0.9090909090909091,
+        "risk_flag_accuracy": 0.5,
+        "citation_grounding": 0.8,
+        "hallucination_count": 1
+      },
+      "input_manifest": {
+        "source_contract": {
+          "path": "data/saas_sample.md",
+          "sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b"
+        },
+        "expected_answer": {
+          "path": "expected/saas.json",
+          "sha256": "146b13de4f6e2f6006be82366c3572b55d778e03de4481b097ad8c3682b02158"
+        },
+        "adapter_output": {
+          "path": "fixtures/saas_stub.json",
+          "sha256": "b821cbb125780de1fddb208bf2846233ba5fac8ae909b45baa54e79722ffb5a4"
+        }
+      },
+      "input_manifest_sha256": "1df45232caf555c58019d201df3b9bbb0acd734ea6fa2eaafc0acce090a518e9"
+    }
+  ],
+  "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
+  "external_actions_allowed": false,
+  "integrity_sha256": "9e17c8a61c64ea145e02482c773477d426931b987996a79bb8695a412a149fa1"
+}

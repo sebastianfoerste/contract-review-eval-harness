@@ -26,6 +26,33 @@ Runs end to end, offline and deterministically.
 
 The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
 
+The [release certificate](examples/release-certificate.md) evaluates all bundled
+cases under a stricter legal-review policy. It hashes the source contract, gold
+answer, and adapter output for each case, rejects any unsupported citation, and
+binds the suite decision to a reproducible integrity digest. `make
+certificate-verify` re-runs the offline adapter, recomputes every score and input
+digest, and fails on certificate tampering or benchmark drift.
+
+The [Adversarial Contract Robustness Lab](examples/adversarial-robustness-report.md)
+adds twelve deterministic minimal-pair scenarios across the NDA and SaaS fixtures.
+It tests party-definition changes, residual-knowledge carve-outs, duration changes,
+conflicting governing law, instruction injection, uptime negation, model-training
+rights, liability-cap changes, renewal windows, missing schedules, and two
+semantic-preserving controls. The
+[local HTML campaign view](examples/adversarial-robustness-report.html) exposes
+critical recall, severity-weighted sensitivity, false reassurance, required
+abstention, citation grounding, injection resilience, repeated-run consistency,
+and every scenario-level failure.
+
+The campaign design follows current evidence that apparently strong aggregate
+scores can conceal subtle legal failures. [ContractEval](https://arxiv.org/abs/2508.03080)
+reports material differences across contract-review tasks and model settings.
+[Better Call CLAUSE](https://arxiv.org/abs/2511.00340) stress-tests nuanced and
+adversarial contract flaws. [LegalCiteBench](https://arxiv.org/abs/2605.10186)
+documents persistent weaknesses in exact legal citation tasks. The committed
+offline report therefore preserves the adapter's failures and carries forward the
+baseline release-certificate rejection.
+
 ```markdown
 # Contract Review Eval Scorecard: nda
 
@@ -45,6 +72,11 @@ The demo writes a scorecard with clause-level scoring, citation-grounding assess
 - Risk-flag accuracy.
 - Citation grounding.
 - Unsupported or fabricated citations.
+- Input drift and suite-level release eligibility.
+- Adversarial and subtle contract changes.
+- Critical false reassurance and required abstention.
+- Instruction-injection and semantic-invariance behavior.
+- Repeated-run consistency and input-bound robustness verification.
 
 ## Problem
 
@@ -64,6 +96,10 @@ make install
 make test
 make demo
 uv run python -m contract_eval evaluate --case saas
+make certificate
+make certificate-verify
+make robustness
+make robustness-check
 ```
 
 ## Optional live-model run
@@ -72,8 +108,8 @@ The default path is a deterministic stub. The optional live adapter can score ou
 
 ```bash
 uv sync --extra live
-export MODEL_API_KEY=...
-make demo-live
+export ANTHROPIC_API_KEY=...
+uv run python -m contract_eval robustness --live --runs 3 --out live-results
 ```
 
 A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark.
@@ -89,7 +125,11 @@ Every contract under `data/` is synthetic and fabricated for evaluation. No real
 
 ## Limitations
 
-This is a public-safe prototype, not a production benchmark or leaderboard. The answer sets are synthetic and intentionally small. It covers two contract types today. Broader coverage comes from expanding expected answer sets and adding versioned benchmark runs.
+This is a public-safe prototype and a human-review evaluation artifact. The answer
+sets and twelve perturbations are synthetic and intentionally bounded to two
+contract types. Pilot eligibility from either certificate still requires legal,
+security, privacy, and product review. It never authorizes autonomous contract
+reliance.
 
 ## Stack
 

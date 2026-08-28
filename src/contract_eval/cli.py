@@ -9,11 +9,21 @@ from pathlib import Path
 from contract_eval.adapters import get_adapter
 from contract_eval.models import ExpectedAnswer
 from contract_eval.scorecard import render
+from contract_eval.release_certificate import (
+    build_release_certificate,
+    render_release_certificate,
+    verify_release_certificate,
+)
 from contract_eval.scorer import (
     citation_grounding,
     clause_scores,
     count_hallucinations,
     risk_flag_accuracy,
+)
+from contract_eval.robustness import (
+    build_robustness_report,
+    verify_robustness_report,
+    write_robustness_report,
 )
 
 
@@ -190,6 +200,70 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
         print("\nSuccess: No regressions detected!")
 
 
+def certify(case: str, out_dir: Path) -> tuple[Path, Path]:
+    cases_to_eval = ["nda", "saas"] if case == "all" else [case]
+    certificate = build_release_certificate(
+        {name: evaluate_case(name, live=False) for name in cases_to_eval}
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "release-certificate.json"
+    markdown_path = out_dir / "release-certificate.md"
+    json_path.write_text(json.dumps(certificate, indent=2) + "\n", encoding="utf-8")
+    markdown_path.write_text(
+        render_release_certificate(certificate),
+        encoding="utf-8",
+    )
+    return markdown_path, json_path
+
+
+def verify_certificate(certificate_path: Path) -> dict:
+    certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    scores = {
+        case: evaluate_case(case, live=False)
+        for case in ("nda", "saas")
+    }
+    return verify_release_certificate(certificate, scores)
+
+
+def robustness(
+    campaign_path: Path,
+    out_dir: Path,
+    *,
+    live: bool,
+    runs: int,
+) -> dict:
+    scores = {
+        case: evaluate_case(case, live=False)
+        for case in ("nda", "saas")
+    }
+    certificate = build_release_certificate(scores)
+    report = build_robustness_report(
+        campaign_path,
+        get_adapter(live),
+        certificate,
+        runs=runs,
+    )
+    write_robustness_report(report, out_dir)
+    return report
+
+
+def verify_robustness(
+    report_path: Path,
+    campaign_path: Path,
+) -> dict:
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    scores = {
+        case: evaluate_case(case, live=False)
+        for case in ("nda", "saas")
+    }
+    expected = build_robustness_report(
+        campaign_path,
+        get_adapter(False),
+        build_release_certificate(scores),
+    )
+    return verify_robustness_report(report, expected)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="contract-eval")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -202,6 +276,65 @@ def main() -> None:
     ev.add_argument("--format", default="markdown", choices=["markdown", "json"], help="output format (markdown, json)")
     
     sub.add_parser("compare", help="compare the current scores against the latest saved run in history")
+    cert = sub.add_parser(
+        "certify",
+        help="issue an input-bound release decision over the synthetic benchmark suite",
+    )
+    cert.add_argument("--case", default="all", help="case name (nda, saas, all)")
+    cert.add_argument("--out", default="examples", type=Path, help="certificate output directory")
+    verify = sub.add_parser(
+        "verify-certificate",
+        help="re-run the offline benchmark and verify a release certificate",
+    )
+    verify.add_argument(
+        "--certificate",
+        default="examples/release-certificate.json",
+        type=Path,
+        help="release certificate JSON to verify",
+    )
+    robust = sub.add_parser(
+        "robustness",
+        help="run the adversarial minimal-pair contract review campaign",
+    )
+    robust.add_argument(
+        "--campaign",
+        default="robustness/campaign.v1.json",
+        type=Path,
+        help="versioned robustness campaign JSON",
+    )
+    robust.add_argument(
+        "--out",
+        default="examples",
+        type=Path,
+        help="robustness report output directory",
+    )
+    robust.add_argument(
+        "--live",
+        action="store_true",
+        help="use the optional live adapter",
+    )
+    robust.add_argument(
+        "--runs",
+        default=1,
+        type=int,
+        choices=range(1, 6),
+        metavar="1..5",
+        help="adapter runs per original and mutated contract",
+    )
+    verify_robust = sub.add_parser(
+        "verify-robustness",
+        help="rebuild the offline campaign and verify its input-bound report",
+    )
+    verify_robust.add_argument(
+        "--report",
+        default="examples/adversarial-robustness-report.json",
+        type=Path,
+    )
+    verify_robust.add_argument(
+        "--campaign",
+        default="robustness/campaign.v1.json",
+        type=Path,
+    )
     
     args = parser.parse_args()
 
@@ -214,6 +347,34 @@ def main() -> None:
             sys.exit(1)
     elif args.cmd == "compare":
         compare_runs()
+    elif args.cmd == "certify":
+        markdown_path, json_path = certify(case=args.case, out_dir=args.out)
+        print(f"wrote {markdown_path} and {json_path}")
+    elif args.cmd == "verify-certificate":
+        verification = verify_certificate(args.certificate)
+        print(json.dumps(verification, indent=2))
+        if verification["status"] != "VALID":
+            sys.exit(1)
+    elif args.cmd == "robustness":
+        try:
+            report = robustness(
+                args.campaign,
+                args.out,
+                live=args.live,
+                runs=args.runs,
+            )
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"Error: {exc}")
+            sys.exit(1)
+        print(
+            f"wrote {args.out / 'adversarial-robustness-report.md'} "
+            f"({report['suite_decision']})"
+        )
+    elif args.cmd == "verify-robustness":
+        verification = verify_robustness(args.report, args.campaign)
+        print(json.dumps(verification, indent=2))
+        if verification["status"] != "VALID":
+            sys.exit(1)
 
 
 if __name__ == "__main__":
