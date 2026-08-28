@@ -33,3 +33,15 @@ jobs:
 
       - name: Run comparison regression test
         run: uv run python -m contract_eval compare
+
+      - name: Verify the committed release certificate
+        run: uv run python scripts/check_release_certificate.py
+
+      - name: Recompute the release certificate from source inputs
+        run: uv run python -m contract_eval verify-certificate --certificate examples/release-certificate.json
+
+      - name: Verify the adversarial robustness campaign
+        run: uv run python -m contract_eval verify-robustness --report examples/adversarial-robustness-report.json --campaign robustness/campaign.v1.json
+
+      - name: Check the committed robustness artifacts
+        run: uv run python scripts/check_robustness_report.py
