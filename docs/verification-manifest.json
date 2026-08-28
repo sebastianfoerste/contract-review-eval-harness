@@ -1,0 +1,54 @@
+{
+  "schema_version": "verification-manifest.v1",
+  "repository": "contract-review-eval-harness",
+  "repository_url": "https://github.com/sebastianfoerste/contract-review-eval-harness",
+  "quickstart": [
+    "README.md",
+    "examples/scorecard.md",
+    "examples/release-certificate.md",
+    "examples/adversarial-robustness-report.md"
+  ],
+  "verification_artifacts": [
+    {
+      "path": "docs/demo.png",
+      "label": "Demo screenshot"
+    },
+    {
+      "path": "examples/scorecard.json",
+      "label": "Deterministic scorecard"
+    },
+    {
+      "path": "examples/release-certificate.json",
+      "label": "Input-bound release certificate"
+    },
+    {
+      "path": "examples/adversarial-robustness-report.json",
+      "label": "Adversarial minimal-pair campaign report"
+    },
+    {
+      "path": "examples/live-run-claude-opus-4-8-2026-06-29.md",
+      "label": "Dated optional live-model run"
+    }
+  ],
+  "validation_commands": [
+    "make test",
+    "make demo",
+    "make certificate-verify",
+    "make robustness-check",
+    "make check"
+  ],
+  "data_boundary": "Synthetic contracts and human-authored expected answers only.",
+  "safety_controls": [
+    "offline deterministic fixture path",
+    "citation grounding and unsupported-citation counts",
+    "adversarial minimal-pair scenarios that the baseline adapter fails",
+    "input-bound integrity digests over contracts, gold answers and adapter output",
+    "human review required before reliance"
+  ],
+  "blocked_actions": [
+    "no client contracts",
+    "no external API call in the fixture benchmark",
+    "no representation that a non-deterministic live run is a stable benchmark",
+    "no release eligibility without a passing certificate and robustness campaign"
+  ]
+}
