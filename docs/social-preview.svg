@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="1280" height="640" fill="#17110F"/>
+  <rect x="0" y="0" width="10" height="640" fill="#C6534B"/>
+  <text x="72" y="112" fill="#C6534B" font-size="21" font-weight="700" letter-spacing="4.2">CONTRACT REVIEW EVAL HARNESS</text>
+  <text x="72" y="205" fill="#F4EEEB" font-size="62" font-weight="700">Measured, not asserted.</text>
+  <text x="72" y="272" fill="#A99C97" font-size="27">Clause scoring, citation grounding and hallucination counts</text>
+  <text x="72" y="311" fill="#A99C97" font-size="27">against a human-authored gold answer set.</text>
+
+  <rect x="72" y="360" width="1136" height="132" rx="10" fill="#241A17" stroke="#3B2C27"/>
+  <text x="104" y="404" fill="#8E827E" font-size="17" font-weight="700" letter-spacing="2.6">ADVERSARIAL CAMPAIGN · 18 SCENARIOS · 3 CONTRACT TYPES</text>
+  <text x="104" y="462" fill="#E7594F" font-size="40" font-weight="700">REJECT</text>
+  <text x="290" y="462" fill="#A99C97" font-size="25">on its own baseline adapter — the instrument can fail</text>
+
+  <text x="72" y="556" fill="#7D716D" font-size="21">NDA · SaaS · Art. 28 GDPR data processing agreement</text>
+  <text x="72" y="592" fill="#7D716D" font-size="21">Synthetic data only. Not legal advice.</text>
+  <text x="1208" y="592" fill="#5F5551" font-size="21" text-anchor="end">github.com/sebastianfoerste</text>
+</svg>
