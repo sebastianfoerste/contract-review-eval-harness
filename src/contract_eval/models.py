@@ -43,3 +43,7 @@ class ExpectedAnswer(BaseModel):
     clause_types: list[str]
     risk_flags: dict[str, str]  # clause_type -> severity
     thresholds: dict[str, float] = Field(default_factory=dict)
+    # Declared synonyms for the SAME clause of the SAME document: spelling,
+    # plural and hyphenation variants, or an equally accurate name for the
+    # clause. Never a way to accept an answer about a different clause.
+    clause_aliases: dict[str, str] = Field(default_factory=dict)

@@ -123,6 +123,13 @@ uv run python -m contract_eval evaluate --case all --live --model claude-opus-4-
 
 A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark. Any published comparison must name the model, the date and the harness version, because a score without those three is not reproducible.
 
+The [2026-08-28 run](examples/live-run-claude-opus-4-8-2026-08-28.md) is worth reading
+for what it found in the harness rather than in the model. The first pass scored the
+model at 0.40 clause F1 and 0.00 risk accuracy on the DPA. It had in fact found every
+clause and matched every gold severity, and was scored as failing because it wrote
+`audits_and_inspections` where the gold set says `audit_rights`. Scoring string
+equality of taxonomy labels reported a correct review as a total failure.
+
 ## Use cases
 
 Thirty-two clause types across three agreements:
@@ -136,7 +143,8 @@ Thirty-two clause types across three agreements:
   governing law.
 
 Each gold set records a `_severity_rationale` naming why every flag carries its severity,
-so the calibration can be challenged rather than assumed. Some clauses in each agreement
+so the calibration can be challenged rather than assumed, and a `clause_aliases` map
+declaring synonyms for the same clause so that vocabulary is not scored as legal error. Some clauses in each agreement
 are deliberately unremarkable: a reviewer who flags them is producing false positives.
 
 Every case is built so that clause coverage and legal judgment come apart. The offline

@@ -22,7 +22,7 @@
   },
   "baseline_release_certificate": {
     "suite_decision": "REJECT",
-    "integrity_sha256": "d329338fd628710bc3a70d22438625f2c57ed0dc1a2a4a1a0cafc2ee6b201e6e"
+    "integrity_sha256": "60282886bef398abd227457d1f726f81897cc74d92a133ed2213dfde565c03dd"
   },
   "metrics": {
     "scenarios": 18,
@@ -49,8 +49,8 @@
       "bytes": 2351
     },
     "expected/nda.json": {
-      "sha256": "e3088da67f11e7999084dc1a3b3052ec3c0a7c80a93b3005235c9226c46fe67b",
-      "bytes": 2199
+      "sha256": "ac401a79abe99f998d831b62a1cd91e3caa183f7df1ab2f4727602695eb962f0",
+      "bytes": 3017
     },
     "fixtures/nda_stub.json": {
       "sha256": "f8f9b17131c68054df54c45d0782ae472914ec580ea3a345ab22df67b6e82fa8",
@@ -61,8 +61,8 @@
       "bytes": 2206
     },
     "expected/saas.json": {
-      "sha256": "6c11ee21c95d8b47883a7c75ff9f77251f30a0e2d80c092b1db2a33efa54c716",
-      "bytes": 2741
+      "sha256": "15f8c9bc4317f14c3dc73faf72cbd3973bc12efefdedeab9b92ffa217b3f8c81",
+      "bytes": 3673
     },
     "fixtures/saas_stub.json": {
       "sha256": "610ead111d79a99c1f78e2d4ccf86442a502f270d1d2dbc5dcb867209e814a21",
@@ -73,15 +73,15 @@
       "bytes": 2813
     },
     "expected/dpa.json": {
-      "sha256": "a7e9fb424c1a18e69bc031cc599256e07f5ad6b7adbba5210f6112fd02994319",
-      "bytes": 2455
+      "sha256": "a108911e3cbd0b11edb781e80750eb91b3aed7c6bdb7bb659661de874e6797fb",
+      "bytes": 3583
     },
     "fixtures/dpa_stub.json": {
       "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe",
       "bytes": 3823
     }
   },
-  "input_manifest_sha256": "44a82aa1b011e1093044977e5202f0f24bddeadc4eb35ac458066e28cd4fd421",
+  "input_manifest_sha256": "8946cb3bdee4813b25dfca421fcb22f9178b5503baccfda88e9845ab471479f4",
   "scenarios": [
     {
       "scenario_id": "nda-one-way-definition",
@@ -3002,5 +3002,5 @@
   ],
   "review_gate": "This synthetic campaign may support a human-supervised pilot decision. It never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "6a85f478aa49af74f84a02034981d707af9ce4448f4b600a2414e6dc9f9af6f0"
+  "integrity_sha256": "18c5a865029da2e4da97895bcf90341c31e1b080550121d92fc9fc37315a4e88"
 }
