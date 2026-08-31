@@ -21,3 +21,25 @@ def test_expected_answer_parses_severity_map():
         }
     )
     assert exp.risk_flags["term"] == "high"
+
+
+def test_clause_aliases_are_synonyms_not_shortcuts():
+    """An alias renames a clause; it must never point at a different one.
+
+    Without this, an alias map could quietly accept a wrong answer — which is the
+    failure mode the harness exists to catch, reintroduced in the gold set itself.
+    """
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.models import ExpectedAnswer
+
+    for case in ALL_CASES:
+        expected = ExpectedAnswer.model_validate(
+            json.loads(Path(f"expected/{case}.json").read_text())
+        )
+        canonical = set(expected.clause_types)
+        for alias, target in expected.clause_aliases.items():
+            assert target in canonical, f"{case}: alias {alias!r} targets unknown {target!r}"
+            assert alias not in canonical, f"{case}: alias {alias!r} shadows a canonical name"

@@ -1,5 +1,5 @@
 {
-  "_comment": "Human-authored gold answer for the synthetic SaaS agreement. _severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives.",
+  "_comment": "Human-authored gold answer for the synthetic SaaS agreement. _severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
   "clause_types": [
     "service_levels",
     "data_protection",
@@ -32,5 +32,20 @@
     "limitation_of_liability": "medium — a twelve month fee cap is common market practice, but it carves out nothing for data breach, confidentiality or IP indemnity, which is worse than market and should be negotiated.",
     "security": "medium — 'industry standard measures appropriate to a provider of its size' is unmeasurable and gives the customer nothing to audit against, but it is a drafting weakness rather than an absent obligation.",
     "data_export_on_termination": "medium — a seven day deletion window with export only on request risks irreversible data loss on a missed deadline; thirty days with a standing export right is the ordinary position."
+  },
+  "clause_aliases": {
+    "service_level_agreement": "service_levels",
+    "service_level": "service_levels",
+    "uptime": "service_levels",
+    "sub_processors": "subprocessors",
+    "sub_processing": "subprocessors",
+    "intellectual_property": "ip_and_model_training",
+    "intellectual_property_and_service_improvement": "ip_and_model_training",
+    "model_training": "ip_and_model_training",
+    "security_measures": "security",
+    "indemnification": "indemnity",
+    "fees_and_charges": "fees",
+    "data_export": "data_export_on_termination",
+    "deletion_and_export": "data_export_on_termination"
   }
 }

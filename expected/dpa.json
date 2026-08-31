@@ -1,5 +1,5 @@
 {
-  "_comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h in the regulation's own order, plus Chapter V transfers and governing law. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed.",
+  "_comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h in the regulation's own order, plus Chapter V transfers and governing law. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
   "clause_types": [
     "documented_instructions",
     "confidentiality",
@@ -25,5 +25,21 @@
     "audit_rights": "high — Art. 28(3)(h) requires the processor to allow for and contribute to audits, including inspections, conducted by the controller or a mandated auditor. Certification-first audit regimes are ordinary market practice and would be medium; this clause expressly excludes inspections, which removes a mandatory element rather than channelling it.",
     "international_transfers": "high — Chapter V requires an adequacy decision or an Art. 46 safeguard to be in place before a transfer occurs. Permitting transfers now and addressing the mechanism 'if and when the need arises' inverts that sequence.",
     "breach_and_dpia_assistance": "medium — Art. 28(3)(f) and Art. 33(2) require notification without undue delay. A fourteen day window is materially worse than the controller's own 72 hour obligation can absorb and should be negotiated, but a reviewer who accepted it with reasons would not be negligent."
+  },
+  "clause_aliases": {
+    "subject_matter_and_instructions": "documented_instructions",
+    "processing_on_documented_instructions": "documented_instructions",
+    "security_of_processing": "security_measures",
+    "technical_and_organisational_measures": "security_measures",
+    "sub_processors": "subprocessor_authorization",
+    "subprocessors": "subprocessor_authorization",
+    "assistance_data_subject_rights": "data_subject_rights_assistance",
+    "data_subject_rights": "data_subject_rights_assistance",
+    "personal_data_breach_notification": "breach_and_dpia_assistance",
+    "breach_notification": "breach_and_dpia_assistance",
+    "deletion_and_return": "deletion_return",
+    "audits_and_inspections": "audit_rights",
+    "audit": "audit_rights",
+    "transfers": "international_transfers"
   }
 }

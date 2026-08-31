@@ -91,6 +91,24 @@ the planted defects are unreasonable or the thresholds are wrong — fix whichev
 actually at fault and say which in the commit message. Moving a threshold to make a
 number look better is the failure mode this repository exists to expose.
 
+## Declaring clause aliases
+
+Adapters name clauses in their own vocabulary. A review that writes `no_licence` for
+`no_license`, `sub_processors` for `subprocessors`, or `audits_and_inspections` for
+`audit_rights` is a correct review with different labels, and scoring it as a missed
+clause measures vocabulary rather than legal judgment.
+
+`clause_aliases` in the gold set maps a synonym onto the gold set's own name for **the
+same clause of the same document**. Add an alias when you meet a label that names the
+clause you meant just as accurately as yours does.
+
+Never add one to make a wrong answer pass. An alias that maps onto a different clause
+lets a review about section 8 score as a review about section 4, which is the exact
+failure this harness exists to catch, reintroduced inside the benchmark. A test asserts
+that every alias target is a declared clause type and that no alias shadows a canonical
+name; that test is the floor, not the standard. The standard is that you could defend
+each alias as the same clause in writing.
+
 ## Adding adversarial scenarios
 
 Each scenario is a minimal pair: the smallest edit that changes the legal answer, plus a

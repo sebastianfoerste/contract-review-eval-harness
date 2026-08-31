@@ -28,13 +28,31 @@ from contract_eval.robustness import (
 )
 
 
+def canonical_clause(clause_type: str, aliases: dict[str, str]) -> str:
+    """Map a declared synonym onto the gold set's own name for the same clause.
+
+    Adapters name clauses in their own vocabulary: `no_licence` for `no_license`,
+    `sub_processors` for `subprocessors`, `permitted_disclosures` for the singular.
+    Scoring those as missed clauses measures vocabulary, not legal judgment, and
+    quietly reports a correct review as a failure. Aliases are declared in the gold
+    set so the mapping is reviewable.
+    """
+    return aliases.get(clause_type, clause_type)
+
+
 def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
     source = Path(f"data/{case}_sample.md").read_text()
     expected = ExpectedAnswer.model_validate(json.loads(Path(f"expected/{case}.json").read_text()))
     output = get_adapter(live, model=model).review(source_text=source, case=case)
 
-    clause = clause_scores(expected.clause_types, [c.clause_type for c in output.clauses])
-    predicted_flags = {f.clause_type: f.severity for f in output.risk_flags}
+    aliases = expected.clause_aliases
+    clause = clause_scores(
+        expected.clause_types,
+        [canonical_clause(c.clause_type, aliases) for c in output.clauses],
+    )
+    predicted_flags = {
+        canonical_clause(f.clause_type, aliases): f.severity for f in output.risk_flags
+    }
     risk_accuracy = risk_flag_accuracy(expected.risk_flags, predicted_flags)
     citation = citation_grounding(source, output.citations)
     hallucinations = count_hallucinations(source, output.citations)
