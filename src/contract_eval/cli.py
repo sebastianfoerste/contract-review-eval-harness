@@ -294,7 +294,7 @@ def main() -> None:
     ev.add_argument(
         "--model",
         default=None,
-        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-4-8)",
+        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-5)",
     )
     ev.add_argument("--out", default=".", type=Path, help="output directory for scorecard.md")
     ev.add_argument("--no-gate", action="store_true", help="do not exit with code 1 on regression/failure")
@@ -341,7 +341,7 @@ def main() -> None:
     robust.add_argument(
         "--model",
         default=None,
-        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-4-8)",
+        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-5)",
     )
     robust.add_argument(
         "--runs",

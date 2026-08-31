@@ -115,10 +115,10 @@ uv run python -m contract_eval robustness --live --runs 3 --out live-results
 
 The model is selectable, so the same gold set can be replayed across versions and
 compared. Pass `--model`, or set `CONTRACT_EVAL_MODEL`; the default is
-`claude-opus-4-8`.
+`claude-opus-5`.
 
 ```bash
-uv run python -m contract_eval evaluate --case all --live --model claude-opus-4-8
+uv run python -m contract_eval evaluate --case all --live --model claude-opus-5
 ```
 
 A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark. Any published comparison must name the model, the date and the harness version, because a score without those three is not reproducible.

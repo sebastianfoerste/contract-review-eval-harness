@@ -6,7 +6,7 @@ from contract_eval.models import ReviewOutput
 
 # Every published run records the model it used. Comparing scorecards across model
 # versions is only meaningful when the identifier travels with the result.
-DEFAULT_MODEL = "claude-opus-4-8"
+DEFAULT_MODEL = "claude-opus-5"
 
 _PROMPT = """You are a contract review assistant. Read the contract below and return ONLY valid JSON of this shape:
 {{
