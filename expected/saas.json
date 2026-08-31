@@ -1,7 +1,36 @@
 {
-  "clause_types": ["service_levels", "data_protection", "limitation_of_liability", "term", "auto_renewal"],
+  "_comment": "Human-authored gold answer for the synthetic SaaS agreement. _severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives.",
+  "clause_types": [
+    "service_levels",
+    "data_protection",
+    "limitation_of_liability",
+    "term",
+    "auto_renewal",
+    "subprocessors",
+    "security",
+    "ip_and_model_training",
+    "indemnity",
+    "fees",
+    "data_export_on_termination"
+  ],
   "risk_flags": {
     "auto_renewal": "high",
-    "limitation_of_liability": "medium"
+    "ip_and_model_training": "high",
+    "indemnity": "high",
+    "fees": "high",
+    "subprocessors": "high",
+    "limitation_of_liability": "medium",
+    "security": "medium",
+    "data_export_on_termination": "medium"
+  },
+  "_severity_rationale": {
+    "auto_renewal": "high — a ninety day notice window against a twelve month term means the decision point falls at month nine, and a single missed date commits the customer to another full year.",
+    "ip_and_model_training": "high — a perpetual irrevocable licence to train models on Customer Data expressly including Customer Personal Data has no lawful basis under the data protection clause in section 2, which limits processing to documented instructions. The two clauses contradict each other, and this one would make the provider a controller for that processing.",
+    "indemnity": "high — the customer indemnifying the provider against third-party claims that the provider's own service infringes reverses the normal allocation. The party that built the service and can clear the rights bears none of the risk.",
+    "fees": "high — an uncapped increase at any time on thirty days notice with no corresponding termination right is a unilateral right to reprice a locked-in customer.",
+    "subprocessors": "high — appointing sub-processors with website publication and no notice gives the customer no opportunity to object and does not meet Art. 28(2) GDPR, which the data protection clause purports to comply with.",
+    "limitation_of_liability": "medium — a twelve month fee cap is common market practice, but it carves out nothing for data breach, confidentiality or IP indemnity, which is worse than market and should be negotiated.",
+    "security": "medium — 'industry standard measures appropriate to a provider of its size' is unmeasurable and gives the customer nothing to audit against, but it is a drafting weakness rather than an absent obligation.",
+    "data_export_on_termination": "medium — a seven day deletion window with export only on request risks irreversible data loss on a missed deadline; thirty days with a standing export right is the ordinary position."
   }
 }

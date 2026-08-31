@@ -1,23 +1,38 @@
 {
-  "_comment": "Deterministic stub model output for the SaaS case. Same deliberate-error pattern as the NDA: one spurious clause (indemnification), one wrong severity (limitation_of_liability flagged low, expected medium), one over-flag (service_levels), one fabricated citation.",
+  "_comment": "Deterministic stub output for the SaaS case. Coverage is near perfect while severity judgment is not. It catches the auto-renewal trap, the uncapped fee increase, the vague security standard and the narrow liability cap, but rates the perpetual model-training licence and the reversed IP indemnity as low, omits the sub-processor point entirely, invents a data residency clause the agreement does not contain, and fabricates the citation supporting a SOC 2 commitment.",
   "clauses": [
-    { "clause_type": "service_levels", "text": "99.5% monthly uptime target on commercially reasonable efforts." },
-    { "clause_type": "data_protection", "text": "Processes personal data only on documented instructions." },
-    { "clause_type": "limitation_of_liability", "text": "Liability capped at trailing twelve months of fees." },
+    { "clause_type": "service_levels", "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime." },
+    { "clause_type": "data_protection", "text": "Processing only on documented instructions from the customer." },
+    { "clause_type": "limitation_of_liability", "text": "Liability capped at twelve months of fees." },
     { "clause_type": "term", "text": "Initial term of twelve months." },
-    { "clause_type": "auto_renewal", "text": "Auto-renews for twelve-month terms; 90 days notice to stop." },
-    { "clause_type": "indemnification", "text": "Customer indemnifies Provider against third-party claims." }
+    { "clause_type": "auto_renewal", "text": "Renews automatically unless ninety days notice is given." },
+    { "clause_type": "subprocessors", "text": "Provider may appoint sub-processors and publish a list on its website." },
+    { "clause_type": "security", "text": "Industry standard security measures appropriate to the provider's size." },
+    { "clause_type": "ip_and_model_training", "text": "Provider licensed to use Customer Data to train machine learning models." },
+    { "clause_type": "indemnity", "text": "Customer indemnifies the provider against claims arising from use of the service." },
+    { "clause_type": "fees", "text": "Provider may increase fees on thirty days notice." },
+    { "clause_type": "data_export_on_termination", "text": "Data deleted seven days after termination, export on request." },
+    { "clause_type": "data_residency", "text": "Customer Data is stored within the European Economic Area." }
   ],
   "risk_flags": [
-    { "clause_type": "auto_renewal", "severity": "high", "rationale": "90-day notice window makes the renewal easy to miss." },
-    { "clause_type": "limitation_of_liability", "severity": "low", "rationale": "Liability cap is present." },
-    { "clause_type": "service_levels", "severity": "low", "rationale": "Standard uptime commitment." }
+    { "clause_type": "auto_renewal", "severity": "high", "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date." },
+    { "clause_type": "fees", "severity": "high", "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer." },
+    { "clause_type": "limitation_of_liability", "severity": "medium", "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality." },
+    { "clause_type": "security", "severity": "medium", "rationale": "The standard is unmeasurable and gives the customer nothing to audit against." },
+    { "clause_type": "ip_and_model_training", "severity": "low", "rationale": "Service improvement licences are common in SaaS terms." },
+    { "clause_type": "indemnity", "severity": "low", "rationale": "Customer indemnities for use of the service are standard." },
+    { "clause_type": "data_export_on_termination", "severity": "low", "rationale": "A defined deletion window is good data hygiene." }
   ],
   "citations": [
-    { "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime", "clause_type": "service_levels" },
-    { "quote": "process Customer Personal Data only on documented instructions", "clause_type": "data_protection" },
-    { "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim", "clause_type": "limitation_of_liability" },
-    { "quote": "ninety (90) days written notice prior to the end of the then-current term", "clause_type": "auto_renewal" },
-    { "quote": "Provider may terminate immediately for any reason without notice", "clause_type": "term" }
-  ]
+    { "quote": "99.5% monthly uptime", "clause_type": "service_levels" },
+    { "quote": "only on documented instructions", "clause_type": "data_protection" },
+    { "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim", "clause_type": "limitation_of_liability" },
+    { "quote": "initial term of this Agreement is twelve (12) months", "clause_type": "term" },
+    { "quote": "ninety (90) days written notice", "clause_type": "auto_renewal" },
+    { "quote": "perpetual, irrevocable, worldwide licence to use Customer Data", "clause_type": "ip_and_model_training" },
+    { "quote": "industry standard security measures", "clause_type": "security" },
+    { "quote": "may increase the fees at any time on thirty (30) days written notice", "clause_type": "fees" },
+    { "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term", "clause_type": "security" }
+  ],
+  "abstentions": []
 }

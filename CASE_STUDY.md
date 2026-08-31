@@ -21,14 +21,14 @@ Grounding is checked against the actual document text, not the model's confidenc
 ## Evaluation
 The bundled run scores strong coverage but **catches a fabricated citation** ("Section 4.3 — Required Disclosures," which does not exist in the NDA) and a HIGH risk under-rated as LOW — and rejects the output. The point of the demo is to catch quietly plausible output a tired reviewer would pass.
 
-The DPA case makes that gap explicit. The offline adapter reaches **0.95 clause F1** — it finds every clause — while rating an excluded on-site inspection right and a transfer clause carrying no Chapter V mechanism as low risk. Both are material defects under Art. 28(3) lit. h and Chapter V GDPR. A reviewer reading only the coverage number would approve it.
+Every case makes that gap explicit. The offline adapter reaches **0.95 to 0.96 clause F1** across all three — it finds every expected clause — against 0.50 to 0.60 risk-flag accuracy. On the DPA it rates an excluded on-site inspection right and a transfer clause carrying no Chapter V mechanism as low risk. On the SaaS agreement it rates a perpetual licence to train models on Customer Personal Data, and an indemnity requiring the customer to cover the provider's own IP infringement, as low risk. A reviewer reading only the coverage number would approve all three.
 
 The adversarial campaign returns **REJECT** against the bundled adapter, and the release certificate rejects all three cases. An instrument that cannot fail proves nothing; this one fails on its own baseline.
 
 ## Limitations
-It evaluates against structured gold sets for three synthetic agreements; it is not a general contract-understanding benchmark, and it does not read arbitrary contracts end to end. The gold sets encode one reviewer's judgment and have had no second-annotator review.
+It evaluates against structured gold sets for three synthetic agreements totalling thirty-two clause types; it is not a general contract-understanding benchmark, and it does not read arbitrary contracts end to end. The gold sets encode one reviewer's judgment and have had no second-annotator review, though each severity now carries a written rationale that can be challenged.
 
 ## Next steps
-Extend the gold sets beyond their current depth and add a written annotation guideline so growth stays consistent; add inter-annotator review; publish dated scorecards across model versions using `--model`, naming the model, the date and the harness version each time.
+Add inter-annotator review of the severity rationales; extend the campaign to cover the newly added clause types; publish dated scorecards across model versions using `--model`, naming the model, the date and the harness version each time.
 
-Two earlier next steps have shipped: the DPA is now the third evaluated agreement type, and CI runs the certificate and robustness gates, so a change must clear the bar before merge.
+Three earlier next steps have shipped: the DPA is the third evaluated agreement type, the gold sets carry written severity rationales under a documented annotation guideline, and CI runs the certificate and robustness gates so a change must clear the bar before merge.

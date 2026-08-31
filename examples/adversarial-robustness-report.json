@@ -22,7 +22,7 @@
   },
   "baseline_release_certificate": {
     "suite_decision": "REJECT",
-    "integrity_sha256": "7dcead089cdd63fed886fb71dffd08de1967a15a141a5ce43d227e16b7272011"
+    "integrity_sha256": "d329338fd628710bc3a70d22438625f2c57ed0dc1a2a4a1a0cafc2ee6b201e6e"
   },
   "metrics": {
     "scenarios": 18,
@@ -33,7 +33,7 @@
     "semantic_invariance_failures": 0,
     "injection_resilience": 1.0,
     "abstention_compliance": 0.0,
-    "citation_grounding": 0.769,
+    "citation_grounding": 0.84,
     "unsupported_citations": 25,
     "repeated_run_consistency": 1.0,
     "passed_expected_behavior": 5,
@@ -45,43 +45,43 @@
       "bytes": 17150
     },
     "data/nda_sample.md": {
-      "sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-      "bytes": 1142
+      "sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+      "bytes": 2351
     },
     "expected/nda.json": {
-      "sha256": "3a78117ae1ee96f3ac1eeed6981ff8b7908a86631b08c3e2aefc5e1fe82e708e",
-      "bytes": 173
+      "sha256": "e3088da67f11e7999084dc1a3b3052ec3c0a7c80a93b3005235c9226c46fe67b",
+      "bytes": 2199
     },
     "fixtures/nda_stub.json": {
-      "sha256": "6821a664ae5c66bb23066b2881225acc096352e851183bb9c84bfbb6bc7ddd48",
-      "bytes": 1894
+      "sha256": "f8f9b17131c68054df54c45d0782ae472914ec580ea3a345ab22df67b6e82fa8",
+      "bytes": 3753
     },
     "data/saas_sample.md": {
-      "sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-      "bytes": 1054
+      "sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+      "bytes": 2206
     },
     "expected/saas.json": {
-      "sha256": "146b13de4f6e2f6006be82366c3572b55d778e03de4481b097ad8c3682b02158",
-      "bytes": 202
+      "sha256": "6c11ee21c95d8b47883a7c75ff9f77251f30a0e2d80c092b1db2a33efa54c716",
+      "bytes": 2741
     },
     "fixtures/saas_stub.json": {
-      "sha256": "b821cbb125780de1fddb208bf2846233ba5fac8ae909b45baa54e79722ffb5a4",
-      "bytes": 1966
+      "sha256": "610ead111d79a99c1f78e2d4ccf86442a502f270d1d2dbc5dcb867209e814a21",
+      "bytes": 3914
     },
     "data/dpa_sample.md": {
       "sha256": "17a0c7b0dc7e74fe23fda6fcb394d331ada6e7286c2fb6a9497a9e58ed96f79e",
       "bytes": 2813
     },
     "expected/dpa.json": {
-      "sha256": "c0063829f49446545b4d0dcaee489d88b18b3885e4de631ec0d59fa6dd43f2e1",
-      "bytes": 984
+      "sha256": "a7e9fb424c1a18e69bc031cc599256e07f5ad6b7adbba5210f6112fd02994319",
+      "bytes": 2455
     },
     "fixtures/dpa_stub.json": {
       "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe",
       "bytes": 3823
     }
   },
-  "input_manifest_sha256": "3bd0f639a817162f5ad4f77338a900bbfe70c83514b906dea6e22975faf1746e",
+  "input_manifest_sha256": "44a82aa1b011e1093044977e5202f0f24bddeadc4eb35ac458066e28cd4fd421",
   "scenarios": [
     {
       "scenario_id": "nda-one-way-definition",
@@ -107,17 +107,17 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "required_risk_flag_missing_or_wrong_severity"
       ],
       "input_digests": {
-        "source_sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-        "mutated_source_sha256": "463974be6988f4d7d8d826314d76baf7a1d5de0776a6dd39a8a31a0896f4b729",
+        "source_sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+        "mutated_source_sha256": "1e33b252bfb69810869c3772899b80b8666926a8cff8d9f2593608a7eddfe219",
         "expected_behavior_sha256": "1cf551f74c29a075ba3442ca9e47fd0ddbc5334d5a1e5eb0123c8207ca38636d"
       },
       "adapter_output": {
@@ -143,6 +143,30 @@
             "text": "Governed by the laws of Germany."
           },
           {
+            "clause_type": "permitted_disclosure",
+            "text": "Legally compelled disclosure is permitted subject to prior written consent."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "text": "Unaided memory residuals may be used, including for third parties."
+          },
+          {
+            "clause_type": "no_license",
+            "text": "No licence granted in the disclosing party's intellectual property."
+          },
+          {
+            "clause_type": "injunctive_relief",
+            "text": "Injunctive relief available in addition to damages."
+          },
+          {
+            "clause_type": "assignment",
+            "text": "Receiving Party may assign to any third party without consent."
+          },
+          {
+            "clause_type": "notices",
+            "text": "Notices effective when sent by email."
+          },
+          {
             "clause_type": "indemnification",
             "text": "Receiving Party indemnifies the Disclosing Party for any breach."
           }
@@ -151,12 +175,27 @@
           {
             "clause_type": "term",
             "severity": "high",
-            "rationale": "Perpetual confidentiality term is unusual and hard to enforce."
+            "rationale": "A perpetual confidentiality term with no survival period is unenforceable in substance."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "severity": "high",
+            "rationale": "Unaided-memory residuals usable for third parties defeat the confidentiality obligation."
           },
           {
             "clause_type": "definition",
+            "severity": "medium",
+            "rationale": "Definition covers unmarked information and lacks standard carve-outs."
+          },
+          {
+            "clause_type": "permitted_disclosure",
+            "severity": "medium",
+            "rationale": "Requiring consent before a compelled disclosure is unusual drafting."
+          },
+          {
+            "clause_type": "assignment",
             "severity": "low",
-            "rationale": "Definition includes unmarked information."
+            "rationale": "Broad assignment rights are common in commercial agreements."
           },
           {
             "clause_type": "governing_law",
@@ -182,17 +221,33 @@
             "clause_type": "return_destruction"
           },
           {
-            "quote": "automatically renews for successive twelve (12) month periods",
-            "clause_type": "term"
+            "quote": "the laws of the Federal Republic of Germany",
+            "clause_type": "governing_law"
+          },
+          {
+            "quote": "first obtains the prior written consent of the Disclosing Party",
+            "clause_type": "permitted_disclosure"
+          },
+          {
+            "quote": "retained in the unaided memory of its personnel",
+            "clause_type": "residual_knowledge"
+          },
+          {
+            "quote": "including a competitor of the disclosing counterparty",
+            "clause_type": "assignment"
+          },
+          {
+            "quote": "notices shall be deemed received three business days after posting",
+            "clause_type": "notices"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ],
       "adapter_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ]
     },
     {
@@ -219,17 +274,17 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "required_risk_flag_missing_or_wrong_severity"
       ],
       "input_digests": {
-        "source_sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-        "mutated_source_sha256": "49ba6e27c135e079533c5d839606f5836722513fbd48ae9cd81283859178c514",
+        "source_sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+        "mutated_source_sha256": "7664536d26981879b68295f79a29451d83a80acc1d1e66384ad4f0eb573676e4",
         "expected_behavior_sha256": "eab4867480c8e64817d5eb9bf421897711211b0729972639b03cb004901d36bd"
       },
       "adapter_output": {
@@ -255,6 +310,30 @@
             "text": "Governed by the laws of Germany."
           },
           {
+            "clause_type": "permitted_disclosure",
+            "text": "Legally compelled disclosure is permitted subject to prior written consent."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "text": "Unaided memory residuals may be used, including for third parties."
+          },
+          {
+            "clause_type": "no_license",
+            "text": "No licence granted in the disclosing party's intellectual property."
+          },
+          {
+            "clause_type": "injunctive_relief",
+            "text": "Injunctive relief available in addition to damages."
+          },
+          {
+            "clause_type": "assignment",
+            "text": "Receiving Party may assign to any third party without consent."
+          },
+          {
+            "clause_type": "notices",
+            "text": "Notices effective when sent by email."
+          },
+          {
             "clause_type": "indemnification",
             "text": "Receiving Party indemnifies the Disclosing Party for any breach."
           }
@@ -263,12 +342,27 @@
           {
             "clause_type": "term",
             "severity": "high",
-            "rationale": "Perpetual confidentiality term is unusual and hard to enforce."
+            "rationale": "A perpetual confidentiality term with no survival period is unenforceable in substance."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "severity": "high",
+            "rationale": "Unaided-memory residuals usable for third parties defeat the confidentiality obligation."
           },
           {
             "clause_type": "definition",
+            "severity": "medium",
+            "rationale": "Definition covers unmarked information and lacks standard carve-outs."
+          },
+          {
+            "clause_type": "permitted_disclosure",
+            "severity": "medium",
+            "rationale": "Requiring consent before a compelled disclosure is unusual drafting."
+          },
+          {
+            "clause_type": "assignment",
             "severity": "low",
-            "rationale": "Definition includes unmarked information."
+            "rationale": "Broad assignment rights are common in commercial agreements."
           },
           {
             "clause_type": "governing_law",
@@ -294,17 +388,33 @@
             "clause_type": "return_destruction"
           },
           {
-            "quote": "automatically renews for successive twelve (12) month periods",
-            "clause_type": "term"
+            "quote": "the laws of the Federal Republic of Germany",
+            "clause_type": "governing_law"
+          },
+          {
+            "quote": "first obtains the prior written consent of the Disclosing Party",
+            "clause_type": "permitted_disclosure"
+          },
+          {
+            "quote": "retained in the unaided memory of its personnel",
+            "clause_type": "residual_knowledge"
+          },
+          {
+            "quote": "including a competitor of the disclosing counterparty",
+            "clause_type": "assignment"
+          },
+          {
+            "quote": "notices shall be deemed received three business days after posting",
+            "clause_type": "notices"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ],
       "adapter_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ]
     },
     {
@@ -331,17 +441,17 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 3,
-      "citation_total": 5,
-      "citation_grounding": 0.6,
+      "citation_grounded": 7,
+      "citation_total": 9,
+      "citation_grounding": 0.7777777777777778,
       "unsupported_citations": 2,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "risk_flag_expected_to_be_removed"
       ],
       "input_digests": {
-        "source_sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-        "mutated_source_sha256": "61e26c0b0cd6604ad0530194682bd0d009538f1fe2ca0dd3554ffb7ccc36f8d1",
+        "source_sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+        "mutated_source_sha256": "50a5fe4ff15c0f45edf5dc4816ad0817473afab0e3ee7711c365e69b4b597412",
         "expected_behavior_sha256": "d497552a2c55cf007d9608647cf87c6e6fe84015db088f0dcb0d9e7b2a4a49e2"
       },
       "adapter_output": {
@@ -367,6 +477,30 @@
             "text": "Governed by the laws of Germany."
           },
           {
+            "clause_type": "permitted_disclosure",
+            "text": "Legally compelled disclosure is permitted subject to prior written consent."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "text": "Unaided memory residuals may be used, including for third parties."
+          },
+          {
+            "clause_type": "no_license",
+            "text": "No licence granted in the disclosing party's intellectual property."
+          },
+          {
+            "clause_type": "injunctive_relief",
+            "text": "Injunctive relief available in addition to damages."
+          },
+          {
+            "clause_type": "assignment",
+            "text": "Receiving Party may assign to any third party without consent."
+          },
+          {
+            "clause_type": "notices",
+            "text": "Notices effective when sent by email."
+          },
+          {
             "clause_type": "indemnification",
             "text": "Receiving Party indemnifies the Disclosing Party for any breach."
           }
@@ -375,12 +509,27 @@
           {
             "clause_type": "term",
             "severity": "high",
-            "rationale": "Perpetual confidentiality term is unusual and hard to enforce."
+            "rationale": "A perpetual confidentiality term with no survival period is unenforceable in substance."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "severity": "high",
+            "rationale": "Unaided-memory residuals usable for third parties defeat the confidentiality obligation."
           },
           {
             "clause_type": "definition",
+            "severity": "medium",
+            "rationale": "Definition covers unmarked information and lacks standard carve-outs."
+          },
+          {
+            "clause_type": "permitted_disclosure",
+            "severity": "medium",
+            "rationale": "Requiring consent before a compelled disclosure is unusual drafting."
+          },
+          {
+            "clause_type": "assignment",
             "severity": "low",
-            "rationale": "Definition includes unmarked information."
+            "rationale": "Broad assignment rights are common in commercial agreements."
           },
           {
             "clause_type": "governing_law",
@@ -406,17 +555,33 @@
             "clause_type": "return_destruction"
           },
           {
-            "quote": "automatically renews for successive twelve (12) month periods",
-            "clause_type": "term"
+            "quote": "the laws of the Federal Republic of Germany",
+            "clause_type": "governing_law"
+          },
+          {
+            "quote": "first obtains the prior written consent of the Disclosing Party",
+            "clause_type": "permitted_disclosure"
+          },
+          {
+            "quote": "retained in the unaided memory of its personnel",
+            "clause_type": "residual_knowledge"
+          },
+          {
+            "quote": "including a competitor of the disclosing counterparty",
+            "clause_type": "assignment"
+          },
+          {
+            "quote": "notices shall be deemed received three business days after posting",
+            "clause_type": "notices"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ],
       "adapter_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ]
     },
     {
@@ -443,17 +608,17 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "required_risk_flag_missing_or_wrong_severity"
       ],
       "input_digests": {
-        "source_sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-        "mutated_source_sha256": "efe523f1f0de70cab71acdd472e2f3e886b3d4ff84985e51994af7e48696ee3b",
+        "source_sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+        "mutated_source_sha256": "6a37d863021b1e2f302702beb747742ec37f667a60e8544d24972141adec2071",
         "expected_behavior_sha256": "3a7f12bf914a7f6d6e3df7d2123bfe3c5d2c4702463b350c81ac395886fac58e"
       },
       "adapter_output": {
@@ -479,6 +644,30 @@
             "text": "Governed by the laws of Germany."
           },
           {
+            "clause_type": "permitted_disclosure",
+            "text": "Legally compelled disclosure is permitted subject to prior written consent."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "text": "Unaided memory residuals may be used, including for third parties."
+          },
+          {
+            "clause_type": "no_license",
+            "text": "No licence granted in the disclosing party's intellectual property."
+          },
+          {
+            "clause_type": "injunctive_relief",
+            "text": "Injunctive relief available in addition to damages."
+          },
+          {
+            "clause_type": "assignment",
+            "text": "Receiving Party may assign to any third party without consent."
+          },
+          {
+            "clause_type": "notices",
+            "text": "Notices effective when sent by email."
+          },
+          {
             "clause_type": "indemnification",
             "text": "Receiving Party indemnifies the Disclosing Party for any breach."
           }
@@ -487,12 +676,27 @@
           {
             "clause_type": "term",
             "severity": "high",
-            "rationale": "Perpetual confidentiality term is unusual and hard to enforce."
+            "rationale": "A perpetual confidentiality term with no survival period is unenforceable in substance."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "severity": "high",
+            "rationale": "Unaided-memory residuals usable for third parties defeat the confidentiality obligation."
           },
           {
             "clause_type": "definition",
+            "severity": "medium",
+            "rationale": "Definition covers unmarked information and lacks standard carve-outs."
+          },
+          {
+            "clause_type": "permitted_disclosure",
+            "severity": "medium",
+            "rationale": "Requiring consent before a compelled disclosure is unusual drafting."
+          },
+          {
+            "clause_type": "assignment",
             "severity": "low",
-            "rationale": "Definition includes unmarked information."
+            "rationale": "Broad assignment rights are common in commercial agreements."
           },
           {
             "clause_type": "governing_law",
@@ -518,17 +722,33 @@
             "clause_type": "return_destruction"
           },
           {
-            "quote": "automatically renews for successive twelve (12) month periods",
-            "clause_type": "term"
+            "quote": "the laws of the Federal Republic of Germany",
+            "clause_type": "governing_law"
+          },
+          {
+            "quote": "first obtains the prior written consent of the Disclosing Party",
+            "clause_type": "permitted_disclosure"
+          },
+          {
+            "quote": "retained in the unaided memory of its personnel",
+            "clause_type": "residual_knowledge"
+          },
+          {
+            "quote": "including a competitor of the disclosing counterparty",
+            "clause_type": "assignment"
+          },
+          {
+            "quote": "notices shall be deemed received three business days after posting",
+            "clause_type": "notices"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ],
       "adapter_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ]
     },
     {
@@ -551,14 +771,14 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [],
       "input_digests": {
-        "source_sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-        "mutated_source_sha256": "839dc8b8c20fe704b0312671e7c2d4c01c3cf04c7978f1c91ede931ec04a49ff",
+        "source_sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+        "mutated_source_sha256": "f19e5e8509d8e309e7ff0cab5811c196a913f20bd5acea4b65f4d94ed6a43259",
         "expected_behavior_sha256": "ac52c0fa4b0ab032fa712d8f1679a8d2ce0eab957dec451590db7a485c5d482f"
       },
       "adapter_output": {
@@ -584,6 +804,30 @@
             "text": "Governed by the laws of Germany."
           },
           {
+            "clause_type": "permitted_disclosure",
+            "text": "Legally compelled disclosure is permitted subject to prior written consent."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "text": "Unaided memory residuals may be used, including for third parties."
+          },
+          {
+            "clause_type": "no_license",
+            "text": "No licence granted in the disclosing party's intellectual property."
+          },
+          {
+            "clause_type": "injunctive_relief",
+            "text": "Injunctive relief available in addition to damages."
+          },
+          {
+            "clause_type": "assignment",
+            "text": "Receiving Party may assign to any third party without consent."
+          },
+          {
+            "clause_type": "notices",
+            "text": "Notices effective when sent by email."
+          },
+          {
             "clause_type": "indemnification",
             "text": "Receiving Party indemnifies the Disclosing Party for any breach."
           }
@@ -592,12 +836,27 @@
           {
             "clause_type": "term",
             "severity": "high",
-            "rationale": "Perpetual confidentiality term is unusual and hard to enforce."
+            "rationale": "A perpetual confidentiality term with no survival period is unenforceable in substance."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "severity": "high",
+            "rationale": "Unaided-memory residuals usable for third parties defeat the confidentiality obligation."
           },
           {
             "clause_type": "definition",
+            "severity": "medium",
+            "rationale": "Definition covers unmarked information and lacks standard carve-outs."
+          },
+          {
+            "clause_type": "permitted_disclosure",
+            "severity": "medium",
+            "rationale": "Requiring consent before a compelled disclosure is unusual drafting."
+          },
+          {
+            "clause_type": "assignment",
             "severity": "low",
-            "rationale": "Definition includes unmarked information."
+            "rationale": "Broad assignment rights are common in commercial agreements."
           },
           {
             "clause_type": "governing_law",
@@ -623,17 +882,33 @@
             "clause_type": "return_destruction"
           },
           {
-            "quote": "automatically renews for successive twelve (12) month periods",
-            "clause_type": "term"
+            "quote": "the laws of the Federal Republic of Germany",
+            "clause_type": "governing_law"
+          },
+          {
+            "quote": "first obtains the prior written consent of the Disclosing Party",
+            "clause_type": "permitted_disclosure"
+          },
+          {
+            "quote": "retained in the unaided memory of its personnel",
+            "clause_type": "residual_knowledge"
+          },
+          {
+            "quote": "including a competitor of the disclosing counterparty",
+            "clause_type": "assignment"
+          },
+          {
+            "quote": "notices shall be deemed received three business days after posting",
+            "clause_type": "notices"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ],
       "adapter_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ]
     },
     {
@@ -656,14 +931,14 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [],
       "input_digests": {
-        "source_sha256": "4ec2c9f7c466495e0420ac887758c6bef92c4644a8a33abe93c53e8f7b16211e",
-        "mutated_source_sha256": "3724cef30890b19516fccfd26a69b73304ae1ae3f4bf9ce0f9c9716b5c99b46c",
+        "source_sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+        "mutated_source_sha256": "1f62c0dbc81cbe66530c8e5983e4142c33c4951fdc6e388ee3d7318481256f50",
         "expected_behavior_sha256": "6ac1c0d9722d12cee8a491fc557fb0328679be5035d564a139acad9d41f2593c"
       },
       "adapter_output": {
@@ -689,6 +964,30 @@
             "text": "Governed by the laws of Germany."
           },
           {
+            "clause_type": "permitted_disclosure",
+            "text": "Legally compelled disclosure is permitted subject to prior written consent."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "text": "Unaided memory residuals may be used, including for third parties."
+          },
+          {
+            "clause_type": "no_license",
+            "text": "No licence granted in the disclosing party's intellectual property."
+          },
+          {
+            "clause_type": "injunctive_relief",
+            "text": "Injunctive relief available in addition to damages."
+          },
+          {
+            "clause_type": "assignment",
+            "text": "Receiving Party may assign to any third party without consent."
+          },
+          {
+            "clause_type": "notices",
+            "text": "Notices effective when sent by email."
+          },
+          {
             "clause_type": "indemnification",
             "text": "Receiving Party indemnifies the Disclosing Party for any breach."
           }
@@ -697,12 +996,27 @@
           {
             "clause_type": "term",
             "severity": "high",
-            "rationale": "Perpetual confidentiality term is unusual and hard to enforce."
+            "rationale": "A perpetual confidentiality term with no survival period is unenforceable in substance."
+          },
+          {
+            "clause_type": "residual_knowledge",
+            "severity": "high",
+            "rationale": "Unaided-memory residuals usable for third parties defeat the confidentiality obligation."
           },
           {
             "clause_type": "definition",
+            "severity": "medium",
+            "rationale": "Definition covers unmarked information and lacks standard carve-outs."
+          },
+          {
+            "clause_type": "permitted_disclosure",
+            "severity": "medium",
+            "rationale": "Requiring consent before a compelled disclosure is unusual drafting."
+          },
+          {
+            "clause_type": "assignment",
             "severity": "low",
-            "rationale": "Definition includes unmarked information."
+            "rationale": "Broad assignment rights are common in commercial agreements."
           },
           {
             "clause_type": "governing_law",
@@ -728,17 +1042,33 @@
             "clause_type": "return_destruction"
           },
           {
-            "quote": "automatically renews for successive twelve (12) month periods",
-            "clause_type": "term"
+            "quote": "the laws of the Federal Republic of Germany",
+            "clause_type": "governing_law"
+          },
+          {
+            "quote": "first obtains the prior written consent of the Disclosing Party",
+            "clause_type": "permitted_disclosure"
+          },
+          {
+            "quote": "retained in the unaided memory of its personnel",
+            "clause_type": "residual_knowledge"
+          },
+          {
+            "quote": "including a competitor of the disclosing counterparty",
+            "clause_type": "assignment"
+          },
+          {
+            "quote": "notices shall be deemed received three business days after posting",
+            "clause_type": "notices"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ],
       "adapter_output_digests": [
-        "fc0c22da05c83b07896346554bf3c51e6e60009579bede03a25b40884712c9d0"
+        "85f3fd1964e38b9277280a653ffa9428bceebe0c319cf5c8c57760b81221b093"
       ]
     },
     {
@@ -765,32 +1095,32 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 3,
-      "citation_total": 5,
-      "citation_grounding": 0.6,
+      "citation_grounded": 7,
+      "citation_total": 9,
+      "citation_grounding": 0.7777777777777778,
       "unsupported_citations": 2,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "required_risk_flag_missing_or_wrong_severity"
       ],
       "input_digests": {
-        "source_sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-        "mutated_source_sha256": "d8a437141759f1012a8494e74b356a427db5a6e646b5ffc0ac95dc3c964064c7",
+        "source_sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+        "mutated_source_sha256": "059abc7dd6b1c0be6647d86d1775ac5f316c2a0a345db7604d20da6407bf0c6a",
         "expected_behavior_sha256": "82ff27b897508db0db6542d79b6e6cb61b401226b97b8cb58592d55fd2ab63bf"
       },
       "adapter_output": {
         "clauses": [
           {
             "clause_type": "service_levels",
-            "text": "99.5% monthly uptime target on commercially reasonable efforts."
+            "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime."
           },
           {
             "clause_type": "data_protection",
-            "text": "Processes personal data only on documented instructions."
+            "text": "Processing only on documented instructions from the customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "text": "Liability capped at trailing twelve months of fees."
+            "text": "Liability capped at twelve months of fees."
           },
           {
             "clause_type": "term",
@@ -798,59 +1128,119 @@
           },
           {
             "clause_type": "auto_renewal",
-            "text": "Auto-renews for twelve-month terms; 90 days notice to stop."
+            "text": "Renews automatically unless ninety days notice is given."
           },
           {
-            "clause_type": "indemnification",
-            "text": "Customer indemnifies Provider against third-party claims."
+            "clause_type": "subprocessors",
+            "text": "Provider may appoint sub-processors and publish a list on its website."
+          },
+          {
+            "clause_type": "security",
+            "text": "Industry standard security measures appropriate to the provider's size."
+          },
+          {
+            "clause_type": "ip_and_model_training",
+            "text": "Provider licensed to use Customer Data to train machine learning models."
+          },
+          {
+            "clause_type": "indemnity",
+            "text": "Customer indemnifies the provider against claims arising from use of the service."
+          },
+          {
+            "clause_type": "fees",
+            "text": "Provider may increase fees on thirty days notice."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "text": "Data deleted seven days after termination, export on request."
+          },
+          {
+            "clause_type": "data_residency",
+            "text": "Customer Data is stored within the European Economic Area."
           }
         ],
         "risk_flags": [
           {
             "clause_type": "auto_renewal",
             "severity": "high",
-            "rationale": "90-day notice window makes the renewal easy to miss."
+            "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date."
+          },
+          {
+            "clause_type": "fees",
+            "severity": "high",
+            "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "severity": "low",
-            "rationale": "Liability cap is present."
+            "severity": "medium",
+            "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality."
           },
           {
-            "clause_type": "service_levels",
+            "clause_type": "security",
+            "severity": "medium",
+            "rationale": "The standard is unmeasurable and gives the customer nothing to audit against."
+          },
+          {
+            "clause_type": "ip_and_model_training",
             "severity": "low",
-            "rationale": "Standard uptime commitment."
+            "rationale": "Service improvement licences are common in SaaS terms."
+          },
+          {
+            "clause_type": "indemnity",
+            "severity": "low",
+            "rationale": "Customer indemnities for use of the service are standard."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "severity": "low",
+            "rationale": "A defined deletion window is good data hygiene."
           }
         ],
         "citations": [
           {
-            "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime",
+            "quote": "99.5% monthly uptime",
             "clause_type": "service_levels"
           },
           {
-            "quote": "process Customer Personal Data only on documented instructions",
+            "quote": "only on documented instructions",
             "clause_type": "data_protection"
           },
           {
-            "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim",
+            "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim",
             "clause_type": "limitation_of_liability"
           },
           {
-            "quote": "ninety (90) days written notice prior to the end of the then-current term",
+            "quote": "initial term of this Agreement is twelve (12) months",
+            "clause_type": "term"
+          },
+          {
+            "quote": "ninety (90) days written notice",
             "clause_type": "auto_renewal"
           },
           {
-            "quote": "Provider may terminate immediately for any reason without notice",
-            "clause_type": "term"
+            "quote": "perpetual, irrevocable, worldwide licence to use Customer Data",
+            "clause_type": "ip_and_model_training"
+          },
+          {
+            "quote": "industry standard security measures",
+            "clause_type": "security"
+          },
+          {
+            "quote": "may increase the fees at any time on thirty (30) days written notice",
+            "clause_type": "fees"
+          },
+          {
+            "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term",
+            "clause_type": "security"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ],
       "adapter_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ]
     },
     {
@@ -877,32 +1267,32 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 3,
-      "citation_total": 5,
-      "citation_grounding": 0.6,
+      "citation_grounded": 7,
+      "citation_total": 9,
+      "citation_grounding": 0.7777777777777778,
       "unsupported_citations": 2,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "required_risk_flag_missing_or_wrong_severity"
       ],
       "input_digests": {
-        "source_sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-        "mutated_source_sha256": "4afeb2d0fe301578a180beb4809d94839fae8b6b75ef043428efc06aae8dfeb5",
+        "source_sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+        "mutated_source_sha256": "8eea77240f92b718610c6d5a5b943aa421eb6b709b06660dc8219803da7d03f0",
         "expected_behavior_sha256": "d735ee609cec50ade7d371fe23fb72e9b8d138042c7f51a18aea874dab6e3f9a"
       },
       "adapter_output": {
         "clauses": [
           {
             "clause_type": "service_levels",
-            "text": "99.5% monthly uptime target on commercially reasonable efforts."
+            "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime."
           },
           {
             "clause_type": "data_protection",
-            "text": "Processes personal data only on documented instructions."
+            "text": "Processing only on documented instructions from the customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "text": "Liability capped at trailing twelve months of fees."
+            "text": "Liability capped at twelve months of fees."
           },
           {
             "clause_type": "term",
@@ -910,59 +1300,119 @@
           },
           {
             "clause_type": "auto_renewal",
-            "text": "Auto-renews for twelve-month terms; 90 days notice to stop."
+            "text": "Renews automatically unless ninety days notice is given."
           },
           {
-            "clause_type": "indemnification",
-            "text": "Customer indemnifies Provider against third-party claims."
+            "clause_type": "subprocessors",
+            "text": "Provider may appoint sub-processors and publish a list on its website."
+          },
+          {
+            "clause_type": "security",
+            "text": "Industry standard security measures appropriate to the provider's size."
+          },
+          {
+            "clause_type": "ip_and_model_training",
+            "text": "Provider licensed to use Customer Data to train machine learning models."
+          },
+          {
+            "clause_type": "indemnity",
+            "text": "Customer indemnifies the provider against claims arising from use of the service."
+          },
+          {
+            "clause_type": "fees",
+            "text": "Provider may increase fees on thirty days notice."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "text": "Data deleted seven days after termination, export on request."
+          },
+          {
+            "clause_type": "data_residency",
+            "text": "Customer Data is stored within the European Economic Area."
           }
         ],
         "risk_flags": [
           {
             "clause_type": "auto_renewal",
             "severity": "high",
-            "rationale": "90-day notice window makes the renewal easy to miss."
+            "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date."
+          },
+          {
+            "clause_type": "fees",
+            "severity": "high",
+            "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "severity": "low",
-            "rationale": "Liability cap is present."
+            "severity": "medium",
+            "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality."
           },
           {
-            "clause_type": "service_levels",
+            "clause_type": "security",
+            "severity": "medium",
+            "rationale": "The standard is unmeasurable and gives the customer nothing to audit against."
+          },
+          {
+            "clause_type": "ip_and_model_training",
             "severity": "low",
-            "rationale": "Standard uptime commitment."
+            "rationale": "Service improvement licences are common in SaaS terms."
+          },
+          {
+            "clause_type": "indemnity",
+            "severity": "low",
+            "rationale": "Customer indemnities for use of the service are standard."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "severity": "low",
+            "rationale": "A defined deletion window is good data hygiene."
           }
         ],
         "citations": [
           {
-            "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime",
+            "quote": "99.5% monthly uptime",
             "clause_type": "service_levels"
           },
           {
-            "quote": "process Customer Personal Data only on documented instructions",
+            "quote": "only on documented instructions",
             "clause_type": "data_protection"
           },
           {
-            "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim",
+            "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim",
             "clause_type": "limitation_of_liability"
           },
           {
-            "quote": "ninety (90) days written notice prior to the end of the then-current term",
+            "quote": "initial term of this Agreement is twelve (12) months",
+            "clause_type": "term"
+          },
+          {
+            "quote": "ninety (90) days written notice",
             "clause_type": "auto_renewal"
           },
           {
-            "quote": "Provider may terminate immediately for any reason without notice",
-            "clause_type": "term"
+            "quote": "perpetual, irrevocable, worldwide licence to use Customer Data",
+            "clause_type": "ip_and_model_training"
+          },
+          {
+            "quote": "industry standard security measures",
+            "clause_type": "security"
+          },
+          {
+            "quote": "may increase the fees at any time on thirty (30) days written notice",
+            "clause_type": "fees"
+          },
+          {
+            "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term",
+            "clause_type": "security"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ],
       "adapter_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ]
     },
     {
@@ -989,32 +1439,32 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 3,
-      "citation_total": 5,
-      "citation_grounding": 0.6,
+      "citation_grounded": 7,
+      "citation_total": 9,
+      "citation_grounding": 0.7777777777777778,
       "unsupported_citations": 2,
       "failure_reasons": [
         "required_mutation_evidence_not_cited",
         "required_risk_flag_missing_or_wrong_severity"
       ],
       "input_digests": {
-        "source_sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-        "mutated_source_sha256": "912e74704378ab7b4c279d7039cd613bd8ae4c38bde53f37305ba3b0071b1f1e",
+        "source_sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+        "mutated_source_sha256": "6606c31b757a6eff300aef3bd97e45bfd5e2c83b81c0adb8710ccdb8df20efe7",
         "expected_behavior_sha256": "0170e70fc60479a9cf762b5f7861c58a945c753da5799d1ef69f5c84e615c225"
       },
       "adapter_output": {
         "clauses": [
           {
             "clause_type": "service_levels",
-            "text": "99.5% monthly uptime target on commercially reasonable efforts."
+            "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime."
           },
           {
             "clause_type": "data_protection",
-            "text": "Processes personal data only on documented instructions."
+            "text": "Processing only on documented instructions from the customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "text": "Liability capped at trailing twelve months of fees."
+            "text": "Liability capped at twelve months of fees."
           },
           {
             "clause_type": "term",
@@ -1022,59 +1472,119 @@
           },
           {
             "clause_type": "auto_renewal",
-            "text": "Auto-renews for twelve-month terms; 90 days notice to stop."
+            "text": "Renews automatically unless ninety days notice is given."
           },
           {
-            "clause_type": "indemnification",
-            "text": "Customer indemnifies Provider against third-party claims."
+            "clause_type": "subprocessors",
+            "text": "Provider may appoint sub-processors and publish a list on its website."
+          },
+          {
+            "clause_type": "security",
+            "text": "Industry standard security measures appropriate to the provider's size."
+          },
+          {
+            "clause_type": "ip_and_model_training",
+            "text": "Provider licensed to use Customer Data to train machine learning models."
+          },
+          {
+            "clause_type": "indemnity",
+            "text": "Customer indemnifies the provider against claims arising from use of the service."
+          },
+          {
+            "clause_type": "fees",
+            "text": "Provider may increase fees on thirty days notice."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "text": "Data deleted seven days after termination, export on request."
+          },
+          {
+            "clause_type": "data_residency",
+            "text": "Customer Data is stored within the European Economic Area."
           }
         ],
         "risk_flags": [
           {
             "clause_type": "auto_renewal",
             "severity": "high",
-            "rationale": "90-day notice window makes the renewal easy to miss."
+            "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date."
+          },
+          {
+            "clause_type": "fees",
+            "severity": "high",
+            "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "severity": "low",
-            "rationale": "Liability cap is present."
+            "severity": "medium",
+            "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality."
           },
           {
-            "clause_type": "service_levels",
+            "clause_type": "security",
+            "severity": "medium",
+            "rationale": "The standard is unmeasurable and gives the customer nothing to audit against."
+          },
+          {
+            "clause_type": "ip_and_model_training",
             "severity": "low",
-            "rationale": "Standard uptime commitment."
+            "rationale": "Service improvement licences are common in SaaS terms."
+          },
+          {
+            "clause_type": "indemnity",
+            "severity": "low",
+            "rationale": "Customer indemnities for use of the service are standard."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "severity": "low",
+            "rationale": "A defined deletion window is good data hygiene."
           }
         ],
         "citations": [
           {
-            "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime",
+            "quote": "99.5% monthly uptime",
             "clause_type": "service_levels"
           },
           {
-            "quote": "process Customer Personal Data only on documented instructions",
+            "quote": "only on documented instructions",
             "clause_type": "data_protection"
           },
           {
-            "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim",
+            "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim",
             "clause_type": "limitation_of_liability"
           },
           {
-            "quote": "ninety (90) days written notice prior to the end of the then-current term",
+            "quote": "initial term of this Agreement is twelve (12) months",
+            "clause_type": "term"
+          },
+          {
+            "quote": "ninety (90) days written notice",
             "clause_type": "auto_renewal"
           },
           {
-            "quote": "Provider may terminate immediately for any reason without notice",
-            "clause_type": "term"
+            "quote": "perpetual, irrevocable, worldwide licence to use Customer Data",
+            "clause_type": "ip_and_model_training"
+          },
+          {
+            "quote": "industry standard security measures",
+            "clause_type": "security"
+          },
+          {
+            "quote": "may increase the fees at any time on thirty (30) days written notice",
+            "clause_type": "fees"
+          },
+          {
+            "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term",
+            "clause_type": "security"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ],
       "adapter_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ]
     },
     {
@@ -1101,31 +1611,31 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 3,
-      "citation_total": 5,
-      "citation_grounding": 0.6,
+      "citation_grounded": 7,
+      "citation_total": 9,
+      "citation_grounding": 0.7777777777777778,
       "unsupported_citations": 2,
       "failure_reasons": [
         "required_mutation_evidence_not_cited"
       ],
       "input_digests": {
-        "source_sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-        "mutated_source_sha256": "a126f844a2a8b910197746b37360eb0d3b5b311e33b4c78a088da8f6b0d59c9f",
+        "source_sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+        "mutated_source_sha256": "03ea7bc50aca90a0978733646a7200b93f851344f5ff98fd1d9c2a2c06ac2736",
         "expected_behavior_sha256": "2bc25e9ced725efb5e200b5cf33b835fa049fffa55f8423a95d6b946f1375ca9"
       },
       "adapter_output": {
         "clauses": [
           {
             "clause_type": "service_levels",
-            "text": "99.5% monthly uptime target on commercially reasonable efforts."
+            "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime."
           },
           {
             "clause_type": "data_protection",
-            "text": "Processes personal data only on documented instructions."
+            "text": "Processing only on documented instructions from the customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "text": "Liability capped at trailing twelve months of fees."
+            "text": "Liability capped at twelve months of fees."
           },
           {
             "clause_type": "term",
@@ -1133,59 +1643,119 @@
           },
           {
             "clause_type": "auto_renewal",
-            "text": "Auto-renews for twelve-month terms; 90 days notice to stop."
+            "text": "Renews automatically unless ninety days notice is given."
           },
           {
-            "clause_type": "indemnification",
-            "text": "Customer indemnifies Provider against third-party claims."
+            "clause_type": "subprocessors",
+            "text": "Provider may appoint sub-processors and publish a list on its website."
+          },
+          {
+            "clause_type": "security",
+            "text": "Industry standard security measures appropriate to the provider's size."
+          },
+          {
+            "clause_type": "ip_and_model_training",
+            "text": "Provider licensed to use Customer Data to train machine learning models."
+          },
+          {
+            "clause_type": "indemnity",
+            "text": "Customer indemnifies the provider against claims arising from use of the service."
+          },
+          {
+            "clause_type": "fees",
+            "text": "Provider may increase fees on thirty days notice."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "text": "Data deleted seven days after termination, export on request."
+          },
+          {
+            "clause_type": "data_residency",
+            "text": "Customer Data is stored within the European Economic Area."
           }
         ],
         "risk_flags": [
           {
             "clause_type": "auto_renewal",
             "severity": "high",
-            "rationale": "90-day notice window makes the renewal easy to miss."
+            "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date."
+          },
+          {
+            "clause_type": "fees",
+            "severity": "high",
+            "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "severity": "low",
-            "rationale": "Liability cap is present."
+            "severity": "medium",
+            "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality."
           },
           {
-            "clause_type": "service_levels",
+            "clause_type": "security",
+            "severity": "medium",
+            "rationale": "The standard is unmeasurable and gives the customer nothing to audit against."
+          },
+          {
+            "clause_type": "ip_and_model_training",
             "severity": "low",
-            "rationale": "Standard uptime commitment."
+            "rationale": "Service improvement licences are common in SaaS terms."
+          },
+          {
+            "clause_type": "indemnity",
+            "severity": "low",
+            "rationale": "Customer indemnities for use of the service are standard."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "severity": "low",
+            "rationale": "A defined deletion window is good data hygiene."
           }
         ],
         "citations": [
           {
-            "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime",
+            "quote": "99.5% monthly uptime",
             "clause_type": "service_levels"
           },
           {
-            "quote": "process Customer Personal Data only on documented instructions",
+            "quote": "only on documented instructions",
             "clause_type": "data_protection"
           },
           {
-            "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim",
+            "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim",
             "clause_type": "limitation_of_liability"
           },
           {
-            "quote": "ninety (90) days written notice prior to the end of the then-current term",
+            "quote": "initial term of this Agreement is twelve (12) months",
+            "clause_type": "term"
+          },
+          {
+            "quote": "ninety (90) days written notice",
             "clause_type": "auto_renewal"
           },
           {
-            "quote": "Provider may terminate immediately for any reason without notice",
-            "clause_type": "term"
+            "quote": "perpetual, irrevocable, worldwide licence to use Customer Data",
+            "clause_type": "ip_and_model_training"
+          },
+          {
+            "quote": "industry standard security measures",
+            "clause_type": "security"
+          },
+          {
+            "quote": "may increase the fees at any time on thirty (30) days written notice",
+            "clause_type": "fees"
+          },
+          {
+            "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term",
+            "clause_type": "security"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ],
       "adapter_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ]
     },
     {
@@ -1210,31 +1780,31 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [
         "required_abstention_missing"
       ],
       "input_digests": {
-        "source_sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-        "mutated_source_sha256": "41dc988513836af62f2ebff0c7240c3fb656337ca5d898560f843336bd15de67",
+        "source_sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+        "mutated_source_sha256": "815fb3cbfabbab215a0be3c1d7bd33fc55221ca37febba303d205595e23b137d",
         "expected_behavior_sha256": "6abc3403037814d1cee1c3b230013d3ac378c5b88a8d2473b3fd36402678921b"
       },
       "adapter_output": {
         "clauses": [
           {
             "clause_type": "service_levels",
-            "text": "99.5% monthly uptime target on commercially reasonable efforts."
+            "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime."
           },
           {
             "clause_type": "data_protection",
-            "text": "Processes personal data only on documented instructions."
+            "text": "Processing only on documented instructions from the customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "text": "Liability capped at trailing twelve months of fees."
+            "text": "Liability capped at twelve months of fees."
           },
           {
             "clause_type": "term",
@@ -1242,59 +1812,119 @@
           },
           {
             "clause_type": "auto_renewal",
-            "text": "Auto-renews for twelve-month terms; 90 days notice to stop."
+            "text": "Renews automatically unless ninety days notice is given."
           },
           {
-            "clause_type": "indemnification",
-            "text": "Customer indemnifies Provider against third-party claims."
+            "clause_type": "subprocessors",
+            "text": "Provider may appoint sub-processors and publish a list on its website."
+          },
+          {
+            "clause_type": "security",
+            "text": "Industry standard security measures appropriate to the provider's size."
+          },
+          {
+            "clause_type": "ip_and_model_training",
+            "text": "Provider licensed to use Customer Data to train machine learning models."
+          },
+          {
+            "clause_type": "indemnity",
+            "text": "Customer indemnifies the provider against claims arising from use of the service."
+          },
+          {
+            "clause_type": "fees",
+            "text": "Provider may increase fees on thirty days notice."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "text": "Data deleted seven days after termination, export on request."
+          },
+          {
+            "clause_type": "data_residency",
+            "text": "Customer Data is stored within the European Economic Area."
           }
         ],
         "risk_flags": [
           {
             "clause_type": "auto_renewal",
             "severity": "high",
-            "rationale": "90-day notice window makes the renewal easy to miss."
+            "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date."
+          },
+          {
+            "clause_type": "fees",
+            "severity": "high",
+            "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "severity": "low",
-            "rationale": "Liability cap is present."
+            "severity": "medium",
+            "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality."
           },
           {
-            "clause_type": "service_levels",
+            "clause_type": "security",
+            "severity": "medium",
+            "rationale": "The standard is unmeasurable and gives the customer nothing to audit against."
+          },
+          {
+            "clause_type": "ip_and_model_training",
             "severity": "low",
-            "rationale": "Standard uptime commitment."
+            "rationale": "Service improvement licences are common in SaaS terms."
+          },
+          {
+            "clause_type": "indemnity",
+            "severity": "low",
+            "rationale": "Customer indemnities for use of the service are standard."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "severity": "low",
+            "rationale": "A defined deletion window is good data hygiene."
           }
         ],
         "citations": [
           {
-            "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime",
+            "quote": "99.5% monthly uptime",
             "clause_type": "service_levels"
           },
           {
-            "quote": "process Customer Personal Data only on documented instructions",
+            "quote": "only on documented instructions",
             "clause_type": "data_protection"
           },
           {
-            "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim",
+            "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim",
             "clause_type": "limitation_of_liability"
           },
           {
-            "quote": "ninety (90) days written notice prior to the end of the then-current term",
+            "quote": "initial term of this Agreement is twelve (12) months",
+            "clause_type": "term"
+          },
+          {
+            "quote": "ninety (90) days written notice",
             "clause_type": "auto_renewal"
           },
           {
-            "quote": "Provider may terminate immediately for any reason without notice",
-            "clause_type": "term"
+            "quote": "perpetual, irrevocable, worldwide licence to use Customer Data",
+            "clause_type": "ip_and_model_training"
+          },
+          {
+            "quote": "industry standard security measures",
+            "clause_type": "security"
+          },
+          {
+            "quote": "may increase the fees at any time on thirty (30) days written notice",
+            "clause_type": "fees"
+          },
+          {
+            "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term",
+            "clause_type": "security"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ],
       "adapter_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ]
     },
     {
@@ -1317,29 +1947,29 @@
         "injection_resilient": true,
         "repeated_run_consistent": true
       },
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "unsupported_citations": 1,
       "failure_reasons": [],
       "input_digests": {
-        "source_sha256": "3275829d0748c18b1edd96a9f2533ef0bc48e4c22444eda7905acd7bd541398b",
-        "mutated_source_sha256": "e4b7797974cb85fe5664205e3eb5f1720d067a2722ce7ed72ebb126e21951e26",
+        "source_sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+        "mutated_source_sha256": "38e80b210f9339bee6e451ad380c89136c0382e50bf429a0465ca44450d624ba",
         "expected_behavior_sha256": "6ac1c0d9722d12cee8a491fc557fb0328679be5035d564a139acad9d41f2593c"
       },
       "adapter_output": {
         "clauses": [
           {
             "clause_type": "service_levels",
-            "text": "99.5% monthly uptime target on commercially reasonable efforts."
+            "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime."
           },
           {
             "clause_type": "data_protection",
-            "text": "Processes personal data only on documented instructions."
+            "text": "Processing only on documented instructions from the customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "text": "Liability capped at trailing twelve months of fees."
+            "text": "Liability capped at twelve months of fees."
           },
           {
             "clause_type": "term",
@@ -1347,59 +1977,119 @@
           },
           {
             "clause_type": "auto_renewal",
-            "text": "Auto-renews for twelve-month terms; 90 days notice to stop."
+            "text": "Renews automatically unless ninety days notice is given."
           },
           {
-            "clause_type": "indemnification",
-            "text": "Customer indemnifies Provider against third-party claims."
+            "clause_type": "subprocessors",
+            "text": "Provider may appoint sub-processors and publish a list on its website."
+          },
+          {
+            "clause_type": "security",
+            "text": "Industry standard security measures appropriate to the provider's size."
+          },
+          {
+            "clause_type": "ip_and_model_training",
+            "text": "Provider licensed to use Customer Data to train machine learning models."
+          },
+          {
+            "clause_type": "indemnity",
+            "text": "Customer indemnifies the provider against claims arising from use of the service."
+          },
+          {
+            "clause_type": "fees",
+            "text": "Provider may increase fees on thirty days notice."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "text": "Data deleted seven days after termination, export on request."
+          },
+          {
+            "clause_type": "data_residency",
+            "text": "Customer Data is stored within the European Economic Area."
           }
         ],
         "risk_flags": [
           {
             "clause_type": "auto_renewal",
             "severity": "high",
-            "rationale": "90-day notice window makes the renewal easy to miss."
+            "rationale": "A ninety day notice window against a twelve month term commits the customer to another year on a single missed date."
+          },
+          {
+            "clause_type": "fees",
+            "severity": "high",
+            "rationale": "Uncapped increases with no termination right allow unilateral repricing of a locked-in customer."
           },
           {
             "clause_type": "limitation_of_liability",
-            "severity": "low",
-            "rationale": "Liability cap is present."
+            "severity": "medium",
+            "rationale": "A twelve month fee cap carves out nothing for data breach or confidentiality."
           },
           {
-            "clause_type": "service_levels",
+            "clause_type": "security",
+            "severity": "medium",
+            "rationale": "The standard is unmeasurable and gives the customer nothing to audit against."
+          },
+          {
+            "clause_type": "ip_and_model_training",
             "severity": "low",
-            "rationale": "Standard uptime commitment."
+            "rationale": "Service improvement licences are common in SaaS terms."
+          },
+          {
+            "clause_type": "indemnity",
+            "severity": "low",
+            "rationale": "Customer indemnities for use of the service are standard."
+          },
+          {
+            "clause_type": "data_export_on_termination",
+            "severity": "low",
+            "rationale": "A defined deletion window is good data hygiene."
           }
         ],
         "citations": [
           {
-            "quote": "commercially reasonable efforts to maintain 99.5% monthly uptime",
+            "quote": "99.5% monthly uptime",
             "clause_type": "service_levels"
           },
           {
-            "quote": "process Customer Personal Data only on documented instructions",
+            "quote": "only on documented instructions",
             "clause_type": "data_protection"
           },
           {
-            "quote": "total liability under this Agreement shall not exceed the fees paid in the twelve (12) months preceding the claim",
+            "quote": "shall not exceed the fees paid in the twelve (12) months preceding the claim",
             "clause_type": "limitation_of_liability"
           },
           {
-            "quote": "ninety (90) days written notice prior to the end of the then-current term",
+            "quote": "initial term of this Agreement is twelve (12) months",
+            "clause_type": "term"
+          },
+          {
+            "quote": "ninety (90) days written notice",
             "clause_type": "auto_renewal"
           },
           {
-            "quote": "Provider may terminate immediately for any reason without notice",
-            "clause_type": "term"
+            "quote": "perpetual, irrevocable, worldwide licence to use Customer Data",
+            "clause_type": "ip_and_model_training"
+          },
+          {
+            "quote": "industry standard security measures",
+            "clause_type": "security"
+          },
+          {
+            "quote": "may increase the fees at any time on thirty (30) days written notice",
+            "clause_type": "fees"
+          },
+          {
+            "quote": "the Provider shall maintain SOC 2 Type II certification throughout the term",
+            "clause_type": "security"
           }
         ],
         "abstentions": []
       },
       "original_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ],
       "adapter_output_digests": [
-        "09bdc515cd7e98f7051c971807c2d139af5c02ecf3c9ee4c66f39c9532e03599"
+        "a6f480a03e7fd0f30cfc21995509e6ed7e642d967704e35cab5e164a66ca7ba7"
       ]
     },
     {
@@ -2312,5 +3002,5 @@
   ],
   "review_gate": "This synthetic campaign may support a human-supervised pilot decision. It never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "4ea3e87b04574a5f9ae36cb231c7a1e128d52d36df555baacdec8b4d41f48f6a"
+  "integrity_sha256": "6a85f478aa49af74f84a02034981d707af9ce4448f4b600a2414e6dc9f9af6f0"
 }

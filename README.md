@@ -59,11 +59,11 @@ baseline release-certificate rejection.
 
 | Dimension | Score | Notes |
 |---|---:|---|
-| Clause precision | 0.83 | predicted clause types that were expected |
+| Clause precision | 0.92 | predicted clause types that were expected |
 | Clause recall | 1.00 | expected clause types that were found |
-| Clause F1 | 0.91 | harmonic mean of precision and recall |
+| Clause F1 | 0.96 | harmonic mean of precision and recall |
 | Risk-flag accuracy | 0.50 | risky clauses flagged at the expected severity |
-| Citation grounding | 0.80 | 4/5 quotes grounded in the source |
+| Citation grounding | 0.89 | 8/9 quotes grounded in the source |
 | Hallucination count | 1 | cited quotes not grounded in the source |
 ```
 
@@ -125,15 +125,27 @@ A captured run against a frontier model is committed in the examples folder as a
 
 ## Use cases
 
-- NDA: confidentiality, definition, term, return/destruction, governing law.
-- SaaS agreement: service levels, data protection, limitation of liability, term, auto-renewal.
-- Data processing agreement: Art. 28(3) lit. a to h GDPR, Chapter V transfers, governing law.
+Thirty-two clause types across three agreements:
 
-The DPA case is where clause coverage and legal judgment come apart most clearly.
-The offline adapter scores 0.95 clause F1 on it — it finds every clause — while
-rating the exclusion of on-site inspections as low risk and a transfer clause
-carrying no Chapter V mechanism as low risk. Both are material Art. 28(3) and
-Chapter V defects. A reviewer reading only the coverage number would not see them.
+- **NDA** — definition, confidentiality, term, return/destruction, governing law, permitted
+  disclosure, residual knowledge, no licence, injunctive relief, assignment, notices.
+- **SaaS agreement** — service levels, data protection, limitation of liability, term,
+  auto-renewal, sub-processors, security, IP and model training, indemnity, fees, data
+  export on termination.
+- **Data processing agreement** — Art. 28(3) lit. a to h GDPR, Chapter V transfers,
+  governing law.
+
+Each gold set records a `_severity_rationale` naming why every flag carries its severity,
+so the calibration can be challenged rather than assumed. Some clauses in each agreement
+are deliberately unremarkable: a reviewer who flags them is producing false positives.
+
+Every case is built so that clause coverage and legal judgment come apart. The offline
+adapter reaches 0.95 to 0.96 clause F1 on all three — it finds every expected clause —
+against 0.50 to 0.60 risk-flag accuracy. On the DPA it rates the exclusion of on-site inspections and a transfer clause
+carrying no Chapter V mechanism as low risk; on the SaaS agreement it rates a perpetual
+licence to train models on Customer Personal Data and a reversed IP indemnity as low
+risk; on the NDA it under-rates a consent condition on legally compelled disclosure.
+A reviewer reading only the coverage number would approve all three.
 
 Adding a fourth contract type means adding four files and one entry in
 [`src/contract_eval/cases.py`](src/contract_eval/cases.py); no consumer hardcodes
