@@ -1,7 +1,32 @@
 {
-  "clause_types": ["confidentiality", "definition", "term", "return_destruction", "governing_law"],
+  "_comment": "Human-authored gold answer for the synthetic mutual NDA. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. Sections 8, 9 and 11 are deliberately unremarkable: a reviewer who flags them is producing false positives.",
+  "clause_types": [
+    "definition",
+    "confidentiality",
+    "term",
+    "return_destruction",
+    "governing_law",
+    "permitted_disclosure",
+    "residual_knowledge",
+    "no_license",
+    "injunctive_relief",
+    "assignment",
+    "notices"
+  ],
   "risk_flags": {
     "term": "high",
-    "definition": "medium"
+    "residual_knowledge": "high",
+    "permitted_disclosure": "high",
+    "assignment": "high",
+    "definition": "medium",
+    "notices": "low"
+  },
+  "_severity_rationale": {
+    "term": "high — a perpetual confidentiality obligation with no survival period and no trade-secret carve-out is unenforceable in substance and unmanageable in practice; the receiving party cannot ever demonstrate compliance has ended.",
+    "residual_knowledge": "high — an unaided-memory residuals clause that permits use for the benefit of third parties defeats the operative obligation in section 2. Whatever a person remembers may be used for a competitor, so the agreement protects only documents, not information.",
+    "permitted_disclosure": "high — conditioning a legally compelled disclosure on the disclosing party's prior written consent is not capable of performance. The standard position is notice where lawful and cooperation in seeking protective relief, not consent.",
+    "assignment": "high — free assignment to a competitor of the disclosing party defeats the purpose of the agreement, since the counterparty can change to the one party the discloser would never have contracted with.",
+    "definition": "medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. It is worse than market but negotiable.",
+    "notices": "low — email-only notice with no read receipt or deemed-delivery rule is slightly off-market and worth a note, not a blocker."
   }
 }

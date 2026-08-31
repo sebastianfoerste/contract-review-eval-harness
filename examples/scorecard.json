@@ -2,13 +2,13 @@
   "case": "nda",
   "scores": {
     "nda": {
-      "clause_precision": 0.8333333333333334,
+      "clause_precision": 0.9166666666666666,
       "clause_recall": 1.0,
-      "clause_f1": 0.9090909090909091,
+      "clause_f1": 0.9565217391304348,
       "risk_flag_accuracy": 0.5,
-      "citation_grounded": 4,
-      "citation_total": 5,
-      "citation_grounding": 0.8,
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
       "hallucination_count": 1,
       "thresholds": {
         "f1": 0.85,

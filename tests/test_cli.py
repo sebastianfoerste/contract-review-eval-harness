@@ -1,4 +1,4 @@
-from contract_eval.cli import evaluate
+from contract_eval.cli import evaluate, evaluate_case
 
 
 def test_evaluate_writes_scorecard(tmp_path):
@@ -10,13 +10,16 @@ def test_evaluate_writes_scorecard(tmp_path):
 
 
 def test_evaluate_catches_the_seeded_errors(tmp_path):
-    # The NDA stub is rigged with a spurious clause, a wrong severity, and one
-    # fabricated citation. The harness must surface all three.
-    path = evaluate(case="nda", live=False, out_dir=tmp_path)
-    text = path.read_text()
-    assert "0.83" in text  # clause precision: 5 of 6 predicted clause types are expected
-    assert "0.50" in text  # risk-flag accuracy: 1 of 2 severities correct
-    assert "0.80" in text  # citation grounding: 4 of 5 quotes grounded
+    # The NDA stub is rigged with a spurious clause, under-rated severities, and one
+    # fabricated citation. Assert the properties rather than the decimals, so growing
+    # the gold set does not require editing this test.
+    scores = evaluate_case("nda", live=False)
+
+    assert scores["clause_recall"] == 1.0, "every expected clause type is found"
+    assert scores["clause_precision"] < 1.0, "the spurious clause is penalised"
+    assert 0.0 < scores["risk_flag_accuracy"] < 1.0, "some severities are wrong"
+    assert scores["hallucination_count"] == 1, "exactly one fabricated citation"
+    assert scores["citation_grounding"] < 1.0
 
 
 def test_evaluate_writes_json_scorecard(tmp_path):
@@ -27,8 +30,8 @@ def test_evaluate_writes_json_scorecard(tmp_path):
     assert data["case"] == "nda"
     assert "nda" in data["scores"]
     scores = data["scores"]["nda"]
-    assert scores["clause_precision"] == 0.8333333333333334 or round(scores["clause_precision"], 2) == 0.83
-    assert scores["risk_flag_accuracy"] == 0.5
-    assert scores["citation_grounding"] == 0.8
+    assert 0.0 < scores["clause_precision"] < 1.0
+    assert 0.0 < scores["risk_flag_accuracy"] < 1.0
+    assert 0.0 < scores["citation_grounding"] < 1.0
     assert scores["hallucination_count"] == 1
 

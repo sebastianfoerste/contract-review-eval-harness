@@ -31,3 +31,38 @@ Confidential Information in its possession within thirty (30) days.
 
 This Agreement shall be governed by and construed in accordance with the laws of
 the Federal Republic of Germany.
+
+## 6. Permitted Disclosures
+
+The Receiving Party may disclose Confidential Information where disclosure is
+required by law, court order, or a competent regulatory authority, provided that
+the Receiving Party first obtains the prior written consent of the Disclosing
+Party.
+
+## 7. Residual Knowledge
+
+Nothing in this Agreement restricts the Receiving Party from using ideas,
+concepts, know-how, or techniques retained in the unaided memory of its personnel,
+including for the benefit of third parties.
+
+## 8. No Licence
+
+Nothing in this Agreement grants the Receiving Party any licence or other right in
+respect of the Disclosing Party's intellectual property.
+
+## 9. Injunctive Relief
+
+The parties acknowledge that damages may be an inadequate remedy for breach and
+that the Disclosing Party may seek injunctive relief in addition to any other
+remedy available at law.
+
+## 10. Assignment
+
+The Receiving Party may assign this Agreement, in whole or in part, to any third
+party, including a competitor of the disclosing counterparty, and no consent is
+required for such an assignment.
+
+## 11. Notices
+
+Notices under this Agreement are effective when sent by email to the address
+stated in the signature block.

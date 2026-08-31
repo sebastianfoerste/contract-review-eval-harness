@@ -6,15 +6,15 @@
 - Cases: 3
 - Rejected: 3
 - Unsupported citations: 3
-- Integrity SHA-256: `7dcead089cdd63fed886fb71dffd08de1967a15a141a5ce43d227e16b7272011`
+- Integrity SHA-256: `d329338fd628710bc3a70d22438625f2c57ed0dc1a2a4a1a0cafc2ee6b201e6e`
 
 ## Case decisions
 
 | Case | Decision | Clause F1 | Risk accuracy | Citation grounding | Unsupported citations |
 | --- | --- | ---: | ---: | ---: | ---: |
 | dpa | REJECT | 0.95 | 0.60 | 0.88 | 1 |
-| nda | REJECT | 0.91 | 0.50 | 0.80 | 1 |
-| saas | REJECT | 0.91 | 0.50 | 0.80 | 1 |
+| nda | REJECT | 0.96 | 0.50 | 0.89 | 1 |
+| saas | REJECT | 0.96 | 0.50 | 0.89 | 1 |
 
 ## Failure register
 
