@@ -69,8 +69,13 @@ familiar-looking clause that defeats a mandatory requirement is `high`. Unusual 
 that changes no substantive right is not a finding at all.
 
 Record the severity you would defend in writing to the client. If two annotators would
-plausibly disagree, the case is a poor benchmark item — either sharpen the planted
-defect or leave the clause unflagged.
+plausibly disagree, the case is a poor benchmark item: either sharpen the planted defect
+or leave the clause unflagged.
+
+Every risk flag must carry exactly one `severity_rationale` entry, and it must contain
+real text. This is enforced, not conventional: a flag with no written justification, an
+empty rationale map, or a blank string all fail validation. A severity nobody wrote a
+reason for is an assertion, and assertions are what this repository exists to replace.
 
 ## Writing the stub fixture
 
@@ -111,6 +116,10 @@ clause type and that no alias shadows a canonical name. They cannot tell whether
 alias is a genuine synonym: mapping `termination` onto `audit_rights` passes every
 automated check. Aliases are therefore manually reviewed, and the written defence of
 each one is the actual control.
+
+Two aliases collapsing onto the same clause are reported as duplicates, and a duplicate
+carrying a different severity is reported as a conflict. A review that flags one clause
+both high and low contradicts itself and is not treated as agreeing with the gold set.
 
 ### Known limitation
 

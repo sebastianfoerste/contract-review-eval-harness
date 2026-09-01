@@ -149,3 +149,28 @@ def test_ungrounded_citations_do_not_earn_coverage():
     )
     assert result.coverage == 0.0
     assert result.unlocated_citations == 1
+
+
+def test_duplicate_canonical_risk_flags_are_visible_not_silently_merged():
+    """Two labels collapsing onto one clause used to keep whichever came last."""
+    from contract_eval.cli import canonicalise_risk_flags
+    from contract_eval.models import RiskFlag
+
+    aliases = {"sub_processors": "subprocessors"}
+
+    conflicting = [
+        RiskFlag(clause_type="sub_processors", severity="high", rationale="a"),
+        RiskFlag(clause_type="subprocessors", severity="low", rationale="b"),
+    ]
+    flags, duplicates, conflicts = canonicalise_risk_flags(conflicting, aliases)
+    assert duplicates == ["subprocessors"]
+    assert conflicts == ["subprocessors"], "contradictory severities must be a conflict"
+    assert flags["subprocessors"] == "high", "first prediction wins, deterministically"
+
+    agreeing = [
+        RiskFlag(clause_type="sub_processors", severity="high", rationale="a"),
+        RiskFlag(clause_type="subprocessors", severity="high", rationale="b"),
+    ]
+    _, duplicates, conflicts = canonicalise_risk_flags(agreeing, aliases)
+    assert duplicates == ["subprocessors"]
+    assert conflicts == [], "a repeated flag agreeing with itself is not a conflict"

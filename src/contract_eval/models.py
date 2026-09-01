@@ -76,8 +76,11 @@ class ExpectedAnswer(BaseModel):
     thresholds: dict[str, float] = Field(default_factory=dict)
     # Declared synonyms for the SAME clause of the SAME document: spelling,
     # plural and hyphenation variants, or an equally accurate name for the
-    # clause. Structural validation below cannot establish that an alias is a
-    # genuine synonym; only human review can. See docs/ANNOTATION_GUIDELINE.md.
+    # clause. Validation below is structural only: it checks that a target is a
+    # declared clause type and that an alias does not shadow one. It cannot
+    # establish that an alias is a genuine synonym, so mapping `termination`
+    # onto `audit_rights` passes every automated check. Only human review
+    # establishes semantic equivalence. See docs/ANNOTATION_GUIDELINE.md.
     clause_aliases: dict[str, str] = Field(default_factory=dict)
     # A verbatim phrase locating each clause in the source document. Scoring
     # against these removes the dependence on whatever vocabulary a review used
@@ -97,16 +100,22 @@ class ExpectedAnswer(BaseModel):
         if unknown_flags:
             raise ValueError(f"risk flags for undeclared clause types: {unknown_flags}")
 
-        if self.severity_rationale:
-            flagged = set(self.risk_flags)
-            documented = set(self.severity_rationale)
-            if flagged != documented:
-                missing = sorted(flagged - documented)
-                extra = sorted(documented - flagged)
-                raise ValueError(
-                    "severity_rationale must have one entry per risk flag; "
-                    f"missing={missing} unexpected={extra}"
-                )
+        # Unconditional. Guarding this on a non-empty severity_rationale let a gold
+        # set carry risk flags with no written justification at all, which is the
+        # one case the rule exists to prevent.
+        flagged = set(self.risk_flags)
+        documented = set(self.severity_rationale)
+        if flagged != documented:
+            missing = sorted(flagged - documented)
+            extra = sorted(documented - flagged)
+            raise ValueError(
+                "severity_rationale must have exactly one entry per risk flag; "
+                f"missing={missing} unexpected={extra}"
+            )
+
+        blank = sorted(k for k, v in self.severity_rationale.items() if not v.strip())
+        if blank:
+            raise ValueError(f"severity_rationale entries must not be blank: {blank}")
 
         if self.clause_anchors:
             anchored = set(self.clause_anchors)
