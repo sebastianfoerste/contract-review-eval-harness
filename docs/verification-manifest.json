@@ -42,6 +42,7 @@
   "validation_commands": [
     "make test",
     "make demo",
+    "make anchor-check",
     "make certificate-verify",
     "make robustness-check",
     "make check"

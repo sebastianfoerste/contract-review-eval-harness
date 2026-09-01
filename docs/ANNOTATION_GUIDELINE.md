@@ -123,10 +123,23 @@ A one-to-one map also cannot express a granularity difference. On the DPA case a
 returned `data_breach_notification` and `dpia_assistance` as two clauses where the gold
 set carries a single `breach_and_dpia_assistance`; no set of synonyms fixes that.
 
-The durable fix is to stop matching on labels: anchor each gold clause to a span of the
-source document and score whether the review covered that span. Until that exists,
-treat clause-level scores as a lower bound on coverage and read them with the raw
-adapter output beside them.
+Label-based clause scores are therefore a lower bound on coverage, and should be read
+with `span_coverage` beside them.
+
+## Writing clause anchors
+
+Every clause type carries a `clause_anchors` entry: a verbatim phrase from the contract
+that locates the clause. Anchors are how coverage is measured without reference to
+vocabulary, so they carry more weight than aliases do.
+
+Choose a phrase that is distinctive to the clause and that a reviewer would plausibly
+quote. It must occur exactly once in the document; `make anchor-check` fails the build
+otherwise, because an anchor matching twice credits coverage to whichever region comes
+first.
+
+Each clause owns the region from its own anchor to the next anchor in document order.
+Anchor near the start of the clause, so its region covers the clause body rather than
+beginning halfway through it.
 
 ## Adding adversarial scenarios
 

@@ -34,6 +34,9 @@ jobs:
       - name: Run comparison regression test
         run: uv run python -m contract_eval compare
 
+      - name: Verify every clause anchor locates exactly one clause
+        run: uv run python scripts/check_clause_anchors.py
+
       - name: Verify the committed release certificate
         run: uv run python scripts/check_release_certificate.py
 

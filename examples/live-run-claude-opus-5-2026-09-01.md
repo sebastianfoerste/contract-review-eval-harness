@@ -48,9 +48,33 @@ one-to-many split, so that clause is scored as missed no matter how many synonym
 added.
 
 Expanding the alias map after each run would fit the benchmark to whatever the last
-model said, which is the failure this repository exists to expose. The durable fix is
-to stop matching on labels: anchor each gold clause to a span of the source document
-and score whether the review covered that span. That is not implemented.
+model said, which is the failure this repository exists to expose.
+
+## Span coverage, which does not depend on labels
+
+Each gold clause now carries a verbatim anchor locating it in the source, and each
+clause owns the region from its anchor to the next. A clause counts as covered when a
+grounded citation falls inside its region, whatever the review called it.
+
+Scored on the same captured output:
+
+| Case | Label-based clause F1 (aliases on) | Span coverage |
+| --- | ---: | ---: |
+| NDA | 0.783 | 1.000 |
+| SaaS | 0.818 | 1.000 |
+| DPA | 0.476 | 0.900 |
+
+The DPA gap is the clearest case. Label matching scored 0.476 because the review used
+its own vocabulary and split one gold clause in two. Measured by where it actually
+quoted, it engaged with nine of ten clauses.
+
+Span coverage measures citation placement, not comprehension. Quoting inside a clause
+is evidence that a review addressed it, not that its conclusion was right. It is
+reported next to the label-based scores, not instead of them.
+
+The measure discriminates rather than flattering: the bundled offline stub fixture
+scores 0.727, 0.727 and 0.700 on the same three agreements, a single citation scores
+1/11, and no citations scores zero.
 
 ## Citation grounding
 

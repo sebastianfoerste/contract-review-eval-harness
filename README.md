@@ -70,6 +70,7 @@ baseline release-certificate rejection.
 ## What it checks
 
 - Clause precision and recall.
+- Clause coverage by source span, independent of the review's own vocabulary.
 - Risk identification precision, recall and F1, so over-flagging is penalised.
 - Severity accuracy on identified risks, with a severity confusion count.
 - Citation grounding as an exact span of the normalised source.
@@ -130,7 +131,13 @@ scored twice, with clause aliasing off and on. Identical bytes scored 0.522 and 
 clause F1 on the NDA, because clause-type labels were being compared by string equality.
 Aliasing raises every score but does not solve it: recall reaches at most 0.818, the map
 does not transfer between runs, and it cannot express a gold clause the model split in
-two. Anchoring gold clauses to source spans is the durable fix and is not implemented.
+two.
+
+`span_coverage` measures the same output without reference to labels. Every gold clause
+carries a verbatim anchor locating it in the source, each clause owns the region up to
+the next anchor, and a clause counts as covered when a grounded citation lands inside
+it. On that measure the same output scores 1.000, 1.000 and 0.900 against label-based
+F1 of 0.783, 0.818 and 0.476. It measures citation placement, not comprehension.
 
 The [2026-08-28 record](examples/live-run-claude-opus-4-8-2026-08-28.md) is retained with
 its central comparison retracted: it presented two separate generations as one output

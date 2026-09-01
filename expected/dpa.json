@@ -1,5 +1,11 @@
 {
-  "comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h in the regulation's own order, plus Chapter V transfers and governing law. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h in the regulation's own order, plus Chapter V transfers and governing law. severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "review_context": {
+    "party": "Controller (Northwind Materials GmbH)",
+    "governing_law": "Germany, Regulation (EU) 2016/679",
+    "objective": "Art. 28 GDPR compliance review before appointing the processor.",
+    "risk_appetite": "conservative"
+  },
   "clause_types": [
     "documented_instructions",
     "confidentiality",
@@ -41,5 +47,17 @@
     "audits_and_inspections": "audit_rights",
     "audit": "audit_rights",
     "transfers": "international_transfers"
+  },
+  "clause_anchors": {
+    "documented_instructions": "process personal data only on documented instructions from",
+    "confidentiality": "committed themselves to confidentiality or are under an appropriate",
+    "security_measures": "appropriate technical and organisational measures to ensure a level of security",
+    "subprocessor_authorization": "engage sub-processors at its own discretion",
+    "data_subject_rights_assistance": "rights laid down in Chapter III",
+    "breach_and_dpia_assistance": "notify the Controller of a personal data breach",
+    "deletion_return": "retain personal data for its own legitimate business purposes",
+    "audit_rights": "On-site inspections and audits by the Controller",
+    "international_transfers": "transfer personal data to its affiliates in third countries",
+    "governing_law": "This DPA is governed by the laws of Germany"
   }
 }

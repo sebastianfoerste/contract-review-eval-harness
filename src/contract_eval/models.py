@@ -7,6 +7,24 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 Severity = Literal["low", "medium", "high"]
 
 
+class ReviewContext(BaseModel):
+    """Whose review this gold set encodes.
+
+    A severity is only defensible relative to a position. An uncapped fee increase is
+    high risk for the customer and unremarkable for the provider; an audit exclusion
+    reads differently under a regime that mandates the right. Leaving this implicit
+    made the gold sets look like statements about the contract rather than statements
+    from a party's side of it.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    party: str
+    governing_law: str
+    objective: str
+    risk_appetite: Literal["conservative", "balanced", "commercial"]
+
+
 class Citation(BaseModel):
     quote: str  # text the model claims appears in the source
     clause_type: str
@@ -49,6 +67,7 @@ class ExpectedAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     comment: str = ""
+    review_context: ReviewContext | None = None
     clause_types: list[str]
     risk_flags: dict[str, Severity]
     # One written justification per risk flag, naming why the severity holds and
@@ -60,6 +79,11 @@ class ExpectedAnswer(BaseModel):
     # clause. Structural validation below cannot establish that an alias is a
     # genuine synonym; only human review can. See docs/ANNOTATION_GUIDELINE.md.
     clause_aliases: dict[str, str] = Field(default_factory=dict)
+    # A verbatim phrase locating each clause in the source document. Scoring
+    # against these removes the dependence on whatever vocabulary a review used
+    # for its labels. Each anchor must occur exactly once in the source; that is
+    # checked against the document by scripts/check_clause_anchors.py.
+    clause_anchors: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_gold_set(self) -> "ExpectedAnswer":
@@ -81,6 +105,16 @@ class ExpectedAnswer(BaseModel):
                 extra = sorted(documented - flagged)
                 raise ValueError(
                     "severity_rationale must have one entry per risk flag; "
+                    f"missing={missing} unexpected={extra}"
+                )
+
+        if self.clause_anchors:
+            anchored = set(self.clause_anchors)
+            if anchored != canonical:
+                missing = sorted(canonical - anchored)
+                extra = sorted(anchored - canonical)
+                raise ValueError(
+                    "clause_anchors must have one entry per clause type; "
                     f"missing={missing} unexpected={extra}"
                 )
 
