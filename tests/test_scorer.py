@@ -81,3 +81,71 @@ def test_grounding_requires_a_contiguous_span_not_token_overlap():
     score = citation_grounding(source, [Citation(quote="keep all Confidential", clause_type="c")])
     assert score.grounded == 1
     assert score.spans[0] is not None
+
+
+def _nda():
+    import json
+    from pathlib import Path
+
+    from contract_eval.models import ExpectedAnswer
+
+    src = Path("data/nda_sample.md").read_text()
+    exp = ExpectedAnswer.model_validate(json.loads(Path("expected/nda.json").read_text()))
+    return src, exp
+
+
+def test_span_coverage_is_independent_of_clause_labels():
+    """The whole point: renaming a clause must not change coverage."""
+    from contract_eval.models import Citation
+    from contract_eval.scorer import span_coverage
+
+    src, exp = _nda()
+    quote = "shall remain in effect in perpetuity"
+
+    gold_name = span_coverage(src, exp.clause_anchors, [Citation(quote=quote, clause_type="term")])
+    odd_name = span_coverage(
+        src, exp.clause_anchors, [Citation(quote=quote, clause_type="duration_of_obligations")]
+    )
+    assert gold_name.coverage == odd_name.coverage
+    assert gold_name.covered == odd_name.covered == ["term"]
+
+
+def test_span_coverage_discriminates():
+    """It must be able to fail, and a single quote must not satisfy its neighbours."""
+    from contract_eval.models import Citation
+    from contract_eval.scorer import span_coverage
+
+    src, exp = _nda()
+    total = len(exp.clause_anchors)
+
+    assert span_coverage(src, exp.clause_anchors, []).coverage == 0.0
+
+    one = span_coverage(
+        src,
+        exp.clause_anchors,
+        [Citation(quote="shall remain in effect in perpetuity", clause_type="term")],
+    )
+    assert one.coverage == 1 / total
+    assert one.covered == ["term"]
+
+    everything = span_coverage(
+        src,
+        exp.clause_anchors,
+        [Citation(quote=a, clause_type=c) for c, a in exp.clause_anchors.items()],
+    )
+    assert everything.coverage == 1.0
+    assert everything.uncovered == []
+
+
+def test_ungrounded_citations_do_not_earn_coverage():
+    from contract_eval.models import Citation
+    from contract_eval.scorer import span_coverage
+
+    src, exp = _nda()
+    result = span_coverage(
+        src,
+        exp.clause_anchors,
+        [Citation(quote="a clause that does not appear anywhere", clause_type="term")],
+    )
+    assert result.coverage == 0.0
+    assert result.unlocated_citations == 1

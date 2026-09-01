@@ -94,3 +94,34 @@ def test_severity_rationale_must_match_risk_flags_exactly():
             "risk_flags": {"a": "high", "b": "low"},
             "severity_rationale": {"a": "because"},
         })
+
+
+def test_every_gold_set_states_whose_review_it_encodes():
+    """A severity without a stated party is not defensible."""
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.models import ExpectedAnswer
+
+    for case in ALL_CASES:
+        expected = ExpectedAnswer.model_validate(
+            json.loads(Path(f"expected/{case}.json").read_text())
+        )
+        context = expected.review_context
+        assert context is not None, f"{case}: no review_context"
+        assert context.party and context.governing_law and context.objective
+
+
+def test_every_clause_type_has_an_anchor():
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.models import ExpectedAnswer
+
+    for case in ALL_CASES:
+        expected = ExpectedAnswer.model_validate(
+            json.loads(Path(f"expected/{case}.json").read_text())
+        )
+        assert set(expected.clause_anchors) == set(expected.clause_types)

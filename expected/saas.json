@@ -1,5 +1,11 @@
 {
-  "comment": "Human-authored gold answer for the synthetic SaaS agreement. _severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "comment": "Human-authored gold answer for the synthetic SaaS agreement. severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "review_context": {
+    "party": "Customer (Northwind Materials GmbH)",
+    "governing_law": "Germany",
+    "objective": "Pre-signature review of a vendor paper contract for a business-critical system.",
+    "risk_appetite": "conservative"
+  },
   "clause_types": [
     "service_levels",
     "data_protection",
@@ -47,5 +53,18 @@
     "fees_and_charges": "fees",
     "data_export": "data_export_on_termination",
     "deletion_and_export": "data_export_on_termination"
+  },
+  "clause_anchors": {
+    "service_levels": "commercially reasonable efforts to maintain 99.5% monthly",
+    "data_protection": "process Customer Personal Data only on documented instructions",
+    "limitation_of_liability": "shall not exceed the fees paid",
+    "term": "initial term of this Agreement is twelve (12) months",
+    "auto_renewal": "renews automatically for successive twelve (12) month terms",
+    "subprocessors": "may appoint sub-processors to process Customer Personal Data",
+    "security": "industry standard security measures appropriate to a provider",
+    "ip_and_model_training": "perpetual, irrevocable, worldwide licence",
+    "indemnity": "indemnify and hold harmless the Provider",
+    "fees": "may increase the fees at any time on thirty (30) days written notice",
+    "data_export_on_termination": "delete all Customer Data seven (7) days after termination"
   }
 }

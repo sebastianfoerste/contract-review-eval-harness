@@ -1,5 +1,11 @@
 {
-  "comment": "Human-authored gold answer for the synthetic mutual NDA. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. Sections 8, 9 and 11 are deliberately unremarkable: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "comment": "Human-authored gold answer for the synthetic mutual NDA. severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. Sections 8, 9 and 11 are deliberately unremarkable: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "review_context": {
+    "party": "Disclosing Party (Northwind Materials GmbH)",
+    "governing_law": "Germany",
+    "objective": "Pre-signature review before disclosing technical information to a prospective supplier.",
+    "risk_appetite": "conservative"
+  },
   "clause_types": [
     "definition",
     "confidentiality",
@@ -40,5 +46,18 @@
     "no_licence": "no_license",
     "residuals": "residual_knowledge",
     "notice": "notices"
+  },
+  "clause_anchors": {
+    "definition": "any and all information disclosed by either party",
+    "confidentiality": "shall keep all Confidential Information secret",
+    "term": "shall remain in effect in perpetuity",
+    "return_destruction": "return or destroy all Confidential Information in its possession",
+    "governing_law": "laws of the Federal Republic of Germany",
+    "permitted_disclosure": "required by law, court order, or a competent regulatory authority",
+    "residual_knowledge": "retained in the unaided memory of its personnel",
+    "no_license": "grants the Receiving Party any licence or other right",
+    "injunctive_relief": "damages may be an inadequate remedy for breach",
+    "assignment": "including a competitor of the disclosing counterparty",
+    "notices": "effective when sent by email to the address"
   }
 }

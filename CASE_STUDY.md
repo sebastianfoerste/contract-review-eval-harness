@@ -14,6 +14,7 @@ A legal engineer, innovation lead, or GC evaluating an AI contract-review tool b
 3. It scores clause coverage (precision/recall), risk-flag accuracy, and citation grounding, and counts hallucinated citations.
 4. It writes a **scorecard** (`examples/scorecard.md` + `.json`) with an overall verdict.
 5. An **adversarial campaign** replays eighteen minimal-pair mutations across the three agreements and asks whether the review moved when the contract did.
+6. **Span coverage** asks, independently of what the review called anything, whether it quoted from inside every clause of the document.
 
 ## Controls
 Grounding is checked against the actual document text, not the model's confidence. Any single ungrounded citation forces a **REJECT** verdict regardless of other scores — the harness is deliberately conservative. The gold set is human-authored, so the benchmark itself is reviewable.
@@ -28,11 +29,11 @@ The adversarial campaign returns **REJECT** against the bundled adapter, and the
 ## Limitations
 It evaluates against structured gold sets for three synthetic agreements totalling thirty-two clause types; it is not a general contract-understanding benchmark, and it does not read arbitrary contracts end to end. The gold sets encode one reviewer's judgment and have had no second-annotator review or blind adjudication, though each severity now carries a written rationale that can be challenged.
 
-Clause scoring still matches on taxonomy labels. Declared aliases absorb spelling and plural variants, but the map is written after observing a run and does not transfer between runs, and it cannot express a gold clause that a review splits in two. Clause-level scores are therefore a lower bound on coverage. Anchoring gold clauses to source spans is the durable fix and is not implemented.
+Label-based clause scoring still matches on taxonomy names, and an alias map written after observing one run does not transfer to the next. `span_coverage` measures the same output without labels: each gold clause carries a verbatim anchor, owns the region up to the next anchor, and counts as covered when a grounded citation lands inside it. Read the two together, since span coverage measures citation placement rather than comprehension.
 
-The gold sets also carry no explicit party perspective, governing law, review objective, or risk appetite. A severity defensible for a customer-side reviewer under German law may not be defensible for the counterparty, and that context is currently implicit.
+Each gold set now states whose review it encodes: party, governing law, objective and risk appetite. All three are currently conservative reviews from the receiving side under German law. A provider-side or commercially-minded reviewer would defend different severities on the same clauses, and the gold sets do not yet contain that second perspective.
 
 ## Next steps
-Anchor gold clauses to source spans so scoring stops depending on label vocabulary; add a second annotator with blind adjudication and reported agreement statistics; record party perspective, governing law, review objective and risk appetite as explicit gold-set metadata; extend the campaign to the newly added clause types.
+Add a second annotator with blind adjudication and reported agreement statistics; add a provider-side gold set over the same SaaS agreement so the effect of perspective on severity is measurable; extend the adversarial campaign to the newly added clause types; anchor risk findings to spans as clauses now are, so a finding can be checked against the text it cites.
 
 Three earlier next steps have shipped: the DPA is the third evaluated agreement type, the gold sets carry written severity rationales under a documented annotation guideline, and CI runs the certificate and robustness gates so a change must clear the bar before merge.

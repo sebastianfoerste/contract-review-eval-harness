@@ -49,14 +49,14 @@
         },
         "expected_answer": {
           "path": "expected/dpa.json",
-          "sha256": "f1d31b963e312bec2c7932da712e24032930d65c171ef820c36cb00f90f29768"
+          "sha256": "e7f5ee192939560fa0ed3dd013eb77c438ab9f7fd27659d590471977d37f4a75"
         },
         "adapter_output": {
           "path": "fixtures/dpa_stub.json",
           "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe"
         }
       },
-      "input_manifest_sha256": "8fcef0ede1d747fc092dac22808adc10901b9f84555b31786257001f616dbf02"
+      "input_manifest_sha256": "74bfa6b041aa13423985a8f44cddb1333a3d67ec26e65f634b91e4855a032ce4"
     },
     {
       "case": "nda",
@@ -84,14 +84,14 @@
         },
         "expected_answer": {
           "path": "expected/nda.json",
-          "sha256": "c603d99b64a5849e7a3b9f1e7854f19b3c55a1e559343de9729774734b1e4021"
+          "sha256": "d4752986143f9e0f3bedf9ff1035f65f3b72ba2b00133f23507ec69e542223b8"
         },
         "adapter_output": {
           "path": "fixtures/nda_stub.json",
           "sha256": "f8f9b17131c68054df54c45d0782ae472914ec580ea3a345ab22df67b6e82fa8"
         }
       },
-      "input_manifest_sha256": "1f09b15ec3944c1d2f634acc50a48f3f0dded34d678ffc5a27296e56abec7750"
+      "input_manifest_sha256": "d49d728a5839663a58fa34bd2f855a65e026a15c4bdf7ec1452a6cb59c9b7ced"
     },
     {
       "case": "saas",
@@ -119,17 +119,17 @@
         },
         "expected_answer": {
           "path": "expected/saas.json",
-          "sha256": "81318a1d5359cdabb46d6efdb0adecf90d451e610753474fde4d37951ad1fecb"
+          "sha256": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e"
         },
         "adapter_output": {
           "path": "fixtures/saas_stub.json",
           "sha256": "610ead111d79a99c1f78e2d4ccf86442a502f270d1d2dbc5dcb867209e814a21"
         }
       },
-      "input_manifest_sha256": "daed07b1dc25f2827ce40d1a792bb67ecf8c8eb7430654cbe1eb6ff8846754f3"
+      "input_manifest_sha256": "8a7d1c8ea83d32f3c58426da23b16cd9fc3b88ff30b1c18455e41dfc24bf753d"
     }
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "b86dd5ae128fd9d9cd3a87c1f915c8f8ddb6597432826dd18beaa67480b7e002"
+  "integrity_sha256": "5b074646990b6d5924150a35fc7cd19d24120ec67a9fe135bcf20c2fbcbbffbd"
 }

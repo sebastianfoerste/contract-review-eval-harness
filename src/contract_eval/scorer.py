@@ -21,6 +21,16 @@ class CitationScore:
 
 
 @dataclass
+class SpanCoverage:
+    """Clause coverage measured by where a review cited, not by what it called things."""
+
+    covered: list[str]
+    uncovered: list[str]
+    coverage: float
+    unlocated_citations: int
+
+
+@dataclass
 class RiskScore:
     precision: float
     recall: float
@@ -139,3 +149,53 @@ def citation_grounding(source_text: str, citations: list[Citation]) -> CitationS
 def count_hallucinations(source_text: str, citations: list[Citation]) -> int:
     return sum(1 for c in citations if not _is_grounded(source_text, c.quote))
 
+
+
+def span_coverage(
+    source_text: str,
+    clause_anchors: dict[str, str],
+    citations: list[Citation],
+) -> SpanCoverage:
+    """Did the review quote from inside each gold clause?
+
+    Label-based clause scoring asks whether a review used the gold set's name for a
+    clause. This asks whether it engaged with the clause at all, by checking that at
+    least one grounded citation lands inside that clause's region of the document. A
+    review calling a clause `audits_and_inspections` instead of `audit_rights` scores
+    identically here, because vocabulary never enters the comparison.
+
+    Each clause's region runs from its own anchor to the start of the next anchor in
+    document order, so a citation cannot be credited to a neighbouring clause. An
+    earlier fixed-width window let a single quote satisfy three adjacent clauses.
+
+    It measures citation placement, not comprehension: quoting inside a clause is
+    evidence of engagement, not of a correct conclusion about it.
+    """
+    norm_source = normalize_text(source_text)
+    cited_spans = [s for s in (grounded_span(source_text, c.quote) for c in citations) if s]
+    unlocated = len(citations) - len(cited_spans)
+
+    located: list[tuple[int, str]] = []
+    unlocatable: list[str] = []
+    for clause_type, anchor in clause_anchors.items():
+        start = norm_source.find(normalize_text(anchor))
+        if start == -1:
+            unlocatable.append(clause_type)
+        else:
+            located.append((start, clause_type))
+    located.sort()
+
+    boundaries = [start for start, _ in located] + [len(norm_source)]
+    covered, uncovered = [], list(unlocatable)
+    for index, (start, clause_type) in enumerate(located):
+        region_end = boundaries[index + 1]
+        hit = any(c_start < region_end and c_end > start for c_start, c_end in cited_spans)
+        (covered if hit else uncovered).append(clause_type)
+
+    total = len(clause_anchors)
+    return SpanCoverage(
+        covered=sorted(covered),
+        uncovered=sorted(uncovered),
+        coverage=len(covered) / total if total else 0.0,
+        unlocated_citations=unlocated,
+    )

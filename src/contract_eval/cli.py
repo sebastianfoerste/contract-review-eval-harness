@@ -22,6 +22,7 @@ from contract_eval.scorer import (
     count_hallucinations,
     risk_flag_accuracy,
     risk_metrics,
+    span_coverage,
 )
 from contract_eval.robustness import (
     build_robustness_report,
@@ -59,6 +60,7 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
     risk = risk_metrics(expected.risk_flags, predicted_flags)
     citation = citation_grounding(source, output.citations)
     hallucinations = count_hallucinations(source, output.citations)
+    coverage = span_coverage(source, expected.clause_anchors, output.citations)
 
     # Base thresholds matching the stub adapter baseline
     thresholds = {
@@ -82,6 +84,8 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
         "risk_false_positives": risk.false_positives,
         "risk_missed": risk.missed,
         "risk_severity_confusion": risk.severity_confusion,
+        "span_coverage": coverage.coverage,
+        "span_uncovered_clauses": coverage.uncovered,
         "citation_grounded": citation.grounded,
         "citation_total": citation.total,
         "citation_grounding": citation.grounding_rate,
