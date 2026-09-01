@@ -2,11 +2,11 @@
 
 **Suite decision: REJECT**
 
-- Policy: `contract-review-eval.strict-legal-release-policy.v1`
+- Policy: `contract-review-eval.strict-legal-release-policy.v2`
 - Cases: 3
 - Rejected: 3
 - Unsupported citations: 3
-- Integrity SHA-256: `5b074646990b6d5924150a35fc7cd19d24120ec67a9fe135bcf20c2fbcbbffbd`
+- Integrity SHA-256: `c3413c344b4035545b593744d3e561aa483f5d0c8c3cc1225e1d634e4338e3f3`
 
 ## Case decisions
 
@@ -19,8 +19,8 @@
 ## Failure register
 
 - `dpa`: unsupported_citation_detected, citation_grounding_below_100_percent, unexpected_clause_extracted, risk_severity_mismatch
-- `nda`: unsupported_citation_detected, citation_grounding_below_100_percent, unexpected_clause_extracted, risk_severity_mismatch
-- `saas`: unsupported_citation_detected, citation_grounding_below_100_percent, unexpected_clause_extracted, risk_severity_mismatch
+- `nda`: unsupported_citation_detected, citation_grounding_below_100_percent, unexpected_clause_extracted, expected_risk_missed, risk_false_positive, risk_severity_mismatch
+- `saas`: unsupported_citation_detected, citation_grounding_below_100_percent, unexpected_clause_extracted, expected_risk_missed, risk_severity_mismatch
 
 ## Review gate
 

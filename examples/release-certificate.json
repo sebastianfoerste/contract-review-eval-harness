@@ -1,7 +1,7 @@
 {
-  "schema": "contract-review-eval.release-certificate.v1",
+  "schema": "contract-review-eval.release-certificate.v2",
   "policy": {
-    "policy_id": "contract-review-eval.strict-legal-release-policy.v1",
+    "policy_id": "contract-review-eval.strict-legal-release-policy.v2",
     "requirements": {
       "citation_grounding_minimum": 1.0,
       "hallucination_count_maximum": 0,
@@ -67,6 +67,8 @@
       ],
       "review_items": [
         "unexpected_clause_extracted",
+        "expected_risk_missed",
+        "risk_false_positive",
         "risk_severity_mismatch"
       ],
       "scores": {
@@ -102,6 +104,7 @@
       ],
       "review_items": [
         "unexpected_clause_extracted",
+        "expected_risk_missed",
         "risk_severity_mismatch"
       ],
       "scores": {
@@ -131,5 +134,5 @@
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "5b074646990b6d5924150a35fc7cd19d24120ec67a9fe135bcf20c2fbcbbffbd"
+  "integrity_sha256": "c3413c344b4035545b593744d3e561aa483f5d0c8c3cc1225e1d634e4338e3f3"
 }

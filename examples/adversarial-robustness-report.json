@@ -22,7 +22,7 @@
   },
   "baseline_release_certificate": {
     "suite_decision": "REJECT",
-    "integrity_sha256": "5b074646990b6d5924150a35fc7cd19d24120ec67a9fe135bcf20c2fbcbbffbd"
+    "integrity_sha256": "c3413c344b4035545b593744d3e561aa483f5d0c8c3cc1225e1d634e4338e3f3"
   },
   "metrics": {
     "scenarios": 18,
@@ -3002,5 +3002,5 @@
   ],
   "review_gate": "This synthetic campaign may support a human-supervised pilot decision. It never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "8985acc017f519699c7070f446f5b6563856acdeec15c05d8bec7e74fb385c87"
+  "integrity_sha256": "5c0e507a8c04b4dd365aa8f1f9ccae97a1c91b64b29a607e0e4bf5023c19cab0"
 }

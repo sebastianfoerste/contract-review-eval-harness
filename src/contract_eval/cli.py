@@ -133,7 +133,15 @@ def render_multi(scores: dict) -> str:
             f"| Clause precision | {s['clause_precision']:.2f} | predicted clause types that were expected |\n"
             f"| Clause recall | {s['clause_recall']:.2f} | expected clause types that were found |\n"
             f"| Clause F1 | {s['clause_f1']:.2f} | harmonic mean of precision and recall |\n"
-            f"| Risk-flag accuracy | {s['risk_flag_accuracy']:.2f} | risky clauses flagged at the expected severity |\n"
+            f"| Risk precision | {s['risk_precision']:.2f} | flagged clauses that the gold set treats as risks |\n"
+            f"| Risk recall | {s['risk_recall']:.2f} | gold risks the review flagged |\n"
+            f"| Risk F1 | {s['risk_f1']:.2f} | harmonic mean of risk precision and recall |\n"
+            f"| Severity accuracy | {s['risk_severity_accuracy']:.2f} | correct severity among jointly identified risks |\n"
+            f"| Risk false positives | {len(s['risk_false_positives'])} | clauses flagged that the gold set does not treat as risks |\n"
+            f"| Risk missed | {len(s['risk_missed'])} | gold risks the review did not flag |\n"
+            f"| Duplicate / conflicting flags | {len(s['risk_duplicate_flags'])} / {len(s['risk_conflicting_flags'])} | predictions collapsing onto one clause |\n"
+            f"| Span coverage | {s['span_coverage']:.2f} | gold clauses with a grounded citation inside them |\n"
+            f"| Risk-flag accuracy (legacy) | {s['risk_flag_accuracy']:.2f} | blind to false positives; excluded from release decisions |\n"
             f"| Citation grounding | {s['citation_grounding']:.2f} | {s['citation_grounded']}/{s['citation_total']} quotes matched as an exact span of the normalised source |\n"
             f"| Hallucination count | {s['hallucination_count']} | cited quotes not grounded in the source |\n"
         )
@@ -162,7 +170,12 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
             from contract_eval.scorer import CitationScore, ClauseScore
             clause = ClauseScore(s["clause_precision"], s["clause_recall"], s["clause_f1"])
             citation = CitationScore(s["citation_grounded"], s["citation_total"], s["citation_grounding"])
-            path.write_text(render(case, clause, s["risk_flag_accuracy"], citation, s["hallucination_count"]))
+            path.write_text(
+                render(
+                    case, clause, s["risk_flag_accuracy"], citation,
+                    s["hallucination_count"], scores=s,
+                )
+            )
 
     provenance = run_provenance(
         tuple(cases_to_eval),
@@ -202,7 +215,7 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
                 violations.append(f"[{c.upper()}] Hallucination count {s['hallucination_count']} is above threshold {t['hallucinations']:.0f}")
 
         if violations:
-            print("\n=== EVALUATION QUALITY GATE FAILED ===")
+            print("\n=== demo-regression-policy.v2 GATE FAILED ===")
             for v in violations:
                 print(f"- {v}")
             print("======================================")

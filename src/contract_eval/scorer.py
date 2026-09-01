@@ -76,8 +76,15 @@ def risk_metrics(expected: dict[str, str], predicted: dict[str, str]) -> RiskSco
     """
     exp_keys, pred_keys = set(expected), set(predicted)
     tp_keys = exp_keys & pred_keys
-    precision = len(tp_keys) / len(pred_keys) if pred_keys else 0.0
-    recall = len(tp_keys) / len(exp_keys) if exp_keys else 0.0
+
+    # Empty-set semantics, stated so they cannot drift:
+    #   nothing expected, nothing predicted -> a correct review of a clean contract, 1.0
+    #   nothing expected, something predicted -> every prediction is a false positive,
+    #     so precision 0.0; there was nothing to miss, so recall is vacuously 1.0
+    #   something expected, nothing predicted -> no false positives, so precision is
+    #     vacuously 1.0; everything was missed, so recall 0.0
+    precision = len(tp_keys) / len(pred_keys) if pred_keys else 1.0
+    recall = len(tp_keys) / len(exp_keys) if exp_keys else 1.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
 
     severity_correct = sum(1 for k in tp_keys if predicted[k] == expected[k])

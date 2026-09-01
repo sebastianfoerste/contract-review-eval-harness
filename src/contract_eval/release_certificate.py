@@ -7,8 +7,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-SCHEMA = "contract-review-eval.release-certificate.v1"
-POLICY_ID = "contract-review-eval.strict-legal-release-policy.v1"
+SCHEMA = "contract-review-eval.release-certificate.v2"
+LEGACY_SCHEMA = "contract-review-eval.release-certificate.v1"
+POLICY_ID = "contract-review-eval.strict-legal-release-policy.v2"
+LEGACY_POLICY_ID = "contract-review-eval.strict-legal-release-policy.v1"
 VERIFICATION_SCHEMA = "contract-review-eval.release-certificate-verification.v1"
 
 
@@ -25,16 +27,29 @@ def _case_decision(case: str, scores: dict[str, Any], root: Path) -> dict[str, A
     blockers: list[str] = []
     review_items: list[str] = []
 
+    # Release policy v2. A citation problem is a hard blocker because an unsupported
+    # quotation misrepresents the document. Everything else routes to human review:
+    # the gold set is one annotator's judgment, so a metric mismatch is a question
+    # for a lawyer rather than an automatic rejection.
     if scores["hallucination_count"] > 0:
         blockers.append("unsupported_citation_detected")
     if scores["citation_grounding"] < 1.0:
         blockers.append("citation_grounding_below_100_percent")
+
     if scores["clause_recall"] < 1.0:
         review_items.append("expected_clause_missed")
     if scores["clause_precision"] < 1.0:
         review_items.append("unexpected_clause_extracted")
-    if scores["risk_flag_accuracy"] < 1.0:
+    if scores.get("risk_recall", 1.0) < 1.0:
+        review_items.append("expected_risk_missed")
+    if scores.get("risk_precision", 1.0) < 1.0:
+        review_items.append("risk_false_positive")
+    if scores.get("risk_severity_accuracy", 1.0) < 1.0:
         review_items.append("risk_severity_mismatch")
+    if scores.get("risk_duplicate_flags"):
+        review_items.append("duplicate_risk_flags")
+    if scores.get("risk_conflicting_flags"):
+        review_items.append("conflicting_risk_flags")
 
     if blockers:
         decision = "REJECT"
@@ -151,10 +166,44 @@ def verify_release_certificate(
         if key != "integrity_sha256"
     }
     submitted_integrity = str(certificate.get("integrity_sha256", ""))
-    if certificate.get("schema") != SCHEMA:
-        errors.append("certificate_schema_mismatch")
+
+    # Dispatch by schema. A v1 certificate was issued under the legacy policy and
+    # stays verifiable on its own terms; re-deciding it under v2 would rewrite
+    # history. An unrecognised schema fails with the value that was seen, because
+    # "schema mismatch" alone does not tell a maintainer what to do next.
+    schema = certificate.get("schema")
+    legacy = schema == LEGACY_SCHEMA
+    if schema not in (SCHEMA, LEGACY_SCHEMA):
+        # Fail closed and stop. Rebuilding a certificate for an unknown schema would
+        # compare a v2 decision against a document this code cannot interpret.
+        return {
+            "schema": VERIFICATION_SCHEMA,
+            "status": "INVALID",
+            "errors": [
+                f"certificate_schema_unsupported:{schema!r}; "
+                f"expected {SCHEMA!r} or {LEGACY_SCHEMA!r}"
+            ],
+            "verification_sha256": _canonical_sha256({"unsupported_schema": schema}),
+        }
     if submitted_integrity != _canonical_sha256(submitted_payload):
         errors.append("certificate_integrity_mismatch")
+
+    if legacy:
+        # Verify integrity and inputs only. The legacy decision is not recomputed.
+        return {
+            "schema": VERIFICATION_SCHEMA,
+            "status": "VALID" if not errors else "INVALID",
+            "errors": errors,
+            "policy": LEGACY_POLICY_ID,
+            "legacy_certificate": True,
+            "note": (
+                "v1 certificate verified for integrity only; its decision was issued "
+                "under the legacy policy and is not recomputed under v2"
+            ),
+            "verification_sha256": _canonical_sha256(
+                {"schema": schema, "integrity": submitted_integrity, "errors": errors}
+            ),
+        }
 
     expected = build_release_certificate(case_scores, root=root)
     submitted_cases = {

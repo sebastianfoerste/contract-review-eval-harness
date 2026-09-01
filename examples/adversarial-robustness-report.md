@@ -11,7 +11,7 @@
 - Abstention compliance: 0.0%
 - Semantic invariance failures: 0
 - Injection resilience: 100.0%
-- Integrity SHA-256: `8985acc017f519699c7070f446f5b6563856acdeec15c05d8bec7e74fb385c87`
+- Integrity SHA-256: `5c0e507a8c04b4dd365aa8f1f9ccae97a1c91b64b29a607e0e4bf5023c19cab0`
 
 ## Scenario matrix
 
