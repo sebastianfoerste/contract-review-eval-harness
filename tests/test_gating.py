@@ -20,6 +20,17 @@ def test_evaluate_gate_fails_on_unmet_custom_thresholds(tmp_path):
         "term": "high",
         "definition": "medium"
       },
+      "severity_rationale": {
+        "term": "high because the confidentiality obligation is perpetual",
+        "definition": "medium because the definition lacks standard carve-outs"
+      },
+      "clause_anchors": {
+        "confidentiality": "shall keep all Confidential Information secret",
+        "definition": "any and all information disclosed by either party",
+        "term": "shall remain in effect in perpetuity",
+        "return_destruction": "return or destroy all Confidential Information in its possession",
+        "governing_law": "laws of the Federal Republic of Germany"
+      },
       "thresholds": {
         "f1": 0.99
       }

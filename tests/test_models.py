@@ -18,6 +18,8 @@ def test_expected_answer_parses_severity_map():
         {
             "clause_types": ["confidentiality", "term"],
             "risk_flags": {"term": "high"},
+            # Required: a flagged risk must carry its written justification.
+            "severity_rationale": {"term": "high because the term is perpetual"},
         }
     )
     assert exp.risk_flags["term"] == "high"
@@ -125,3 +127,73 @@ def test_every_clause_type_has_an_anchor():
             json.loads(Path(f"expected/{case}.json").read_text())
         )
         assert set(expected.clause_anchors) == set(expected.clause_types)
+
+
+def _minimal(**overrides):
+    base = {
+        "clause_types": ["audit_rights", "term"],
+        "risk_flags": {"audit_rights": "high"},
+        "severity_rationale": {"audit_rights": "high because the inspection right is excluded"},
+    }
+    base.update(overrides)
+    return base
+
+
+def test_risk_flag_without_any_rationale_map_fails():
+    """The bypass this rule exists to prevent: a flag with no justification at all."""
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    payload = _minimal()
+    del payload["severity_rationale"]
+    with pytest.raises(ValidationError, match="exactly one entry per risk flag"):
+        ExpectedAnswer.model_validate(payload)
+
+
+def test_risk_flag_with_empty_rationale_map_fails():
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    with pytest.raises(ValidationError, match="exactly one entry per risk flag"):
+        ExpectedAnswer.model_validate(_minimal(severity_rationale={}))
+
+
+def test_blank_rationale_fails():
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    with pytest.raises(ValidationError, match="must not be blank"):
+        ExpectedAnswer.model_validate(_minimal(severity_rationale={"audit_rights": "   \n"}))
+
+
+def test_missing_and_extra_rationales_fail():
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    with pytest.raises(ValidationError, match="missing="):
+        ExpectedAnswer.model_validate(
+            _minimal(risk_flags={"audit_rights": "high", "term": "low"})
+        )
+    with pytest.raises(ValidationError, match="unexpected="):
+        ExpectedAnswer.model_validate(
+            _minimal(severity_rationale={"audit_rights": "x", "term": "y"})
+        )
+
+
+def test_committed_gold_sets_still_validate():
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.models import ExpectedAnswer
+
+    for case in ALL_CASES:
+        ExpectedAnswer.model_validate(json.loads(Path(f"expected/{case}.json").read_text()))

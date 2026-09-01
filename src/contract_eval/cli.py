@@ -43,6 +43,33 @@ def canonical_clause(clause_type: str, aliases: dict[str, str]) -> str:
     return aliases.get(clause_type, clause_type)
 
 
+def canonicalise_risk_flags(
+    risk_flags: list,
+    aliases: dict[str, str],
+) -> tuple[dict[str, str], list[str], list[str]]:
+    """Collapse predicted flags onto canonical clause names, visibly.
+
+    A dict comprehension silently kept the last flag whenever two predictions
+    canonicalised onto the same clause, so a review flagging `sub_processors` high
+    and `subprocessors` low scored as whichever came second. Duplicates are now
+    reported, and a duplicate carrying a different severity is a conflict: the
+    review contradicts itself about one clause and cannot be treated as agreeing
+    with the gold set.
+    """
+    seen: dict[str, str] = {}
+    duplicates: list[str] = []
+    conflicts: list[str] = []
+    for flag in risk_flags:
+        canonical = canonical_clause(flag.clause_type, aliases)
+        if canonical in seen:
+            duplicates.append(canonical)
+            if seen[canonical] != flag.severity:
+                conflicts.append(canonical)
+            continue
+        seen[canonical] = flag.severity
+    return seen, sorted(set(duplicates)), sorted(set(conflicts))
+
+
 def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
     source = Path(f"data/{case}_sample.md").read_text()
     expected = ExpectedAnswer.model_validate(json.loads(Path(f"expected/{case}.json").read_text()))
@@ -53,9 +80,9 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
         expected.clause_types,
         [canonical_clause(c.clause_type, aliases) for c in output.clauses],
     )
-    predicted_flags = {
-        canonical_clause(f.clause_type, aliases): f.severity for f in output.risk_flags
-    }
+    predicted_flags, duplicate_flags, conflicting_flags = canonicalise_risk_flags(
+        output.risk_flags, aliases
+    )
     risk_accuracy = risk_flag_accuracy(expected.risk_flags, predicted_flags)
     risk = risk_metrics(expected.risk_flags, predicted_flags)
     citation = citation_grounding(source, output.citations)
@@ -84,6 +111,8 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
         "risk_false_positives": risk.false_positives,
         "risk_missed": risk.missed,
         "risk_severity_confusion": risk.severity_confusion,
+        "risk_duplicate_flags": duplicate_flags,
+        "risk_conflicting_flags": conflicting_flags,
         "span_coverage": coverage.coverage,
         "span_uncovered_clauses": coverage.uncovered,
         "citation_grounded": citation.grounded,
