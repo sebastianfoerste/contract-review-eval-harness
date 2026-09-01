@@ -24,7 +24,7 @@ Adapter output for the `{case}` case, scored against `expected/{case}.json`.
 | Clause recall | {clause.recall:.2f} | expected clause types that were found |
 | Clause F1 | {clause.f1:.2f} | harmonic mean of precision and recall |
 | Risk-flag accuracy | {risk_accuracy:.2f} | risky clauses flagged at the expected severity |
-| Citation grounding | {citation.grounding_rate:.2f} | {citation.grounded}/{citation.total} quotes grounded in the source (exact match or 85%+ token overlap) |
+| Citation grounding | {citation.grounding_rate:.2f} | {citation.grounded}/{citation.total} quotes matched as an exact span of the normalised source |
 | Hallucination count | {hallucinations} | cited quotes not grounded in the source |
 
 ## Human review required

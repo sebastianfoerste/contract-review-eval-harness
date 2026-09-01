@@ -7,7 +7,7 @@
     "examples/scorecard.md",
     "examples/release-certificate.md",
     "examples/adversarial-robustness-report.md",
-    "examples/live-run-claude-opus-4-8-2026-08-28.md"
+    "examples/live-run-claude-opus-5-2026-09-01.md"
   ],
   "verification_artifacts": [
     {
@@ -31,8 +31,12 @@
       "label": "Gold answer set annotation guideline"
     },
     {
-      "path": "examples/live-run-claude-opus-4-8-2026-08-28.md",
-      "label": "Dated live-model run and the taxonomy-alignment finding"
+      "path": "examples/live-run-claude-opus-5-2026-09-01.md",
+      "label": "Controlled re-scoring of one captured live output"
+    },
+    {
+      "path": "examples/raw-output/MANIFEST.json",
+      "label": "Hashes of the preserved raw adapter output"
     }
   ],
   "validation_commands": [

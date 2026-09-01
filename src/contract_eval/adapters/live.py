@@ -7,6 +7,7 @@ from contract_eval.models import ReviewOutput
 # Every published run records the model it used. Comparing scorecards across model
 # versions is only meaningful when the identifier travels with the result.
 DEFAULT_MODEL = "claude-opus-5"
+_MAX_TOKENS = int(os.environ.get("CONTRACT_EVAL_MAX_TOKENS", "8000"))
 
 _PROMPT = """You are a contract review assistant. Read the contract below and return ONLY valid JSON of this shape:
 {{
@@ -69,8 +70,16 @@ class LiveAdapter:
         client = anthropic.Anthropic()
         message = client.messages.create(
             model=self.model,
-            max_tokens=2000,
+            # A full review of an eleven-clause agreement carries a rationale and a
+            # citation per finding. At 2000 the response was truncated mid-JSON and
+            # surfaced as an opaque parse error.
+            max_tokens=_MAX_TOKENS,
             messages=[{"role": "user", "content": _PROMPT.format(source=source_text)}],
         )
+        if getattr(message, "stop_reason", None) == "max_tokens":
+            raise RuntimeError(
+                f"model response hit the {_MAX_TOKENS} token limit and is truncated; "
+                "raise CONTRACT_EVAL_MAX_TOKENS rather than scoring a partial review"
+            )
         text = "".join(block.text for block in message.content if block.type == "text")
         return ReviewOutput.model_validate_json(_extract_json(text))

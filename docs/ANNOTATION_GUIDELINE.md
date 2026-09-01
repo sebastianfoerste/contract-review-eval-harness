@@ -104,10 +104,29 @@ clause you meant just as accurately as yours does.
 
 Never add one to make a wrong answer pass. An alias that maps onto a different clause
 lets a review about section 8 score as a review about section 4, which is the exact
-failure this harness exists to catch, reintroduced inside the benchmark. A test asserts
-that every alias target is a declared clause type and that no alias shadows a canonical
-name; that test is the floor, not the standard. The standard is that you could defend
-each alias as the same clause in writing.
+failure this harness exists to catch, reintroduced inside the benchmark.
+
+Validation is structural only. The tests assert that every alias target is a declared
+clause type and that no alias shadows a canonical name. They cannot tell whether an
+alias is a genuine synonym: mapping `termination` onto `audit_rights` passes every
+automated check. Aliases are therefore manually reviewed, and the written defence of
+each one is the actual control.
+
+### Known limitation
+
+Aliases are added after observing what a model returned, which fits the benchmark to
+whatever vocabulary the last run happened to use. Runs on 2026-08-28 and 2026-09-01
+produced different labels for the same clauses, so a map built from the first did not
+transfer to the second.
+
+A one-to-one map also cannot express a granularity difference. On the DPA case a model
+returned `data_breach_notification` and `dpia_assistance` as two clauses where the gold
+set carries a single `breach_and_dpia_assistance`; no set of synonyms fixes that.
+
+The durable fix is to stop matching on labels: anchor each gold clause to a span of the
+source document and score whether the review covered that span. Until that exists,
+treat clause-level scores as a lower bound on coverage and read them with the raw
+adapter output beside them.
 
 ## Adding adversarial scenarios
 

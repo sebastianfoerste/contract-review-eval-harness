@@ -1,5 +1,5 @@
 {
-  "_comment": "Human-authored gold answer for the synthetic SaaS agreement. _severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "comment": "Human-authored gold answer for the synthetic SaaS agreement. _severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
   "clause_types": [
     "service_levels",
     "data_protection",
@@ -23,7 +23,7 @@
     "security": "medium",
     "data_export_on_termination": "medium"
   },
-  "_severity_rationale": {
+  "severity_rationale": {
     "auto_renewal": "high — a ninety day notice window against a twelve month term means the decision point falls at month nine, and a single missed date commits the customer to another full year.",
     "ip_and_model_training": "high — a perpetual irrevocable licence to train models on Customer Data expressly including Customer Personal Data has no lawful basis under the data protection clause in section 2, which limits processing to documented instructions. The two clauses contradict each other, and this one would make the provider a controller for that processing.",
     "indemnity": "high — the customer indemnifying the provider against third-party claims that the provider's own service infringes reverses the normal allocation. The party that built the service and can clear the rights bears none of the risk.",

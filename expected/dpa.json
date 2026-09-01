@@ -1,5 +1,5 @@
 {
-  "_comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h in the regulation's own order, plus Chapter V transfers and governing law. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "comment": "Human-authored gold answer for the synthetic Art. 28 GDPR data processing agreement. Clause types follow Art. 28(3) lit. a to h in the regulation's own order, plus Chapter V transfers and governing law. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
   "clause_types": [
     "documented_instructions",
     "confidentiality",
@@ -19,7 +19,7 @@
     "international_transfers": "high",
     "breach_and_dpia_assistance": "medium"
   },
-  "_severity_rationale": {
+  "severity_rationale": {
     "subprocessor_authorization": "high — Art. 28(3)(d) and Art. 28(2) require the controller's prior specific or general written authorisation. The clause appoints sub-processors at the processor's discretion and has the controller waive its right to object, which removes the authorisation entirely rather than channelling it.",
     "deletion_return": "high — Art. 28(3)(g) requires deletion or return at the controller's choice at the end of the services. Indefinite retention for the processor's own purposes, including model training, converts the processor into a controller for that processing without a lawful basis.",
     "audit_rights": "high — Art. 28(3)(h) requires the processor to allow for and contribute to audits, including inspections, conducted by the controller or a mandated auditor. Certification-first audit regimes are ordinary market practice and would be medium; this clause expressly excludes inspections, which removes a mandatory element rather than channelling it.",

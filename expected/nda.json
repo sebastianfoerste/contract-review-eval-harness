@@ -1,5 +1,5 @@
 {
-  "_comment": "Human-authored gold answer for the synthetic mutual NDA. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. Sections 8, 9 and 11 are deliberately unremarkable: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
+  "comment": "Human-authored gold answer for the synthetic mutual NDA. _severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. Sections 8, 9 and 11 are deliberately unremarkable: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.",
   "clause_types": [
     "definition",
     "confidentiality",
@@ -21,7 +21,7 @@
     "definition": "medium",
     "notices": "low"
   },
-  "_severity_rationale": {
+  "severity_rationale": {
     "term": "high — a perpetual confidentiality obligation with no survival period and no trade-secret carve-out is unenforceable in substance and unmanageable in practice; the receiving party cannot ever demonstrate compliance has ended.",
     "residual_knowledge": "high — an unaided-memory residuals clause that permits use for the benefit of third parties defeats the operative obligation in section 2. Whatever a person remembers may be used for a competitor, so the agreement protects only documents, not information.",
     "permitted_disclosure": "high — conditioning a legally compelled disclosure on the disclosing party's prior written consent is not capable of performance. The standard position is notice where lawful and cooperation in seeking protective relief, not consent.",

@@ -1,0 +1,170 @@
+{
+  "abstentions": [
+    {
+      "clause_type": "information_security",
+      "reason": "The technical and organisational measures are referenced only as a summary 'available on request'; no security annex is attached, so the adequacy of measures under Article 32 cannot be assessed."
+    },
+    {
+      "clause_type": "subprocessors",
+      "reason": "No schedule or list of currently authorised sub-processors is attached, so the scope of onward disclosures and their locations cannot be evaluated."
+    },
+    {
+      "clause_type": "processing_details",
+      "reason": "The Article 28(3) particulars (subject matter, duration, nature and purpose of processing, types of personal data, categories of data subjects) are not set out in the document or in any attached annex."
+    },
+    {
+      "clause_type": "international_data_transfers",
+      "reason": "No Standard Contractual Clauses, adequacy determination, or transfer impact assessment is attached; the transfer mechanism is deferred, so lawfulness of transfers cannot be concluded."
+    },
+    {
+      "clause_type": "audit_rights",
+      "reason": "The referenced third-party audit certificate/report and its scope and standard are not provided, so it cannot be determined whether it offers audit assurance comparable to Article 28(3)(h)."
+    }
+  ],
+  "citations": [
+    {
+      "clause_type": "processing_instructions",
+      "quote": "The Processor shall process personal data only on documented instructions from"
+    },
+    {
+      "clause_type": "confidentiality",
+      "quote": "have committed themselves to confidentiality or are under an appropriate"
+    },
+    {
+      "clause_type": "information_security",
+      "quote": "available on request."
+    },
+    {
+      "clause_type": "subprocessors",
+      "quote": "The Processor may engage sub-processors at its own discretion and shall inform"
+    },
+    {
+      "clause_type": "subprocessors",
+      "quote": "The Controller waives any right to object to the"
+    },
+    {
+      "clause_type": "data_breach_notification",
+      "quote": "fourteen (14) days of becoming aware of it, and shall provide reasonable"
+    },
+    {
+      "clause_type": "dpia_assistance",
+      "quote": "assistance with data protection impact assessments where commercially agreed."
+    },
+    {
+      "clause_type": "data_retention_and_deletion",
+      "quote": "for its own legitimate business purposes, including product improvement and"
+    },
+    {
+      "clause_type": "data_retention_and_deletion",
+      "quote": "model training, for an indefinite period."
+    },
+    {
+      "clause_type": "audit_rights",
+      "quote": "On-site inspections and audits by the"
+    },
+    {
+      "clause_type": "audit_rights",
+      "quote": "Controller or an auditor mandated by the Controller are expressly excluded."
+    },
+    {
+      "clause_type": "international_data_transfers",
+      "quote": "The parties shall address any"
+    },
+    {
+      "clause_type": "international_data_transfers",
+      "quote": "required transfer mechanism separately if and when the need arises."
+    },
+    {
+      "clause_type": "governing_law",
+      "quote": "This DPA is governed by the laws of Germany."
+    }
+  ],
+  "clauses": [
+    {
+      "clause_type": "processing_instructions",
+      "text": "Processor processes personal data only on the Controller's documented instructions, including for third-country transfers, unless required by Union/Member State law."
+    },
+    {
+      "clause_type": "confidentiality",
+      "text": "Persons authorised to process personal data must be bound by confidentiality commitments or statutory confidentiality obligations."
+    },
+    {
+      "clause_type": "information_security",
+      "text": "Processor implements appropriate technical and organisational measures appropriate to risk; a summary of measures is only 'available on request'."
+    },
+    {
+      "clause_type": "subprocessors",
+      "text": "Processor may appoint sub-processors at its own discretion, informs Controller only after changes take effect, and Controller waives its right to object."
+    },
+    {
+      "clause_type": "data_subject_rights_assistance",
+      "text": "Processor assists Controller in responding to data subject requests under Chapter III GDPR."
+    },
+    {
+      "clause_type": "data_breach_notification",
+      "text": "Processor must notify Controller of a personal data breach within fourteen (14) days of awareness."
+    },
+    {
+      "clause_type": "dpia_assistance",
+      "text": "Processor provides reasonable assistance with data protection impact assessments only 'where commercially agreed'."
+    },
+    {
+      "clause_type": "data_retention_and_deletion",
+      "text": "After termination, Processor may retain personal data indefinitely for its own purposes, including product improvement and model training."
+    },
+    {
+      "clause_type": "audit_rights",
+      "text": "Only an annual third-party audit certificate is provided; on-site inspections and Controller-mandated audits are expressly excluded."
+    },
+    {
+      "clause_type": "international_data_transfers",
+      "text": "Processor may transfer personal data to affiliates in third countries; transfer mechanisms are deferred to a later, separate agreement."
+    },
+    {
+      "clause_type": "governing_law",
+      "text": "The DPA is governed by the laws of Germany."
+    }
+  ],
+  "risk_flags": [
+    {
+      "clause_type": "subprocessors",
+      "rationale": "General discretion to appoint sub-processors, notice only after the change takes effect, and a blanket waiver of objection rights conflict with Article 28(2) and 28(3)(d) GDPR, which require prior specific or general written authorisation and a genuine opportunity to object.",
+      "severity": "high"
+    },
+    {
+      "clause_type": "data_breach_notification",
+      "rationale": "A fixed 14-day notification window is inconsistent with Article 33(2) GDPR ('without undue delay') and can make it impossible for the Controller to meet its own 72-hour supervisory authority deadline.",
+      "severity": "high"
+    },
+    {
+      "clause_type": "data_retention_and_deletion",
+      "rationale": "Indefinite retention for the Processor's own purposes, including model training, contradicts Article 28(3)(g) (delete or return at the Controller's choice) and effectively makes the Processor a controller for those purposes without a lawful basis identified.",
+      "severity": "high"
+    },
+    {
+      "clause_type": "audit_rights",
+      "rationale": "Express exclusion of on-site inspections and Controller-mandated audits contradicts Article 28(3)(h) GDPR, which requires the Processor to allow for and contribute to audits, including inspections.",
+      "severity": "high"
+    },
+    {
+      "clause_type": "international_data_transfers",
+      "rationale": "Transfers to third-country affiliates are permitted before any Chapter V transfer mechanism (e.g., SCCs, adequacy, derogation) is agreed; deferring the mechanism leaves transfers potentially unlawful.",
+      "severity": "high"
+    },
+    {
+      "clause_type": "information_security",
+      "rationale": "No annex or specified list of technical and organisational measures is incorporated; measures are only summarised 'on request', which weakens enforceability and Article 32 evidence.",
+      "severity": "medium"
+    },
+    {
+      "clause_type": "dpia_assistance",
+      "rationale": "Conditioning DPIA/prior-consultation assistance on separate commercial agreement undercuts the mandatory assistance duty in Article 28(3)(f) GDPR.",
+      "severity": "medium"
+    },
+    {
+      "clause_type": "processing_instructions",
+      "rationale": "Instruction clause largely tracks Article 28(3)(a) but omits the duty to inform the Controller before processing where legally required, and omits notification of instructions believed to infringe GDPR.",
+      "severity": "low"
+    }
+  ]
+}
