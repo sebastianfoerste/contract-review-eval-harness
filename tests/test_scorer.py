@@ -174,3 +174,19 @@ def test_duplicate_canonical_risk_flags_are_visible_not_silently_merged():
     _, duplicates, conflicts = canonicalise_risk_flags(agreeing, aliases)
     assert duplicates == ["subprocessors"]
     assert conflicts == [], "a repeated flag agreeing with itself is not a conflict"
+
+
+def test_risk_metric_empty_set_semantics_are_defined():
+    """Documented so they cannot drift silently."""
+    from contract_eval.scorer import risk_metrics
+
+    both_empty = risk_metrics({}, {})
+    assert (both_empty.precision, both_empty.recall, both_empty.f1) == (1.0, 1.0, 1.0)
+
+    nothing_expected = risk_metrics({}, {"a": "high"})
+    assert (nothing_expected.precision, nothing_expected.recall) == (0.0, 1.0)
+    assert nothing_expected.f1 == 0.0
+
+    nothing_predicted = risk_metrics({"a": "high"}, {})
+    assert (nothing_predicted.precision, nothing_predicted.recall) == (1.0, 0.0)
+    assert nothing_predicted.f1 == 0.0

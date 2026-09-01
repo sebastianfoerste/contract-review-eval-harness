@@ -73,6 +73,7 @@ baseline release-certificate rejection.
 - Clause coverage by source span, independent of the review's own vocabulary.
 - Risk identification precision, recall and F1, so over-flagging is penalised.
 - Severity accuracy on identified risks, with a severity confusion count.
+- Duplicate and self-contradicting risk flags.
 - Citation grounding as an exact span of the normalised source.
 - Unsupported or fabricated citations.
 - Input drift and suite-level release eligibility.
@@ -80,6 +81,22 @@ baseline release-certificate rejection.
 - Critical false reassurance and required abstention.
 - Instruction-injection and semantic-invariance behavior.
 - Repeated-run consistency and input-bound robustness verification.
+
+## Two separate gates
+
+`make test` runs `demo-regression-policy.v2`, a threshold gate against the deliberately
+imperfect bundled fixture. It detects regression. Passing it means nothing changed
+unexpectedly; it does not mean an output is fit for use.
+
+The [release certificate](examples/release-certificate.md) is the eligibility decision,
+under `strict-legal-release-policy.v2`. A case reaches `PILOT_ELIGIBLE` only with perfect
+clause precision and recall, perfect risk precision and recall, perfect severity accuracy,
+no duplicate or conflicting flags, full citation grounding and zero unsupported citations.
+Any metric shortfall is `HUMAN_REVIEW_REQUIRED`; an unsupported citation is a hard
+`REJECT`.
+
+A green CI run is not an approved benchmark result. Certificates issued under the v1
+schema stay verifiable for integrity on their original policy and are not re-decided.
 
 ## Problem
 

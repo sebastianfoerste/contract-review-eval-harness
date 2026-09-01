@@ -1,0 +1,13 @@
+{
+  "schema": "contract-review-eval.run-provenance.v1",
+  "adapter": "stub",
+  "output_generated_at": "2026-09-01T18:26:02",
+  "scored_at": "2026-09-01T18:26:02",
+  "scorer_version": "0.5.0",
+  "gold_set_sha256": {
+    "nda": "d4752986143f9e0f3bedf9ff1035f65f3b72ba2b00133f23507ec69e542223b8"
+  },
+  "source_contract_sha256": {
+    "nda": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43"
+  }
+}

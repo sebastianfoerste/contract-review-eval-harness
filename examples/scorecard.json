@@ -6,6 +6,30 @@
       "clause_recall": 1.0,
       "clause_f1": 0.9565217391304348,
       "risk_flag_accuracy": 0.5,
+      "risk_precision": 0.8333333333333334,
+      "risk_recall": 0.8333333333333334,
+      "risk_f1": 0.8333333333333334,
+      "risk_severity_accuracy": 0.6,
+      "risk_false_positives": [
+        "governing_law"
+      ],
+      "risk_missed": [
+        "notices"
+      ],
+      "risk_severity_confusion": {
+        "high->low": 1,
+        "medium->medium": 1,
+        "high->medium": 1,
+        "high->high": 2
+      },
+      "risk_duplicate_flags": [],
+      "risk_conflicting_flags": [],
+      "span_coverage": 0.7272727272727273,
+      "span_uncovered_clauses": [
+        "injunctive_relief",
+        "no_license",
+        "notices"
+      ],
       "citation_grounded": 8,
       "citation_total": 9,
       "citation_grounding": 0.8888888888888888,
