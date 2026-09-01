@@ -23,23 +23,74 @@ def test_expected_answer_parses_severity_map():
     assert exp.risk_flags["term"] == "high"
 
 
-def test_clause_aliases_are_synonyms_not_shortcuts():
-    """An alias renames a clause; it must never point at a different one.
-
-    Without this, an alias map could quietly accept a wrong answer — which is the
-    failure mode the harness exists to catch, reintroduced in the gold set itself.
-    """
+def test_gold_sets_validate_and_reject_unknown_fields():
+    """Structural validation only. It cannot establish that an alias is a synonym."""
     import json
     from pathlib import Path
+
+    import pytest
+    from pydantic import ValidationError
 
     from contract_eval.cases import ALL_CASES
     from contract_eval.models import ExpectedAnswer
 
     for case in ALL_CASES:
-        expected = ExpectedAnswer.model_validate(
-            json.loads(Path(f"expected/{case}.json").read_text())
+        raw = json.loads(Path(f"expected/{case}.json").read_text())
+        expected = ExpectedAnswer.model_validate(raw)
+        assert set(expected.severity_rationale) == set(expected.risk_flags)
+
+        with pytest.raises(ValidationError):
+            ExpectedAnswer.model_validate({**raw, "_severity_rationale": {"x": "y"}})
+
+
+def test_alias_validation_is_structural_only():
+    """An alias target must exist and must not shadow a canonical name.
+
+    This does NOT prove semantic equivalence: an alias mapping `termination` onto
+    `audit_rights` passes every check here. Only human review establishes that an
+    alias names the same clause, which is why the annotation guideline requires it.
+    """
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    base = {"clause_types": ["audit_rights"], "risk_flags": {}}
+
+    with pytest.raises(ValidationError):
+        ExpectedAnswer.model_validate({**base, "clause_aliases": {"x": "not_a_clause"}})
+    with pytest.raises(ValidationError):
+        ExpectedAnswer.model_validate({**base, "clause_aliases": {"audit_rights": "audit_rights"}})
+
+    # Semantically wrong, structurally valid. Documented, not asserted away.
+    ExpectedAnswer.model_validate({**base, "clause_aliases": {"termination": "audit_rights"}})
+
+
+def test_risk_flags_must_reference_declared_clauses_and_valid_severities():
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    with pytest.raises(ValidationError):
+        ExpectedAnswer.model_validate(
+            {"clause_types": ["a"], "risk_flags": {"b": "high"}}
         )
-        canonical = set(expected.clause_types)
-        for alias, target in expected.clause_aliases.items():
-            assert target in canonical, f"{case}: alias {alias!r} targets unknown {target!r}"
-            assert alias not in canonical, f"{case}: alias {alias!r} shadows a canonical name"
+    with pytest.raises(ValidationError):
+        ExpectedAnswer.model_validate(
+            {"clause_types": ["a"], "risk_flags": {"a": "catastrophic"}}
+        )
+
+
+def test_severity_rationale_must_match_risk_flags_exactly():
+    import pytest
+    from pydantic import ValidationError
+
+    from contract_eval.models import ExpectedAnswer
+
+    with pytest.raises(ValidationError):
+        ExpectedAnswer.model_validate({
+            "clause_types": ["a", "b"],
+            "risk_flags": {"a": "high", "b": "low"},
+            "severity_rationale": {"a": "because"},
+        })

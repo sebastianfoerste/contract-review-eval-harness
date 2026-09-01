@@ -1,0 +1,11 @@
+{
+  "schema": "contract-review-eval.raw-output-manifest.v1",
+  "model": "claude-opus-5",
+  "output_generated_at": "2026-09-01T08:15:02",
+  "sha256": {
+    "nda": "f5ec1291e3c0494a036d6b461cda54bfbaedb5dc81f4d04c506d06ae6d8affb4",
+    "saas": "8eca917be2e6aa43161c57456d0dcc089d2d4c18eed93dda342bca496dfdef1d",
+    "dpa": "78e68da86e008ff85dea00a855a1a46242d11b6dc096b9b62017557471493973"
+  },
+  "note": "Raw adapter output, preserved so any score computed from it can be recomputed and audited."
+}

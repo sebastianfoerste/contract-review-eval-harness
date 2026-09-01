@@ -6,9 +6,10 @@ import json
 import sys
 from pathlib import Path
 
-from contract_eval.adapters import get_adapter
+from contract_eval.adapters import adapter_identifier, get_adapter
 from contract_eval.cases import ALL_CASES
 from contract_eval.models import ExpectedAnswer
+from contract_eval.provenance import run_provenance, write_provenance
 from contract_eval.scorecard import render
 from contract_eval.release_certificate import (
     build_release_certificate,
@@ -20,6 +21,7 @@ from contract_eval.scorer import (
     clause_scores,
     count_hallucinations,
     risk_flag_accuracy,
+    risk_metrics,
 )
 from contract_eval.robustness import (
     build_robustness_report,
@@ -54,6 +56,7 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
         canonical_clause(f.clause_type, aliases): f.severity for f in output.risk_flags
     }
     risk_accuracy = risk_flag_accuracy(expected.risk_flags, predicted_flags)
+    risk = risk_metrics(expected.risk_flags, predicted_flags)
     citation = citation_grounding(source, output.citations)
     hallucinations = count_hallucinations(source, output.citations)
 
@@ -72,6 +75,13 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
         "clause_recall": clause.recall,
         "clause_f1": clause.f1,
         "risk_flag_accuracy": risk_accuracy,
+        "risk_precision": risk.precision,
+        "risk_recall": risk.recall,
+        "risk_f1": risk.f1,
+        "risk_severity_accuracy": risk.severity_accuracy,
+        "risk_false_positives": risk.false_positives,
+        "risk_missed": risk.missed,
+        "risk_severity_confusion": risk.severity_confusion,
         "citation_grounded": citation.grounded,
         "citation_total": citation.total,
         "citation_grounding": citation.grounding_rate,
@@ -91,7 +101,7 @@ def render_multi(scores: dict) -> str:
             f"| Clause recall | {s['clause_recall']:.2f} | expected clause types that were found |\n"
             f"| Clause F1 | {s['clause_f1']:.2f} | harmonic mean of precision and recall |\n"
             f"| Risk-flag accuracy | {s['risk_flag_accuracy']:.2f} | risky clauses flagged at the expected severity |\n"
-            f"| Citation grounding | {s['citation_grounding']:.2f} | {s['citation_grounded']}/{s['citation_total']} quotes grounded in the source (exact match or 85%+ token overlap) |\n"
+            f"| Citation grounding | {s['citation_grounding']:.2f} | {s['citation_grounded']}/{s['citation_total']} quotes matched as an exact span of the normalised source |\n"
             f"| Hallucination count | {s['hallucination_count']} | cited quotes not grounded in the source |\n"
         )
     return "\n".join(parts)
@@ -121,6 +131,16 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
             citation = CitationScore(s["citation_grounded"], s["citation_total"], s["citation_grounding"])
             path.write_text(render(case, clause, s["risk_flag_accuracy"], citation, s["hallucination_count"]))
 
+    provenance = run_provenance(
+        tuple(cases_to_eval),
+        adapter=adapter_identifier(live, model),
+        # The adapter produced this output during this call, so the two dates
+        # coincide here. Re-scoring a stored output must set them apart.
+        output_generated_at=datetime.datetime.now().isoformat(timespec="seconds"),
+        scored_at=datetime.datetime.now().isoformat(timespec="seconds"),
+    )
+    write_provenance(provenance, out_dir / "run-provenance.json")
+
     # Save run to history
     history_dir = Path("history")
     history_dir.mkdir(parents=True, exist_ok=True)
@@ -129,6 +149,7 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
     history_file.write_text(json.dumps({
         "timestamp": datetime.datetime.now().isoformat(),
         "case": case,
+        "provenance": provenance,
         "scores": run_scores
     }, indent=2))
 

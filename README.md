@@ -70,8 +70,9 @@ baseline release-certificate rejection.
 ## What it checks
 
 - Clause precision and recall.
-- Risk-flag accuracy.
-- Citation grounding.
+- Risk identification precision, recall and F1, so over-flagging is penalised.
+- Severity accuracy on identified risks, with a severity confusion count.
+- Citation grounding as an exact span of the normalised source.
 - Unsupported or fabricated citations.
 - Input drift and suite-level release eligibility.
 - Adversarial and subtle contract changes.
@@ -123,12 +124,17 @@ uv run python -m contract_eval evaluate --case all --live --model claude-opus-5
 
 A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark. Any published comparison must name the model, the date and the harness version, because a score without those three is not reproducible.
 
-The [2026-08-28 run](examples/live-run-claude-opus-4-8-2026-08-28.md) is worth reading
-for what it found in the harness rather than in the model. The first pass scored the
-model at 0.40 clause F1 and 0.00 risk accuracy on the DPA. It had in fact found every
-clause and matched every gold severity, and was scored as failing because it wrote
-`audits_and_inspections` where the gold set says `audit_rights`. Scoring string
-equality of taxonomy labels reported a correct review as a total failure.
+The [2026-09-01 run](examples/live-run-claude-opus-5-2026-09-01.md) is worth reading for
+what it found in the harness rather than in the model. One captured adapter output was
+scored twice, with clause aliasing off and on. Identical bytes scored 0.522 and 0.783
+clause F1 on the NDA, because clause-type labels were being compared by string equality.
+Aliasing raises every score but does not solve it: recall reaches at most 0.818, the map
+does not transfer between runs, and it cannot express a gold clause the model split in
+two. Anchoring gold clauses to source spans is the durable fix and is not implemented.
+
+The [2026-08-28 record](examples/live-run-claude-opus-4-8-2026-08-28.md) is retained with
+its central comparison retracted: it presented two separate generations as one output
+scored twice.
 
 ## Use cases
 
@@ -142,9 +148,12 @@ Thirty-two clause types across three agreements:
 - **Data processing agreement** — Art. 28(3) lit. a to h GDPR, Chapter V transfers,
   governing law.
 
-Each gold set records a `_severity_rationale` naming why every flag carries its severity,
+Each gold set records a `severity_rationale` naming why every flag carries its severity,
 so the calibration can be challenged rather than assumed, and a `clause_aliases` map
-declaring synonyms for the same clause so that vocabulary is not scored as legal error. Some clauses in each agreement
+declaring synonyms for the same clause so that vocabulary is not scored as legal error.
+Both fields are typed and validated: unknown keys are rejected, and every risk flag must
+carry exactly one rationale. Alias validation is structural only and cannot establish
+that an alias is a genuine synonym, which is why they are manually reviewed. Some clauses in each agreement
 are deliberately unremarkable: a reviewer who flags them is producing false positives.
 
 Every case is built so that clause coverage and legal judgment come apart. The offline
