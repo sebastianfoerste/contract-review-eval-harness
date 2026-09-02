@@ -20,7 +20,7 @@ def _scores():
 def test_release_certificate_rejects_seeded_unsupported_citations():
     certificate = build_release_certificate(_scores())
 
-    assert certificate["schema"] == "contract-review-eval.release-certificate.v2"
+    assert certificate["schema"] == "contract-review-eval.release-certificate.v3"
     assert certificate["suite_decision"] == "REJECT"
     # Every case fixture seeds exactly one fabricated citation, so each is rejected.
     assert certificate["summary"]["rejected"] == len(ALL_CASES)
@@ -188,14 +188,174 @@ def test_unknown_certificate_schema_fails_with_an_actionable_error():
 def test_legacy_v1_certificates_remain_verifiable():
     """A v1 decision was issued under the legacy policy and is not re-decided."""
     from contract_eval.release_certificate import (
-        LEGACY_SCHEMA,
+        V1_SCHEMA,
         _canonical_sha256,
         verify_release_certificate,
     )
 
-    payload = {"schema": LEGACY_SCHEMA, "suite_decision": "REJECT", "cases": []}
+    payload = {"schema": V1_SCHEMA, "suite_decision": "REJECT", "cases": []}
     certificate = {**payload, "integrity_sha256": _canonical_sha256(payload)}
 
     verification = verify_release_certificate(certificate, {})
     assert verification["status"] == "VALID"
-    assert verification["legacy_certificate"] is True
+    assert verification["verification_scope"] == "integrity_only"
+
+
+def _eligible_scores():
+    """A case satisfying every requirement in the registry."""
+    from contract_eval.release_certificate import DIAGNOSTIC_METRICS, REQUIREMENTS
+
+    scores = {}
+    for requirement in REQUIREMENTS:
+        if requirement.comparator == "gte":
+            scores[requirement.metric] = requirement.threshold
+        elif requirement.comparator == "zero":
+            scores[requirement.metric] = 0
+        elif requirement.comparator == "empty":
+            scores[requirement.metric] = []
+    for metric in DIAGNOSTIC_METRICS:
+        scores.setdefault(metric, 0)
+    scores["risk_severity_confusion"] = {}
+    scores["span_uncovered_clauses"] = []
+    return scores
+
+
+def _violate(scores, requirement):
+    scores = dict(scores)
+    if requirement.comparator == "gte":
+        scores[requirement.metric] = 0.5
+    elif requirement.comparator == "zero":
+        scores[requirement.metric] = 1
+    elif requirement.comparator == "empty":
+        scores[requirement.metric] = ["something"]
+    return scores
+
+
+def test_every_requirement_fails_in_isolation_with_its_declared_code_and_class():
+    """Each registry entry must be individually load-bearing."""
+    from contract_eval.release_certificate import REQUIREMENTS, build_release_certificate
+
+    baseline = build_release_certificate({"nda": _eligible_scores()})["cases"][0]
+    assert baseline["decision"] == "PILOT_ELIGIBLE"
+
+    for requirement in REQUIREMENTS:
+        result = build_release_certificate(
+            {"nda": _violate(_eligible_scores(), requirement)}
+        )["cases"][0]
+
+        if requirement.failure_class == "blocker":
+            assert result["decision"] == "REJECT", requirement.requirement_id
+            assert requirement.failure_code in result["blockers"], requirement.requirement_id
+        else:
+            assert result["decision"] == "HUMAN_REVIEW_REQUIRED", requirement.requirement_id
+            assert requirement.failure_code in result["review_items"], requirement.requirement_id
+
+
+def test_every_decision_input_is_published_in_every_case():
+    from contract_eval.release_certificate import REQUIREMENTS, build_release_certificate
+
+    certificate = build_release_certificate({"nda": _eligible_scores()})
+    for result in certificate["cases"]:
+        for requirement in REQUIREMENTS:
+            assert requirement.metric in result["scores"], requirement.metric
+
+
+def test_legacy_risk_accuracy_cannot_affect_the_decision():
+    """It is a diagnostic. Driving it to zero must not change eligibility."""
+    from contract_eval.release_certificate import build_release_certificate
+
+    scores = _eligible_scores()
+    scores["risk_flag_accuracy"] = 0.0
+
+    result = build_release_certificate({"nda": scores})["cases"][0]
+    assert result["decision"] == "PILOT_ELIGIBLE"
+    assert "risk_flag_accuracy" not in result["scores"]
+    assert result["diagnostics"]["risk_flag_accuracy"] == 0.0
+
+
+def test_missing_decision_input_fails_loudly():
+    """A certificate must never be issued while a decision input is absent."""
+    import pytest
+
+    from contract_eval.release_certificate import build_release_certificate
+
+    scores = _eligible_scores()
+    del scores["risk_precision"]
+
+    with pytest.raises(KeyError, match="risk_precision"):
+        build_release_certificate({"nda": scores})
+
+
+def test_twenty_spurious_flags_still_prevent_eligibility_under_v3():
+    from contract_eval.release_certificate import build_release_certificate
+
+    scores = _eligible_scores()
+    scores["risk_precision"] = 0.05
+    scores["risk_false_positives"] = [f"spurious_{i}" for i in range(20)]
+
+    result = build_release_certificate({"nda": scores})["cases"][0]
+    assert result["decision"] == "HUMAN_REVIEW_REQUIRED"
+    assert "risk_false_positive" in result["review_items"]
+
+
+def test_frozen_v2_certificate_verifies_at_full_v2_scope():
+    """A historical v2 artifact stays reproducible by its own frozen builder."""
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import evaluate_case
+    from contract_eval.release_certificate import verify_release_certificate
+
+    certificate = json.loads(
+        Path("tests/fixtures/frozen-release-certificate-v2.json").read_text()
+    )
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
+
+    verification = verify_release_certificate(certificate, scores)
+    assert verification["status"] == "VALID"
+    assert verification["verification_scope"] == "full_v2"
+
+
+def test_v2_certificate_with_drifted_inputs_degrades_to_integrity_only(tmp_path):
+    """Once an input moves, the historical decision cannot be recomputed against it."""
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import evaluate_case
+    from contract_eval.release_certificate import verify_release_certificate
+
+    certificate = json.loads(
+        Path("tests/fixtures/frozen-release-certificate-v2.json").read_text()
+    )
+    # Point one recorded input at a path whose bytes differ from the record.
+    certificate["cases"][0]["input_manifest"]["source_contract"]["sha256"] = "0" * 64
+
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
+    verification = verify_release_certificate(certificate, scores)
+
+    assert verification["verification_scope"] == "integrity_only"
+    assert any("changed" in entry for entry in verification["input_drift"])
+    assert "re-issue" in verification["note"]
+
+
+def test_current_v3_certificate_reproduces_and_verifies():
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import evaluate_case
+    from contract_eval.release_certificate import (
+        build_release_certificate,
+        verify_release_certificate,
+    )
+
+    committed = json.loads(Path("examples/release-certificate.json").read_text())
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
+
+    assert build_release_certificate(scores) == committed, "committed artifact must reproduce"
+
+    verification = verify_release_certificate(committed, scores)
+    assert verification["status"] == "VALID"
+    assert verification["verification_scope"] == "full"
