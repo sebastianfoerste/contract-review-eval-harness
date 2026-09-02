@@ -20,7 +20,7 @@
     },
     {
       "path": "examples/release-certificate.json",
-      "label": "Input-bound release certificate"
+      "label": "Input-bound release certificate (schema v3, nine published decision inputs)"
     },
     {
       "path": "examples/adversarial-robustness-report.json",

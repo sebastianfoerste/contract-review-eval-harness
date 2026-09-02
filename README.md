@@ -89,14 +89,23 @@ imperfect bundled fixture. It detects regression. Passing it means nothing chang
 unexpectedly; it does not mean an output is fit for use.
 
 The [release certificate](examples/release-certificate.md) is the eligibility decision,
-under `strict-legal-release-policy.v2`. A case reaches `PILOT_ELIGIBLE` only with perfect
-clause precision and recall, perfect risk precision and recall, perfect severity accuracy,
-no duplicate or conflicting flags, full citation grounding and zero unsupported citations.
-Any metric shortfall is `HUMAN_REVIEW_REQUIRED`; an unsupported citation is a hard
-`REJECT`.
+under `strict-legal-release-policy.v2`. Nine requirements live in one typed registry that
+drives the decision, the policy the certificate publishes, the scores each case reports,
+and what the verifier expects. A case reaches `PILOT_ELIGIBLE` only when all nine pass.
+An unsupported citation or grounding below 100 percent is a hard `REJECT`; every other
+shortfall is `HUMAN_REVIEW_REQUIRED`.
 
-A green CI run is not an approved benchmark result. Certificates issued under the v1
-schema stay verifiable for integrity on their original policy and are not re-decided.
+Certificate schema v3 publishes every one of those nine decision inputs. Earlier
+certificates advertised a `risk_flag_accuracy_target` that no longer decided anything and
+omitted the risk metrics that did, so a reader could not reconstruct the decision from the
+artifact. Diagnostics, including legacy risk-flag accuracy and span coverage, are printed
+in a separate table and never affect eligibility.
+
+A green CI run is not an approved benchmark result. Every verification result publishes a
+`verification_scope`: v1 certificates verify for integrity only, v2 certificates reproduce
+under their frozen builder while their inputs still match and degrade to integrity only
+once an input moves, and v3 certificates reproduce in full. An unknown schema fails closed
+naming the value it saw.
 
 ## Problem
 

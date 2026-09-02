@@ -1,17 +1,105 @@
 {
-  "schema": "contract-review-eval.release-certificate.v2",
+  "schema": "contract-review-eval.release-certificate.v3",
   "policy": {
     "policy_id": "contract-review-eval.strict-legal-release-policy.v2",
-    "requirements": {
-      "citation_grounding_minimum": 1.0,
-      "hallucination_count_maximum": 0,
-      "clause_precision_target": 1.0,
-      "clause_recall_target": 1.0,
-      "risk_flag_accuracy_target": 1.0
-    },
+    "requirements": [
+      {
+        "requirement_id": "citation.grounding",
+        "metric": "citation_grounding",
+        "comparator": "gte",
+        "threshold": 1.0,
+        "failure_class": "blocker",
+        "failure_code": "citation_grounding_below_100_percent",
+        "description": "Every citation must match an exact span of the normalised source."
+      },
+      {
+        "requirement_id": "citation.unsupported",
+        "metric": "hallucination_count",
+        "comparator": "zero",
+        "threshold": null,
+        "failure_class": "blocker",
+        "failure_code": "unsupported_citation_detected",
+        "description": "No citation may be unsupported by the source document."
+      },
+      {
+        "requirement_id": "clause.precision",
+        "metric": "clause_precision",
+        "comparator": "gte",
+        "threshold": 1.0,
+        "failure_class": "review_item",
+        "failure_code": "unexpected_clause_extracted",
+        "description": "No clause may be reported that the gold set does not declare."
+      },
+      {
+        "requirement_id": "clause.recall",
+        "metric": "clause_recall",
+        "comparator": "gte",
+        "threshold": 1.0,
+        "failure_class": "review_item",
+        "failure_code": "expected_clause_missed",
+        "description": "Every gold clause must be found."
+      },
+      {
+        "requirement_id": "risk.precision",
+        "metric": "risk_precision",
+        "comparator": "gte",
+        "threshold": 1.0,
+        "failure_class": "review_item",
+        "failure_code": "risk_false_positive",
+        "description": "No clause may be flagged that the gold set does not treat as a risk."
+      },
+      {
+        "requirement_id": "risk.recall",
+        "metric": "risk_recall",
+        "comparator": "gte",
+        "threshold": 1.0,
+        "failure_class": "review_item",
+        "failure_code": "expected_risk_missed",
+        "description": "Every gold risk must be flagged."
+      },
+      {
+        "requirement_id": "risk.severity",
+        "metric": "risk_severity_accuracy",
+        "comparator": "gte",
+        "threshold": 1.0,
+        "failure_class": "review_item",
+        "failure_code": "risk_severity_mismatch",
+        "description": "Every jointly identified risk must carry the gold severity."
+      },
+      {
+        "requirement_id": "risk.duplicates",
+        "metric": "risk_duplicate_flags",
+        "comparator": "empty",
+        "threshold": null,
+        "failure_class": "review_item",
+        "failure_code": "duplicate_risk_flags",
+        "description": "No two predictions may collapse onto one clause."
+      },
+      {
+        "requirement_id": "risk.conflicts",
+        "metric": "risk_conflicting_flags",
+        "comparator": "empty",
+        "threshold": null,
+        "failure_class": "review_item",
+        "failure_code": "conflicting_risk_flags",
+        "description": "One clause may not carry contradictory severities."
+      }
+    ],
     "hard_blockers": [
-      "unsupported citation",
-      "citation grounding below 100 percent"
+      "citation_grounding_below_100_percent",
+      "unsupported_citation_detected"
+    ],
+    "diagnostics_only": [
+      "clause_f1",
+      "risk_f1",
+      "risk_flag_accuracy",
+      "risk_false_positives",
+      "risk_missed",
+      "risk_severity_confusion",
+      "span_coverage",
+      "span_uncovered_clauses",
+      "citation_grounded",
+      "citation_total"
     ]
   },
   "suite_decision": "REJECT",
@@ -27,20 +115,43 @@
       "case": "dpa",
       "decision": "REJECT",
       "blockers": [
-        "unsupported_citation_detected",
-        "citation_grounding_below_100_percent"
+        "citation_grounding_below_100_percent",
+        "unsupported_citation_detected"
       ],
       "review_items": [
         "unexpected_clause_extracted",
         "risk_severity_mismatch"
       ],
       "scores": {
+        "citation_grounding": 0.875,
+        "hallucination_count": 1,
         "clause_precision": 0.9090909090909091,
         "clause_recall": 1.0,
+        "risk_precision": 1.0,
+        "risk_recall": 1.0,
+        "risk_severity_accuracy": 0.6,
+        "risk_duplicate_flags": [],
+        "risk_conflicting_flags": []
+      },
+      "diagnostics": {
         "clause_f1": 0.9523809523809523,
+        "risk_f1": 1.0,
         "risk_flag_accuracy": 0.6,
-        "citation_grounding": 0.875,
-        "hallucination_count": 1
+        "risk_false_positives": [],
+        "risk_missed": [],
+        "risk_severity_confusion": {
+          "high->low": 2,
+          "medium->medium": 1,
+          "high->high": 2
+        },
+        "span_coverage": 0.7,
+        "span_uncovered_clauses": [
+          "audit_rights",
+          "governing_law",
+          "international_transfers"
+        ],
+        "citation_grounded": 7,
+        "citation_total": 8
       },
       "input_manifest": {
         "source_contract": {
@@ -62,22 +173,50 @@
       "case": "nda",
       "decision": "REJECT",
       "blockers": [
-        "unsupported_citation_detected",
-        "citation_grounding_below_100_percent"
+        "citation_grounding_below_100_percent",
+        "unsupported_citation_detected"
       ],
       "review_items": [
         "unexpected_clause_extracted",
-        "expected_risk_missed",
         "risk_false_positive",
+        "expected_risk_missed",
         "risk_severity_mismatch"
       ],
       "scores": {
+        "citation_grounding": 0.8888888888888888,
+        "hallucination_count": 1,
         "clause_precision": 0.9166666666666666,
         "clause_recall": 1.0,
+        "risk_precision": 0.8333333333333334,
+        "risk_recall": 0.8333333333333334,
+        "risk_severity_accuracy": 0.6,
+        "risk_duplicate_flags": [],
+        "risk_conflicting_flags": []
+      },
+      "diagnostics": {
         "clause_f1": 0.9565217391304348,
+        "risk_f1": 0.8333333333333334,
         "risk_flag_accuracy": 0.5,
-        "citation_grounding": 0.8888888888888888,
-        "hallucination_count": 1
+        "risk_false_positives": [
+          "governing_law"
+        ],
+        "risk_missed": [
+          "notices"
+        ],
+        "risk_severity_confusion": {
+          "high->low": 1,
+          "medium->medium": 1,
+          "high->medium": 1,
+          "high->high": 2
+        },
+        "span_coverage": 0.7272727272727273,
+        "span_uncovered_clauses": [
+          "injunctive_relief",
+          "no_license",
+          "notices"
+        ],
+        "citation_grounded": 8,
+        "citation_total": 9
       },
       "input_manifest": {
         "source_contract": {
@@ -99,8 +238,8 @@
       "case": "saas",
       "decision": "REJECT",
       "blockers": [
-        "unsupported_citation_detected",
-        "citation_grounding_below_100_percent"
+        "citation_grounding_below_100_percent",
+        "unsupported_citation_detected"
       ],
       "review_items": [
         "unexpected_clause_extracted",
@@ -108,12 +247,38 @@
         "risk_severity_mismatch"
       ],
       "scores": {
+        "citation_grounding": 0.8888888888888888,
+        "hallucination_count": 1,
         "clause_precision": 0.9166666666666666,
         "clause_recall": 1.0,
+        "risk_precision": 1.0,
+        "risk_recall": 0.875,
+        "risk_severity_accuracy": 0.5714285714285714,
+        "risk_duplicate_flags": [],
+        "risk_conflicting_flags": []
+      },
+      "diagnostics": {
         "clause_f1": 0.9565217391304348,
+        "risk_f1": 0.9333333333333333,
         "risk_flag_accuracy": 0.5,
-        "citation_grounding": 0.8888888888888888,
-        "hallucination_count": 1
+        "risk_false_positives": [],
+        "risk_missed": [
+          "subprocessors"
+        ],
+        "risk_severity_confusion": {
+          "high->high": 2,
+          "medium->low": 1,
+          "high->low": 2,
+          "medium->medium": 2
+        },
+        "span_coverage": 0.7272727272727273,
+        "span_uncovered_clauses": [
+          "data_export_on_termination",
+          "indemnity",
+          "subprocessors"
+        ],
+        "citation_grounded": 8,
+        "citation_total": 9
       },
       "input_manifest": {
         "source_contract": {
@@ -134,5 +299,5 @@
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "c3413c344b4035545b593744d3e561aa483f5d0c8c3cc1225e1d634e4338e3f3"
+  "integrity_sha256": "cb08c9340dc45ea365d11458f489e703ebafe5df18c5f43f2aa0199e61440092"
 }
