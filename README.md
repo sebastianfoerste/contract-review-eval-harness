@@ -220,6 +220,20 @@ the case set. The [annotation guideline](docs/ANNOTATION_GUIDELINE.md) records h
 clause types are chosen, how severities are calibrated, and why a stub fixture is
 never tuned to clear a threshold.
 
+## Gold schema v2, in preparation
+
+Schema v2 replaces named clauses with atomic obligations anchored to raw character
+offsets, so coverage no longer depends on what a review calls anything. Candidate
+obligations live in [`annotations/drafts/`](annotations/) and are validated against
+their source on every run by `make gold-v2-check`: 33 obligations, every offset
+resolving to the exact recorded quote.
+
+They are **not** authoritative. The candidates were derived by one annotator, and their
+severities carried over from that same annotator, so statistics computed against them
+would measure a set against itself. `expected/*.json` under schema v1 remains the gold
+set until a second qualified reviewer has annotated the same contracts blind and every
+disagreement has been adjudicated. That reviewer is a hard external dependency.
+
 ## Synthetic data statement
 
 Every contract under `data/` is synthetic and fabricated for evaluation. No real agreement, client, or personal data is included.

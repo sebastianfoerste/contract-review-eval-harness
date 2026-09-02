@@ -1,0 +1,32 @@
+{
+  "schema": "contract-review-eval.annotation-pack.v1",
+  "pack_id": "blind-annotation-2026-09-02",
+  "annotator": "annotator-b",
+  "cases": [
+    "nda",
+    "saas",
+    "dpa"
+  ],
+  "files": {
+    "ANNOTATOR_GUIDELINE.md": "bb08d37658fe052050e790597c07979b447579e0eb6f8f2494a5ca3d5e4f8d0e",
+    "contracts/dpa_sample.md": "17a0c7b0dc7e74fe23fda6fcb394d331ada6e7286c2fb6a9497a9e58ed96f79e",
+    "contracts/nda_sample.md": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+    "contracts/saas_sample.md": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+    "primary-law-ledger.md": "29233a0ec9008c546c5655c8ed344c2d9cb649bce99c89b97d19f570fd2ac846",
+    "templates/dpa.annotator-b.v2.json": "7d727529c633a06f802626408b82176a4649afc4187bf79d15f802f50e599693",
+    "templates/nda.annotator-b.v2.json": "a556832389439a95872757f4e0e6a3e1a38f208bac45aa2e63da930264e70471",
+    "templates/saas.annotator-b.v2.json": "d35231b6c806c1eaf95ad291aa729f065c3bb8d62db0c8120f57998cc1360cec"
+  },
+  "excluded_from_pack": [
+    "expected/*.json (the current authoritative gold set)",
+    "annotations/drafts/*.candidate.v2.json (Annotator A's candidate obligations)",
+    "clause_aliases (Annotator A's vocabulary choices)",
+    "severity rationales (Annotator A's calibration)",
+    "examples/raw-output/* and examples/captures/* (model output)",
+    "examples/scorecard*, examples/release-certificate*, examples/live-run-* (scores)",
+    "examples/adversarial-robustness-report.* (campaign results)",
+    "docs/ANNOTATION_GUIDELINE.md (maintainer guideline; discusses scoring and aliases)"
+  ],
+  "instructions": "Work only from the contracts and the guideline in this pack. Do not consult the repository's expected/ directory, any model output, or any published score before returning your annotations.",
+  "manifest_sha256": "6bc5957125609ecf54728985fc06d5bcc7763f357a83c3ca94fbee1886ea74cb"
+}
