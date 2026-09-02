@@ -124,6 +124,7 @@ def replay(
         "gold_sha256": capture.gold.sha256,
         "prompt_sha256": capture.request.prompt_sha256 if capture.request else None,
         "requested_model": capture.request.model if capture.request else None,
+        "effort": capture.request.effort if capture.request else None,
         "returned_model": capture.response.returned_model,
         "adapter_id": capture.adapter_id,
         "parser_version": capture.parser_version,

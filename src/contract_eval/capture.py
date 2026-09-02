@@ -82,6 +82,12 @@ class ProviderRequest(BaseModel):
     timeout_seconds: float | None = None
     prompt: str
     prompt_sha256: str
+    # Reasoning effort changes the output, and it can be set per run from the
+    # environment without a code change, so a capture that omitted it could not
+    # explain a score difference between two runs of the same commit. Optional:
+    # captures written before the field existed, and adapters that call no model,
+    # carry None.
+    effort: str | None = None
 
 
 class ProviderResponse(BaseModel):

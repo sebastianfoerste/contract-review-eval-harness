@@ -18,7 +18,7 @@ from contract_eval.capture import (
 )
 from contract_eval.models import ReviewOutput
 
-PROMPT_VERSION = "contract-review.prompt.v1"
+PROMPT_VERSION = "contract-review.prompt.v2"
 PARSER_VERSION = "contract-review.parser.v1"
 
 
