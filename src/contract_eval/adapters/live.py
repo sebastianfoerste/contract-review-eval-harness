@@ -2,12 +2,15 @@
 
 import os
 
+from contract_eval.capture import ProviderRequest, ProviderResponse, text_sha256
 from contract_eval.models import ReviewOutput
 
 # Every published run records the model it used. Comparing scorecards across model
 # versions is only meaningful when the identifier travels with the result.
 DEFAULT_MODEL = "claude-opus-5"
 _MAX_TOKENS = int(os.environ.get("CONTRACT_EVAL_MAX_TOKENS", "8000"))
+# A hung request must fail rather than stall a sequential run indefinitely.
+_TIMEOUT_SECONDS = float(os.environ.get("CONTRACT_EVAL_TIMEOUT_SECONDS", "300"))
 
 _PROMPT = """You are a contract review assistant. Read the contract below and return ONLY valid JSON of this shape:
 {{
@@ -58,7 +61,9 @@ class LiveAdapter:
                 "run without --live to use the deterministic stub."
             )
 
-    def review(self, source_text: str, case: str) -> ReviewOutput:
+    def capture(
+        self, source_text: str, case: str
+    ) -> tuple[ProviderRequest, ProviderResponse, str]:
         try:
             import anthropic
         except ImportError as exc:  # pragma: no cover - optional dependency
@@ -67,19 +72,45 @@ class LiveAdapter:
                 "--live, or run without --live for the deterministic stub."
             ) from exc
 
-        client = anthropic.Anthropic()
+        # max_retries=0 keeps one logical attempt equal to one provider request, so a
+        # capture describes exactly what happened rather than an unknown number of
+        # silent retries.
+        client = anthropic.Anthropic(max_retries=0, timeout=_TIMEOUT_SECONDS)
+        prompt = _PROMPT.format(source=source_text)
         message = client.messages.create(
             model=self.model,
-            # A full review of an eleven-clause agreement carries a rationale and a
-            # citation per finding. At 2000 the response was truncated mid-JSON and
-            # surfaced as an opaque parse error.
             max_tokens=_MAX_TOKENS,
-            messages=[{"role": "user", "content": _PROMPT.format(source=source_text)}],
+            messages=[{"role": "user", "content": prompt}],
         )
-        if getattr(message, "stop_reason", None) == "max_tokens":
+        raw_text = "".join(block.text for block in message.content if block.type == "text")
+
+        usage = getattr(message, "usage", None)
+        request = ProviderRequest(
+            model=self.model,
+            max_output_tokens=_MAX_TOKENS,
+            timeout_seconds=_TIMEOUT_SECONDS,
+            prompt=prompt,
+            prompt_sha256=text_sha256(prompt),
+        )
+        response = ProviderResponse(
+            raw_text=raw_text,
+            raw_text_sha256=text_sha256(raw_text),
+            request_id=getattr(message, "id", None),
+            # Recorded separately from the requested id: a provider alias can resolve
+            # to a different concrete model, and a comparison that cannot see that is
+            # not reproducible.
+            returned_model=getattr(message, "model", None),
+            stop_reason=getattr(message, "stop_reason", None),
+            input_tokens=getattr(usage, "input_tokens", None) if usage else None,
+            output_tokens=getattr(usage, "output_tokens", None) if usage else None,
+        )
+        return request, response, raw_text
+
+    def review(self, source_text: str, case: str) -> ReviewOutput:
+        _, response, raw_text = self.capture(source_text=source_text, case=case)
+        if response.stop_reason == "max_tokens":
             raise RuntimeError(
                 f"model response hit the {_MAX_TOKENS} token limit and is truncated; "
                 "raise CONTRACT_EVAL_MAX_TOKENS rather than scoring a partial review"
             )
-        text = "".join(block.text for block in message.content if block.type == "text")
-        return ReviewOutput.model_validate_json(_extract_json(text))
+        return ReviewOutput.model_validate_json(_extract_json(raw_text))

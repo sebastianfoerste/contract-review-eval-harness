@@ -1,0 +1,22 @@
+{
+  "schema": "contract-review-eval.replay-spec.v1",
+  "spec_id": "live-run-claude-opus-5-2026-09-01",
+  "report_date": "2026-09-01",
+  "model_label": "claude-opus-5",
+  "alias_modes": ["off", "on"],
+  "comparison_only": true,
+  "captures": [
+    { "case": "nda", "path": "examples/captures/legacy-nda-2026-09-01.json" },
+    { "case": "saas", "path": "examples/captures/legacy-saas-2026-09-01.json" },
+    { "case": "dpa", "path": "examples/captures/legacy-dpa-2026-09-01.json" }
+  ],
+  "outputs": {
+    "markdown": "examples/live-run-claude-opus-5-2026-09-01.md",
+    "json": "examples/live-run-claude-opus-5-2026-09-01.json"
+  },
+  "disclosures": [
+    "One exploratory run against three synthetic agreements.",
+    "Imported from preserved raw output; provider request id, stop reason and token usage were never recorded and are null.",
+    "Comparison-only: it measures the harness, not the model, and establishes no claim of fitness for contract review."
+  ]
+}

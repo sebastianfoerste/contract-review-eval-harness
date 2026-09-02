@@ -1,0 +1,207 @@
+{
+  "schema": "contract-review-eval.captured-review.v1",
+  "capture_id": "legacy-nda-2026-09-01",
+  "run_id": "legacy-2026-09-01",
+  "origin": "legacy_file",
+  "state": "completed",
+  "case": "nda",
+  "scenario_id": null,
+  "variant": "original",
+  "run_index": 0,
+  "started_at": "2026-09-01T00:00:00.000+00:00",
+  "completed_at": "2026-09-01T00:00:00.000+00:00",
+  "adapter_id": "live",
+  "prompt_version": "contract-review.prompt.v1",
+  "parser_version": "contract-review.parser.v1",
+  "repository_commit": null,
+  "source": {
+    "path": "data/nda_sample.md",
+    "sha256": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+    "text": "# Mutual Non-Disclosure Agreement (SYNTHETIC)\n\nThis Mutual Non-Disclosure Agreement (\"Agreement\") is entered into between\nNorthwind Materials GmbH (\"Disclosing Party\") and Cverbio Labs Inc.\n(\"Receiving Party\"). This document is fabricated for evaluation purposes and is\nnot a real agreement.\n\n## 1. Definition of Confidential Information\n\nConfidential Information means any and all information disclosed by either party\nto the other, whether oral, written, or electronic, whether or not marked as\nconfidential.\n\n## 2. Confidentiality Obligations\n\nThe Receiving Party shall keep all Confidential Information secret and shall not\ndisclose it to any third party without the prior written consent of the\nDisclosing Party.\n\n## 3. Term\n\nThis Agreement and the obligations of confidentiality set out herein shall\nremain in effect in perpetuity.\n\n## 4. Return or Destruction\n\nUpon written request, the Receiving Party shall return or destroy all\nConfidential Information in its possession within thirty (30) days.\n\n## 5. Governing Law\n\nThis Agreement shall be governed by and construed in accordance with the laws of\nthe Federal Republic of Germany.\n\n## 6. Permitted Disclosures\n\nThe Receiving Party may disclose Confidential Information where disclosure is\nrequired by law, court order, or a competent regulatory authority, provided that\nthe Receiving Party first obtains the prior written consent of the Disclosing\nParty.\n\n## 7. Residual Knowledge\n\nNothing in this Agreement restricts the Receiving Party from using ideas,\nconcepts, know-how, or techniques retained in the unaided memory of its personnel,\nincluding for the benefit of third parties.\n\n## 8. No Licence\n\nNothing in this Agreement grants the Receiving Party any licence or other right in\nrespect of the Disclosing Party's intellectual property.\n\n## 9. Injunctive Relief\n\nThe parties acknowledge that damages may be an inadequate remedy for breach and\nthat the Disclosing Party may seek injunctive relief in addition to any other\nremedy available at law.\n\n## 10. Assignment\n\nThe Receiving Party may assign this Agreement, in whole or in part, to any third\nparty, including a competitor of the disclosing counterparty, and no consent is\nrequired for such an assignment.\n\n## 11. Notices\n\nNotices under this Agreement are effective when sent by email to the address\nstated in the signature block.\n"
+  },
+  "gold": {
+    "path": "expected/nda.json",
+    "sha256": "d4752986143f9e0f3bedf9ff1035f65f3b72ba2b00133f23507ec69e542223b8",
+    "text": "{\n  \"comment\": \"Human-authored gold answer for the synthetic mutual NDA. severity_rationale records why each flag carries its severity, so the calibration can be challenged rather than assumed. Sections 8, 9 and 11 are deliberately unremarkable: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.\",\n  \"review_context\": {\n    \"party\": \"Disclosing Party (Northwind Materials GmbH)\",\n    \"governing_law\": \"Germany\",\n    \"objective\": \"Pre-signature review before disclosing technical information to a prospective supplier.\",\n    \"risk_appetite\": \"conservative\"\n  },\n  \"clause_types\": [\n    \"definition\",\n    \"confidentiality\",\n    \"term\",\n    \"return_destruction\",\n    \"governing_law\",\n    \"permitted_disclosure\",\n    \"residual_knowledge\",\n    \"no_license\",\n    \"injunctive_relief\",\n    \"assignment\",\n    \"notices\"\n  ],\n  \"risk_flags\": {\n    \"term\": \"high\",\n    \"residual_knowledge\": \"high\",\n    \"permitted_disclosure\": \"high\",\n    \"assignment\": \"high\",\n    \"definition\": \"medium\",\n    \"notices\": \"low\"\n  },\n  \"severity_rationale\": {\n    \"term\": \"high — a perpetual confidentiality obligation with no survival period and no trade-secret carve-out is unenforceable in substance and unmanageable in practice; the receiving party cannot ever demonstrate compliance has ended.\",\n    \"residual_knowledge\": \"high — an unaided-memory residuals clause that permits use for the benefit of third parties defeats the operative obligation in section 2. Whatever a person remembers may be used for a competitor, so the agreement protects only documents, not information.\",\n    \"permitted_disclosure\": \"high — conditioning a legally compelled disclosure on the disclosing party's prior written consent is not capable of performance. The standard position is notice where lawful and cooperation in seeking protective relief, not consent.\",\n    \"assignment\": \"high — free assignment to a competitor of the disclosing party defeats the purpose of the agreement, since the counterparty can change to the one party the discloser would never have contracted with.\",\n    \"definition\": \"medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. It is worse than market but negotiable.\",\n    \"notices\": \"low — email-only notice with no read receipt or deemed-delivery rule is slightly off-market and worth a note, not a blocker.\"\n  },\n  \"clause_aliases\": {\n    \"definition_of_confidential_information\": \"definition\",\n    \"confidential_information_definition\": \"definition\",\n    \"confidentiality_obligations\": \"confidentiality\",\n    \"return_or_destruction\": \"return_destruction\",\n    \"return_and_destruction\": \"return_destruction\",\n    \"permitted_disclosures\": \"permitted_disclosure\",\n    \"required_disclosure\": \"permitted_disclosure\",\n    \"no_licence\": \"no_license\",\n    \"residuals\": \"residual_knowledge\",\n    \"notice\": \"notices\"\n  },\n  \"clause_anchors\": {\n    \"definition\": \"any and all information disclosed by either party\",\n    \"confidentiality\": \"shall keep all Confidential Information secret\",\n    \"term\": \"shall remain in effect in perpetuity\",\n    \"return_destruction\": \"return or destroy all Confidential Information in its possession\",\n    \"governing_law\": \"laws of the Federal Republic of Germany\",\n    \"permitted_disclosure\": \"required by law, court order, or a competent regulatory authority\",\n    \"residual_knowledge\": \"retained in the unaided memory of its personnel\",\n    \"no_license\": \"grants the Receiving Party any licence or other right\",\n    \"injunctive_relief\": \"damages may be an inadequate remedy for breach\",\n    \"assignment\": \"including a competitor of the disclosing counterparty\",\n    \"notices\": \"effective when sent by email to the address\"\n  }\n}\n"
+  },
+  "request": null,
+  "response": {
+    "raw_text": "{\n  \"abstentions\": [\n    {\n      \"clause_type\": \"notices\",\n      \"reason\": \"The signature block containing the notice email addresses is not included in the provided text, so the validity, ownership, and adequacy of the notice addresses cannot be assessed.\"\n    },\n    {\n      \"clause_type\": \"signature_and_execution\",\n      \"reason\": \"No execution page, signatory names, titles, or effective date are present in the supplied document; authority to bind and commencement date cannot be reviewed.\"\n    },\n    {\n      \"clause_type\": \"purpose_and_permitted_use\",\n      \"reason\": \"The Agreement does not state a defined Purpose or any underlying transaction document; without that context the permitted scope of use of Confidential Information cannot be evaluated.\"\n    },\n    {\n      \"clause_type\": \"governing_law\",\n      \"reason\": \"No jurisdiction/venue provision or referenced dispute schedule is included, so the complete dispute-resolution position cannot be concluded.\"\n    }\n  ],\n  \"citations\": [\n    {\n      \"clause_type\": \"definition_of_confidential_information\",\n      \"quote\": \"whether oral, written, or electronic, whether or not marked as\"\n    },\n    {\n      \"clause_type\": \"confidentiality_obligation\",\n      \"quote\": \"The Receiving Party shall keep all Confidential Information secret and shall not\"\n    },\n    {\n      \"clause_type\": \"term_and_duration\",\n      \"quote\": \"remain in effect in perpetuity.\"\n    },\n    {\n      \"clause_type\": \"return_or_destruction\",\n      \"quote\": \"Confidential Information in its possession within thirty (30) days.\"\n    },\n    {\n      \"clause_type\": \"governing_law\",\n      \"quote\": \"the Federal Republic of Germany.\"\n    },\n    {\n      \"clause_type\": \"permitted_disclosures\",\n      \"quote\": \"the Receiving Party first obtains the prior written consent of the Disclosing\"\n    },\n    {\n      \"clause_type\": \"residual_knowledge\",\n      \"quote\": \"including for the benefit of third parties.\"\n    },\n    {\n      \"clause_type\": \"no_license\",\n      \"quote\": \"Nothing in this Agreement grants the Receiving Party any licence or other right in\"\n    },\n    {\n      \"clause_type\": \"injunctive_relief\",\n      \"quote\": \"the Disclosing Party may seek injunctive relief in addition to any other\"\n    },\n    {\n      \"clause_type\": \"assignment\",\n      \"quote\": \"The Receiving Party may assign this Agreement, in whole or in part, to any third\"\n    },\n    {\n      \"clause_type\": \"notices\",\n      \"quote\": \"Notices under this Agreement are effective when sent by email to the address\"\n    },\n    {\n      \"clause_type\": \"mutuality_of_obligations\",\n      \"quote\": \"Northwind Materials GmbH (\\\"Disclosing Party\\\") and Cverbio Labs Inc.\"\n    }\n  ],\n  \"clauses\": [\n    {\n      \"clause_type\": \"definition_of_confidential_information\",\n      \"text\": \"Section 1 defines Confidential Information as all information disclosed in any form, marked or unmarked, with no stated exclusions (e.g., public domain, independently developed, lawfully received).\"\n    },\n    {\n      \"clause_type\": \"confidentiality_obligation\",\n      \"text\": \"Section 2 requires the Receiving Party to keep all Confidential Information secret and not disclose it to third parties without prior written consent.\"\n    },\n    {\n      \"clause_type\": \"term_and_duration\",\n      \"text\": \"Section 3 states confidentiality obligations continue in perpetuity with no fixed expiry.\"\n    },\n    {\n      \"clause_type\": \"return_or_destruction\",\n      \"text\": \"Section 4 requires return or destruction of Confidential Information within 30 days of written request.\"\n    },\n    {\n      \"clause_type\": \"governing_law\",\n      \"text\": \"Section 5 selects the laws of the Federal Republic of Germany; no forum/jurisdiction clause is included.\"\n    },\n    {\n      \"clause_type\": \"permitted_disclosures\",\n      \"text\": \"Section 6 permits legally compelled disclosure but conditions it on first obtaining the Disclosing Party's prior written consent.\"\n    },\n    {\n      \"clause_type\": \"residual_knowledge\",\n      \"text\": \"Section 7 allows use of unaided-memory know-how, expressly including for the benefit of third parties.\"\n    },\n    {\n      \"clause_type\": \"no_license\",\n      \"text\": \"Section 8 confirms no licence or other IP right is granted to the Receiving Party.\"\n    },\n    {\n      \"clause_type\": \"injunctive_relief\",\n      \"text\": \"Section 9 acknowledges damages may be inadequate and permits the Disclosing Party to seek injunctive relief.\"\n    },\n    {\n      \"clause_type\": \"assignment\",\n      \"text\": \"Section 10 permits the Receiving Party to assign the Agreement freely, including to a competitor, without consent.\"\n    },\n    {\n      \"clause_type\": \"notices\",\n      \"text\": \"Section 11 makes email notices effective on sending, to addresses in the signature block.\"\n    },\n    {\n      \"clause_type\": \"mutuality_of_obligations\",\n      \"text\": \"Titled a mutual NDA, but roles are fixed as a single Disclosing Party and single Receiving Party throughout.\"\n    }\n  ],\n  \"risk_flags\": [\n    {\n      \"clause_type\": \"permitted_disclosures\",\n      \"rationale\": \"Conditioning legally required disclosure on the Disclosing Party's prior written consent is impracticable and may be unenforceable; it can place the Receiving Party in conflict with a court order or regulator. Standard practice is notice (where lawful) and cooperation, not consent.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"residual_knowledge\",\n      \"rationale\": \"A broad residuals carve-out that expressly permits use 'for the benefit of third parties' can effectively gut the confidentiality obligation, allowing personnel to exploit remembered know-how for competitors.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"assignment\",\n      \"rationale\": \"Unrestricted assignment by the Receiving Party, expressly including to a competitor and without consent, allows Confidential Information obligations (and access) to transfer to an adverse party.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"term_and_duration\",\n      \"rationale\": \"Perpetual confidentiality with no exclusions or trade-secret/non-trade-secret distinction may be unenforceable or excessively burdensome in some jurisdictions, and creates indefinite compliance costs.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"definition_of_confidential_information\",\n      \"rationale\": \"No standard exclusions (public domain, prior possession, independent development, lawful third-party receipt) and no marking requirement, making the scope unbounded and hard to administer.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"mutuality_of_obligations\",\n      \"rationale\": \"The Agreement is labelled mutual but assigns fixed Disclosing/Receiving roles, so obligations may operate one-way contrary to the stated intent.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"notices\",\n      \"rationale\": \"Email notices effective on sending (not receipt), with no confirmation mechanism, create dispute risk over whether notice was validly given.\",\n      \"severity\": \"low\"\n    },\n    {\n      \"clause_type\": \"return_or_destruction\",\n      \"rationale\": \"No carve-out for archival/backup copies or legally mandated retention, and no certification of destruction requirement.\",\n      \"severity\": \"low\"\n    },\n    {\n      \"clause_type\": \"governing_law\",\n      \"rationale\": \"Governing law is specified but no exclusive jurisdiction or venue is designated, which may lead to forum disputes, particularly given a US-incorporated counterparty.\",\n      \"severity\": \"low\"\n    }\n  ]\n}\n",
+    "raw_text_sha256": "f5ec1291e3c0494a036d6b461cda54bfbaedb5dc81f4d04c506d06ae6d8affb4",
+    "request_id": null,
+    "returned_model": null,
+    "stop_reason": null,
+    "input_tokens": null,
+    "output_tokens": null
+  },
+  "output": {
+    "clauses": [
+      {
+        "clause_type": "definition_of_confidential_information",
+        "text": "Section 1 defines Confidential Information as all information disclosed in any form, marked or unmarked, with no stated exclusions (e.g., public domain, independently developed, lawfully received)."
+      },
+      {
+        "clause_type": "confidentiality_obligation",
+        "text": "Section 2 requires the Receiving Party to keep all Confidential Information secret and not disclose it to third parties without prior written consent."
+      },
+      {
+        "clause_type": "term_and_duration",
+        "text": "Section 3 states confidentiality obligations continue in perpetuity with no fixed expiry."
+      },
+      {
+        "clause_type": "return_or_destruction",
+        "text": "Section 4 requires return or destruction of Confidential Information within 30 days of written request."
+      },
+      {
+        "clause_type": "governing_law",
+        "text": "Section 5 selects the laws of the Federal Republic of Germany; no forum/jurisdiction clause is included."
+      },
+      {
+        "clause_type": "permitted_disclosures",
+        "text": "Section 6 permits legally compelled disclosure but conditions it on first obtaining the Disclosing Party's prior written consent."
+      },
+      {
+        "clause_type": "residual_knowledge",
+        "text": "Section 7 allows use of unaided-memory know-how, expressly including for the benefit of third parties."
+      },
+      {
+        "clause_type": "no_license",
+        "text": "Section 8 confirms no licence or other IP right is granted to the Receiving Party."
+      },
+      {
+        "clause_type": "injunctive_relief",
+        "text": "Section 9 acknowledges damages may be inadequate and permits the Disclosing Party to seek injunctive relief."
+      },
+      {
+        "clause_type": "assignment",
+        "text": "Section 10 permits the Receiving Party to assign the Agreement freely, including to a competitor, without consent."
+      },
+      {
+        "clause_type": "notices",
+        "text": "Section 11 makes email notices effective on sending, to addresses in the signature block."
+      },
+      {
+        "clause_type": "mutuality_of_obligations",
+        "text": "Titled a mutual NDA, but roles are fixed as a single Disclosing Party and single Receiving Party throughout."
+      }
+    ],
+    "risk_flags": [
+      {
+        "clause_type": "permitted_disclosures",
+        "severity": "high",
+        "rationale": "Conditioning legally required disclosure on the Disclosing Party's prior written consent is impracticable and may be unenforceable; it can place the Receiving Party in conflict with a court order or regulator. Standard practice is notice (where lawful) and cooperation, not consent."
+      },
+      {
+        "clause_type": "residual_knowledge",
+        "severity": "high",
+        "rationale": "A broad residuals carve-out that expressly permits use 'for the benefit of third parties' can effectively gut the confidentiality obligation, allowing personnel to exploit remembered know-how for competitors."
+      },
+      {
+        "clause_type": "assignment",
+        "severity": "high",
+        "rationale": "Unrestricted assignment by the Receiving Party, expressly including to a competitor and without consent, allows Confidential Information obligations (and access) to transfer to an adverse party."
+      },
+      {
+        "clause_type": "term_and_duration",
+        "severity": "medium",
+        "rationale": "Perpetual confidentiality with no exclusions or trade-secret/non-trade-secret distinction may be unenforceable or excessively burdensome in some jurisdictions, and creates indefinite compliance costs."
+      },
+      {
+        "clause_type": "definition_of_confidential_information",
+        "severity": "medium",
+        "rationale": "No standard exclusions (public domain, prior possession, independent development, lawful third-party receipt) and no marking requirement, making the scope unbounded and hard to administer."
+      },
+      {
+        "clause_type": "mutuality_of_obligations",
+        "severity": "medium",
+        "rationale": "The Agreement is labelled mutual but assigns fixed Disclosing/Receiving roles, so obligations may operate one-way contrary to the stated intent."
+      },
+      {
+        "clause_type": "notices",
+        "severity": "low",
+        "rationale": "Email notices effective on sending (not receipt), with no confirmation mechanism, create dispute risk over whether notice was validly given."
+      },
+      {
+        "clause_type": "return_or_destruction",
+        "severity": "low",
+        "rationale": "No carve-out for archival/backup copies or legally mandated retention, and no certification of destruction requirement."
+      },
+      {
+        "clause_type": "governing_law",
+        "severity": "low",
+        "rationale": "Governing law is specified but no exclusive jurisdiction or venue is designated, which may lead to forum disputes, particularly given a US-incorporated counterparty."
+      }
+    ],
+    "citations": [
+      {
+        "quote": "whether oral, written, or electronic, whether or not marked as",
+        "clause_type": "definition_of_confidential_information"
+      },
+      {
+        "quote": "The Receiving Party shall keep all Confidential Information secret and shall not",
+        "clause_type": "confidentiality_obligation"
+      },
+      {
+        "quote": "remain in effect in perpetuity.",
+        "clause_type": "term_and_duration"
+      },
+      {
+        "quote": "Confidential Information in its possession within thirty (30) days.",
+        "clause_type": "return_or_destruction"
+      },
+      {
+        "quote": "the Federal Republic of Germany.",
+        "clause_type": "governing_law"
+      },
+      {
+        "quote": "the Receiving Party first obtains the prior written consent of the Disclosing",
+        "clause_type": "permitted_disclosures"
+      },
+      {
+        "quote": "including for the benefit of third parties.",
+        "clause_type": "residual_knowledge"
+      },
+      {
+        "quote": "Nothing in this Agreement grants the Receiving Party any licence or other right in",
+        "clause_type": "no_license"
+      },
+      {
+        "quote": "the Disclosing Party may seek injunctive relief in addition to any other",
+        "clause_type": "injunctive_relief"
+      },
+      {
+        "quote": "The Receiving Party may assign this Agreement, in whole or in part, to any third",
+        "clause_type": "assignment"
+      },
+      {
+        "quote": "Notices under this Agreement are effective when sent by email to the address",
+        "clause_type": "notices"
+      },
+      {
+        "quote": "Northwind Materials GmbH (\"Disclosing Party\") and Cverbio Labs Inc.",
+        "clause_type": "mutuality_of_obligations"
+      }
+    ],
+    "abstentions": [
+      {
+        "clause_type": "notices",
+        "reason": "The signature block containing the notice email addresses is not included in the provided text, so the validity, ownership, and adequacy of the notice addresses cannot be assessed."
+      },
+      {
+        "clause_type": "signature_and_execution",
+        "reason": "No execution page, signatory names, titles, or effective date are present in the supplied document; authority to bind and commencement date cannot be reviewed."
+      },
+      {
+        "clause_type": "purpose_and_permitted_use",
+        "reason": "The Agreement does not state a defined Purpose or any underlying transaction document; without that context the permitted scope of use of Confidential Information cannot be evaluated."
+      },
+      {
+        "clause_type": "governing_law",
+        "reason": "No jurisdiction/venue provision or referenced dispute schedule is included, so the complete dispute-resolution position cannot be concluded."
+      }
+    ]
+  },
+  "output_sha256": "7a328f3fe404f4d4bb0f295b4410e1fff8f32fd56a1baa01230ec4a18e1050bb",
+  "error": null,
+  "integrity_sha256": "36ac3affe212e952bed6fc88435be2800c3acf9ecffa38007256f67bf1684f83"
+}

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from contract_eval.adapters import adapter_identifier, get_adapter
 from contract_eval.cases import ALL_CASES
-from contract_eval.models import ExpectedAnswer
+from contract_eval.models import ExpectedAnswer, ReviewOutput
 from contract_eval.provenance import run_provenance, write_provenance
 from contract_eval.scorecard import render
 from contract_eval.release_certificate import (
@@ -70,12 +70,27 @@ def canonicalise_risk_flags(
     return seen, sorted(set(duplicates)), sorted(set(conflicts))
 
 
-def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
-    source = Path(f"data/{case}_sample.md").read_text()
-    expected = ExpectedAnswer.model_validate(json.loads(Path(f"expected/{case}.json").read_text()))
-    output = get_adapter(live, model=model).review(source_text=source, case=case)
+def score_review(
+    source_text: str,
+    expected: ExpectedAnswer,
+    output: ReviewOutput,
+    *,
+    alias_mode: str = "on",
+) -> dict:
+    """Score one review. Pure: no file access, no network, no adapter.
 
-    aliases = expected.clause_aliases
+    Extracted so a live evaluation and an offline replay of the same captured bytes
+    run through identical code. If replay had its own scoring path, a replayed score
+    would prove nothing about the published one.
+
+    `alias_mode` selects whether declared clause synonyms are applied, which is what
+    makes the aliases-off and aliases-on comparison a controlled experiment rather
+    than two different scorers.
+    """
+    if alias_mode not in ("on", "off"):
+        raise ValueError(f"alias_mode must be 'on' or 'off', got {alias_mode!r}")
+    aliases = expected.clause_aliases if alias_mode == "on" else {}
+    source = source_text
     clause = clause_scores(
         expected.clause_types,
         [canonical_clause(c.clause_type, aliases) for c in output.clauses],
@@ -121,6 +136,21 @@ def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
         "hallucination_count": hallucinations,
         "thresholds": thresholds,
     }
+
+
+def load_case_inputs(case: str, root: Path = Path(".")) -> tuple[str, ExpectedAnswer]:
+    source = (root / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
+    expected = ExpectedAnswer.model_validate(
+        json.loads((root / "expected" / f"{case}.json").read_text(encoding="utf-8"))
+    )
+    return source, expected
+
+
+def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
+    """Produce and score one review through the adapter."""
+    source, expected = load_case_inputs(case)
+    output = get_adapter(live, model=model).review(source_text=source, case=case)
+    return score_review(source, expected, output, alias_mode="on")
 
 
 def render_multi(scores: dict) -> str:
@@ -418,6 +448,28 @@ def main() -> None:
         metavar="1..5",
         help="adapter runs per original and mutated contract",
     )
+    vc = sub.add_parser(
+        "verify-capture",
+        help="verify a captured review's schema, integrity and embedded inputs",
+    )
+    vc.add_argument("--input", required=True, type=Path, help="captured review JSON")
+
+    so = sub.add_parser(
+        "score-output",
+        help="re-score a captured review offline through the production scorer",
+    )
+    so.add_argument("--input", required=True, type=Path, help="captured review JSON")
+    so.add_argument(
+        "--aliases", default="on", choices=["on", "off", "both"],
+        help="apply declared clause synonyms; 'both' scores the same bytes twice",
+    )
+    so.add_argument("--out", default=None, type=Path, help="directory for the replay result")
+    so.add_argument(
+        "--allow-input-drift", action="store_true",
+        help="reproduce the historical result even though current inputs differ; "
+             "the result is then comparison-only and ineligible for certification",
+    )
+
     verify_robust = sub.add_parser(
         "verify-robustness",
         help="rebuild the offline campaign and verify its input-bound report",
@@ -475,6 +527,33 @@ def main() -> None:
             f"wrote {args.out / 'adversarial-robustness-report.md'} "
             f"({report['suite_decision']})"
         )
+    elif args.cmd == "verify-capture":
+        from contract_eval.replay import load, verify_capture
+
+        report = verify_capture(load(args.input))
+        print(json.dumps(report, indent=2))
+        if not report["authentic"]:
+            sys.exit(1)
+    elif args.cmd == "score-output":
+        from contract_eval.replay import ReplayError, load, replay
+
+        modes = ("on", "off") if args.aliases == "both" else (args.aliases,)
+        try:
+            result = replay(
+                load(args.input),
+                alias_modes=modes,
+                allow_input_drift=args.allow_input_drift,
+            )
+        except ReplayError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(1)
+        if args.out:
+            args.out.mkdir(parents=True, exist_ok=True)
+            path = args.out / f"replay-{result['case']}.json"
+            path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+            print(f"wrote {path}")
+        else:
+            print(json.dumps(result, indent=2))
     elif args.cmd == "verify-robustness":
         verification = verify_robustness(args.report, args.campaign)
         print(json.dumps(verification, indent=2))
