@@ -1,0 +1,215 @@
+{
+  "schema": "contract-review-eval.captured-review.v1",
+  "capture_id": "legacy-saas-2026-09-01",
+  "run_id": "legacy-2026-09-01",
+  "origin": "legacy_file",
+  "state": "completed",
+  "case": "saas",
+  "scenario_id": null,
+  "variant": "original",
+  "run_index": 0,
+  "started_at": "2026-09-01T00:00:00.000+00:00",
+  "completed_at": "2026-09-01T00:00:00.000+00:00",
+  "adapter_id": "live",
+  "prompt_version": "contract-review.prompt.v1",
+  "parser_version": "contract-review.parser.v1",
+  "repository_commit": null,
+  "source": {
+    "path": "data/saas_sample.md",
+    "sha256": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+    "text": "# Software-as-a-Service Agreement (SYNTHETIC)\n\nThis Software-as-a-Service Agreement (\"Agreement\") is entered into between\nCverbio Labs Inc. (\"Provider\") and Northwind Materials GmbH (\"Customer\"). This\ndocument is fabricated for evaluation purposes and is not a real agreement.\n\n## 1. Service Levels\n\nThe Provider shall use commercially reasonable efforts to maintain 99.5% monthly\nuptime, measured over each calendar month.\n\n## 2. Data Protection\n\nThe Provider shall process Customer Personal Data only on documented instructions\nfrom the Customer, in accordance with applicable data protection law.\n\n## 3. Limitation of Liability\n\nThe Provider's total liability under this Agreement shall not exceed the fees paid\nin the twelve (12) months preceding the claim.\n\n## 4. Term\n\nThe initial term of this Agreement is twelve (12) months from the effective date.\n\n## 5. Auto-Renewal\n\nThis Agreement renews automatically for successive twelve (12) month terms unless\neither party gives ninety (90) days written notice prior to the end of the\nthen-current term.\n\n## 6. Sub-processors\n\nThe Provider may appoint sub-processors to process Customer Personal Data and\nshall publish an updated list on its website. No notice to the Customer is\nrequired.\n\n## 7. Security\n\nThe Provider shall maintain industry standard security measures appropriate to a\nprovider of its size.\n\n## 8. Intellectual Property and Service Improvement\n\nThe Customer grants the Provider a perpetual, irrevocable, worldwide licence to\nuse Customer Data, including Customer Personal Data, to develop and train the\nProvider's machine learning models and to create derivative products.\n\n## 9. Indemnity\n\nThe Customer shall indemnify and hold harmless the Provider against all claims\narising from the use of the service, including claims that the service infringes\nthe intellectual property rights of a third party.\n\n## 10. Fees\n\nThe Provider may increase the fees at any time on thirty (30) days written notice.\nThe Customer has no right to terminate on account of a fee increase.\n\n## 11. Data Export on Termination\n\nThe Provider shall delete all Customer Data seven (7) days after termination. The\nCustomer may request an export within that period.\n"
+  },
+  "gold": {
+    "path": "expected/saas.json",
+    "sha256": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e",
+    "text": "{\n  \"comment\": \"Human-authored gold answer for the synthetic SaaS agreement. severity_rationale records why each flag carries its severity. Service levels, data protection and term are deliberately clean: a reviewer who flags them is producing false positives. clause_aliases declares synonyms for the SAME clause of the SAME document — spelling, plural and hyphenation variants, or an equally accurate name. Scoring a correct review as a miss because it wrote 'no_licence' for 'no_license' measures vocabulary, not legal judgment. An alias never maps onto a different clause.\",\n  \"review_context\": {\n    \"party\": \"Customer (Northwind Materials GmbH)\",\n    \"governing_law\": \"Germany\",\n    \"objective\": \"Pre-signature review of a vendor paper contract for a business-critical system.\",\n    \"risk_appetite\": \"conservative\"\n  },\n  \"clause_types\": [\n    \"service_levels\",\n    \"data_protection\",\n    \"limitation_of_liability\",\n    \"term\",\n    \"auto_renewal\",\n    \"subprocessors\",\n    \"security\",\n    \"ip_and_model_training\",\n    \"indemnity\",\n    \"fees\",\n    \"data_export_on_termination\"\n  ],\n  \"risk_flags\": {\n    \"auto_renewal\": \"high\",\n    \"ip_and_model_training\": \"high\",\n    \"indemnity\": \"high\",\n    \"fees\": \"high\",\n    \"subprocessors\": \"high\",\n    \"limitation_of_liability\": \"medium\",\n    \"security\": \"medium\",\n    \"data_export_on_termination\": \"medium\"\n  },\n  \"severity_rationale\": {\n    \"auto_renewal\": \"high — a ninety day notice window against a twelve month term means the decision point falls at month nine, and a single missed date commits the customer to another full year.\",\n    \"ip_and_model_training\": \"high — a perpetual irrevocable licence to train models on Customer Data expressly including Customer Personal Data has no lawful basis under the data protection clause in section 2, which limits processing to documented instructions. The two clauses contradict each other, and this one would make the provider a controller for that processing.\",\n    \"indemnity\": \"high — the customer indemnifying the provider against third-party claims that the provider's own service infringes reverses the normal allocation. The party that built the service and can clear the rights bears none of the risk.\",\n    \"fees\": \"high — an uncapped increase at any time on thirty days notice with no corresponding termination right is a unilateral right to reprice a locked-in customer.\",\n    \"subprocessors\": \"high — appointing sub-processors with website publication and no notice gives the customer no opportunity to object and does not meet Art. 28(2) GDPR, which the data protection clause purports to comply with.\",\n    \"limitation_of_liability\": \"medium — a twelve month fee cap is common market practice, but it carves out nothing for data breach, confidentiality or IP indemnity, which is worse than market and should be negotiated.\",\n    \"security\": \"medium — 'industry standard measures appropriate to a provider of its size' is unmeasurable and gives the customer nothing to audit against, but it is a drafting weakness rather than an absent obligation.\",\n    \"data_export_on_termination\": \"medium — a seven day deletion window with export only on request risks irreversible data loss on a missed deadline; thirty days with a standing export right is the ordinary position.\"\n  },\n  \"clause_aliases\": {\n    \"service_level_agreement\": \"service_levels\",\n    \"service_level\": \"service_levels\",\n    \"uptime\": \"service_levels\",\n    \"sub_processors\": \"subprocessors\",\n    \"sub_processing\": \"subprocessors\",\n    \"intellectual_property\": \"ip_and_model_training\",\n    \"intellectual_property_and_service_improvement\": \"ip_and_model_training\",\n    \"model_training\": \"ip_and_model_training\",\n    \"security_measures\": \"security\",\n    \"indemnification\": \"indemnity\",\n    \"fees_and_charges\": \"fees\",\n    \"data_export\": \"data_export_on_termination\",\n    \"deletion_and_export\": \"data_export_on_termination\"\n  },\n  \"clause_anchors\": {\n    \"service_levels\": \"commercially reasonable efforts to maintain 99.5% monthly\",\n    \"data_protection\": \"process Customer Personal Data only on documented instructions\",\n    \"limitation_of_liability\": \"shall not exceed the fees paid\",\n    \"term\": \"initial term of this Agreement is twelve (12) months\",\n    \"auto_renewal\": \"renews automatically for successive twelve (12) month terms\",\n    \"subprocessors\": \"may appoint sub-processors to process Customer Personal Data\",\n    \"security\": \"industry standard security measures appropriate to a provider\",\n    \"ip_and_model_training\": \"perpetual, irrevocable, worldwide licence\",\n    \"indemnity\": \"indemnify and hold harmless the Provider\",\n    \"fees\": \"may increase the fees at any time on thirty (30) days written notice\",\n    \"data_export_on_termination\": \"delete all Customer Data seven (7) days after termination\"\n  }\n}\n"
+  },
+  "request": null,
+  "response": {
+    "raw_text": "{\n  \"abstentions\": [\n    {\n      \"clause_type\": \"sub_processors\",\n      \"reason\": \"The sub-processor list is referenced as published on the Provider's website but is not attached or reproduced; the identities, locations, and transfer mechanisms of sub-processors cannot be reviewed.\"\n    },\n    {\n      \"clause_type\": \"data_protection\",\n      \"reason\": \"No Data Processing Addendum, Annex, or standard contractual clauses are attached; Art. 28 detail (processing purposes, categories of data, international transfer safeguards, audit rights, breach notification) cannot be assessed.\"\n    },\n    {\n      \"clause_type\": \"service_level\",\n      \"reason\": \"No SLA schedule or service-credit exhibit is included; downtime measurement method, exclusions, and remedies for missing 99.5% are indeterminate.\"\n    },\n    {\n      \"clause_type\": \"fees\",\n      \"reason\": \"No pricing schedule or order form is provided, so the baseline fees, payment terms, and the practical magnitude of the increase right cannot be evaluated.\"\n    },\n    {\n      \"clause_type\": \"security\",\n      \"reason\": \"No security schedule, control list, or certification evidence is attached, so 'industry standard' cannot be benchmarked.\"\n    },\n    {\n      \"clause_type\": \"governing_law_and_dispute_resolution\",\n      \"reason\": \"The document contains no governing law, jurisdiction, or dispute-resolution provision; enforceability of the liability cap, indemnity, and data licence cannot be assessed without it.\"\n    },\n    {\n      \"clause_type\": \"termination_for_cause\",\n      \"reason\": \"No termination-for-breach, suspension, or effect-of-termination provision (other than data deletion) appears in the excerpt provided.\"\n    },\n    {\n      \"clause_type\": \"confidentiality\",\n      \"reason\": \"No confidentiality clause is present in the document supplied; unable to determine how Customer Data is protected outside the data protection section.\"\n    }\n  ],\n  \"citations\": [\n    {\n      \"clause_type\": \"service_level\",\n      \"quote\": \"The Provider shall use commercially reasonable efforts to maintain 99.5% monthly\\nuptime, measured over each calendar month.\"\n    },\n    {\n      \"clause_type\": \"data_protection\",\n      \"quote\": \"The Provider shall process Customer Personal Data only on documented instructions\\nfrom the Customer, in accordance with applicable data protection law.\"\n    },\n    {\n      \"clause_type\": \"limitation_of_liability\",\n      \"quote\": \"The Provider's total liability under this Agreement shall not exceed the fees paid\\nin the twelve (12) months preceding the claim.\"\n    },\n    {\n      \"clause_type\": \"term\",\n      \"quote\": \"The initial term of this Agreement is twelve (12) months from the effective date.\"\n    },\n    {\n      \"clause_type\": \"auto_renewal\",\n      \"quote\": \"This Agreement renews automatically for successive twelve (12) month terms unless\\neither party gives ninety (90) days written notice prior to the end of the\\nthen-current term.\"\n    },\n    {\n      \"clause_type\": \"sub_processors\",\n      \"quote\": \"The Provider may appoint sub-processors to process Customer Personal Data and\\nshall publish an updated list on its website. No notice to the Customer is\\nrequired.\"\n    },\n    {\n      \"clause_type\": \"security\",\n      \"quote\": \"The Provider shall maintain industry standard security measures appropriate to a\\nprovider of its size.\"\n    },\n    {\n      \"clause_type\": \"intellectual_property_data_license\",\n      \"quote\": \"The Customer grants the Provider a perpetual, irrevocable, worldwide licence to\\nuse Customer Data, including Customer Personal Data, to develop and train the\\nProvider's machine learning models and to create derivative products.\"\n    },\n    {\n      \"clause_type\": \"indemnity\",\n      \"quote\": \"The Customer shall indemnify and hold harmless the Provider against all claims\\narising from the use of the service, including claims that the service infringes\\nthe intellectual property rights of a third party.\"\n    },\n    {\n      \"clause_type\": \"fees\",\n      \"quote\": \"The Provider may increase the fees at any time on thirty (30) days written notice.\\nThe Customer has no right to terminate on account of a fee increase.\"\n    },\n    {\n      \"clause_type\": \"data_export_and_deletion\",\n      \"quote\": \"The Provider shall delete all Customer Data seven (7) days after termination. The\\nCustomer may request an export within that period.\"\n    }\n  ],\n  \"clauses\": [\n    {\n      \"clause_type\": \"service_level\",\n      \"text\": \"Commercially reasonable efforts to maintain 99.5% monthly uptime, measured per calendar month.\"\n    },\n    {\n      \"clause_type\": \"data_protection\",\n      \"text\": \"Provider processes Customer Personal Data only on documented Customer instructions, per applicable data protection law.\"\n    },\n    {\n      \"clause_type\": \"limitation_of_liability\",\n      \"text\": \"Provider's aggregate liability capped at fees paid in the 12 months preceding the claim.\"\n    },\n    {\n      \"clause_type\": \"term\",\n      \"text\": \"Initial term of twelve (12) months from the effective date.\"\n    },\n    {\n      \"clause_type\": \"auto_renewal\",\n      \"text\": \"Automatic renewal for successive 12-month terms unless 90 days' prior written notice is given.\"\n    },\n    {\n      \"clause_type\": \"sub_processors\",\n      \"text\": \"Provider may appoint sub-processors and publish an updated list online; no notice to Customer required.\"\n    },\n    {\n      \"clause_type\": \"security\",\n      \"text\": \"Provider maintains 'industry standard' security measures appropriate to a provider of its size.\"\n    },\n    {\n      \"clause_type\": \"intellectual_property_data_license\",\n      \"text\": \"Customer grants Provider a perpetual, irrevocable, worldwide licence to use Customer Data, including Personal Data, for ML model training and derivative products.\"\n    },\n    {\n      \"clause_type\": \"indemnity\",\n      \"text\": \"Customer indemnifies Provider for all claims arising from use of the service, including third-party IP infringement claims.\"\n    },\n    {\n      \"clause_type\": \"fees\",\n      \"text\": \"Provider may raise fees at any time on 30 days' notice; Customer has no termination right for price increases.\"\n    },\n    {\n      \"clause_type\": \"data_export_and_deletion\",\n      \"text\": \"Provider deletes all Customer Data 7 days after termination; Customer may request export within that window.\"\n    }\n  ],\n  \"risk_flags\": [\n    {\n      \"clause_type\": \"intellectual_property_data_license\",\n      \"rationale\": \"Perpetual, irrevocable licence to use Customer Personal Data for ML training conflicts with the Section 2 'documented instructions' processor role and is very difficult to reconcile with GDPR lawful-basis, purpose-limitation and erasure obligations for a German customer.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"indemnity\",\n      \"rationale\": \"One-way indemnity requiring the Customer to cover third-party IP infringement claims about the Provider's own service is a reverse allocation of risk; normally the Provider indemnifies for IP infringement.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"sub_processors\",\n      \"rationale\": \"No notice and no objection right for new sub-processors falls short of the customary GDPR Art. 28(2)/(4) requirement for prior information and an opportunity to object.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"data_export_and_deletion\",\n      \"rationale\": \"A 7-day post-termination deletion window with export only on request risks irrecoverable data loss; no defined export format, SLA, or assistance obligation.\",\n      \"severity\": \"high\"\n    },\n    {\n      \"clause_type\": \"fees\",\n      \"rationale\": \"Unlimited fee increases on 30 days' notice with no cap and no corresponding termination right leaves the Customer economically exposed during the term.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"auto_renewal\",\n      \"rationale\": \"90-day notice window before a 12-month auto-renewal is long; missing the window locks in another full year, compounded by the uncapped fee-increase right.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"limitation_of_liability\",\n      \"rationale\": \"12-month fee cap appears to apply to all liability with no stated carve-outs for data breach, confidentiality, IP indemnity, or wilful misconduct; also appears one-sided in the Provider's favour.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"service_level\",\n      \"rationale\": \"'Commercially reasonable efforts' toward 99.5% uptime creates no firm commitment, and no service credits, measurement methodology, or exclusions are stated in the document.\",\n      \"severity\": \"medium\"\n    },\n    {\n      \"clause_type\": \"security\",\n      \"rationale\": \"'Industry standard ... appropriate to a provider of its size' is subjective and unmeasurable; no specific controls, certifications (e.g. ISO 27001, SOC 2), audit rights, or breach-notification timeline are set out.\",\n      \"severity\": \"medium\"\n    }\n  ]\n}\n",
+    "raw_text_sha256": "8eca917be2e6aa43161c57456d0dcc089d2d4c18eed93dda342bca496dfdef1d",
+    "request_id": null,
+    "returned_model": null,
+    "stop_reason": null,
+    "input_tokens": null,
+    "output_tokens": null
+  },
+  "output": {
+    "clauses": [
+      {
+        "clause_type": "service_level",
+        "text": "Commercially reasonable efforts to maintain 99.5% monthly uptime, measured per calendar month."
+      },
+      {
+        "clause_type": "data_protection",
+        "text": "Provider processes Customer Personal Data only on documented Customer instructions, per applicable data protection law."
+      },
+      {
+        "clause_type": "limitation_of_liability",
+        "text": "Provider's aggregate liability capped at fees paid in the 12 months preceding the claim."
+      },
+      {
+        "clause_type": "term",
+        "text": "Initial term of twelve (12) months from the effective date."
+      },
+      {
+        "clause_type": "auto_renewal",
+        "text": "Automatic renewal for successive 12-month terms unless 90 days' prior written notice is given."
+      },
+      {
+        "clause_type": "sub_processors",
+        "text": "Provider may appoint sub-processors and publish an updated list online; no notice to Customer required."
+      },
+      {
+        "clause_type": "security",
+        "text": "Provider maintains 'industry standard' security measures appropriate to a provider of its size."
+      },
+      {
+        "clause_type": "intellectual_property_data_license",
+        "text": "Customer grants Provider a perpetual, irrevocable, worldwide licence to use Customer Data, including Personal Data, for ML model training and derivative products."
+      },
+      {
+        "clause_type": "indemnity",
+        "text": "Customer indemnifies Provider for all claims arising from use of the service, including third-party IP infringement claims."
+      },
+      {
+        "clause_type": "fees",
+        "text": "Provider may raise fees at any time on 30 days' notice; Customer has no termination right for price increases."
+      },
+      {
+        "clause_type": "data_export_and_deletion",
+        "text": "Provider deletes all Customer Data 7 days after termination; Customer may request export within that window."
+      }
+    ],
+    "risk_flags": [
+      {
+        "clause_type": "intellectual_property_data_license",
+        "severity": "high",
+        "rationale": "Perpetual, irrevocable licence to use Customer Personal Data for ML training conflicts with the Section 2 'documented instructions' processor role and is very difficult to reconcile with GDPR lawful-basis, purpose-limitation and erasure obligations for a German customer."
+      },
+      {
+        "clause_type": "indemnity",
+        "severity": "high",
+        "rationale": "One-way indemnity requiring the Customer to cover third-party IP infringement claims about the Provider's own service is a reverse allocation of risk; normally the Provider indemnifies for IP infringement."
+      },
+      {
+        "clause_type": "sub_processors",
+        "severity": "high",
+        "rationale": "No notice and no objection right for new sub-processors falls short of the customary GDPR Art. 28(2)/(4) requirement for prior information and an opportunity to object."
+      },
+      {
+        "clause_type": "data_export_and_deletion",
+        "severity": "high",
+        "rationale": "A 7-day post-termination deletion window with export only on request risks irrecoverable data loss; no defined export format, SLA, or assistance obligation."
+      },
+      {
+        "clause_type": "fees",
+        "severity": "medium",
+        "rationale": "Unlimited fee increases on 30 days' notice with no cap and no corresponding termination right leaves the Customer economically exposed during the term."
+      },
+      {
+        "clause_type": "auto_renewal",
+        "severity": "medium",
+        "rationale": "90-day notice window before a 12-month auto-renewal is long; missing the window locks in another full year, compounded by the uncapped fee-increase right."
+      },
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "medium",
+        "rationale": "12-month fee cap appears to apply to all liability with no stated carve-outs for data breach, confidentiality, IP indemnity, or wilful misconduct; also appears one-sided in the Provider's favour."
+      },
+      {
+        "clause_type": "service_level",
+        "severity": "medium",
+        "rationale": "'Commercially reasonable efforts' toward 99.5% uptime creates no firm commitment, and no service credits, measurement methodology, or exclusions are stated in the document."
+      },
+      {
+        "clause_type": "security",
+        "severity": "medium",
+        "rationale": "'Industry standard ... appropriate to a provider of its size' is subjective and unmeasurable; no specific controls, certifications (e.g. ISO 27001, SOC 2), audit rights, or breach-notification timeline are set out."
+      }
+    ],
+    "citations": [
+      {
+        "quote": "The Provider shall use commercially reasonable efforts to maintain 99.5% monthly\nuptime, measured over each calendar month.",
+        "clause_type": "service_level"
+      },
+      {
+        "quote": "The Provider shall process Customer Personal Data only on documented instructions\nfrom the Customer, in accordance with applicable data protection law.",
+        "clause_type": "data_protection"
+      },
+      {
+        "quote": "The Provider's total liability under this Agreement shall not exceed the fees paid\nin the twelve (12) months preceding the claim.",
+        "clause_type": "limitation_of_liability"
+      },
+      {
+        "quote": "The initial term of this Agreement is twelve (12) months from the effective date.",
+        "clause_type": "term"
+      },
+      {
+        "quote": "This Agreement renews automatically for successive twelve (12) month terms unless\neither party gives ninety (90) days written notice prior to the end of the\nthen-current term.",
+        "clause_type": "auto_renewal"
+      },
+      {
+        "quote": "The Provider may appoint sub-processors to process Customer Personal Data and\nshall publish an updated list on its website. No notice to the Customer is\nrequired.",
+        "clause_type": "sub_processors"
+      },
+      {
+        "quote": "The Provider shall maintain industry standard security measures appropriate to a\nprovider of its size.",
+        "clause_type": "security"
+      },
+      {
+        "quote": "The Customer grants the Provider a perpetual, irrevocable, worldwide licence to\nuse Customer Data, including Customer Personal Data, to develop and train the\nProvider's machine learning models and to create derivative products.",
+        "clause_type": "intellectual_property_data_license"
+      },
+      {
+        "quote": "The Customer shall indemnify and hold harmless the Provider against all claims\narising from the use of the service, including claims that the service infringes\nthe intellectual property rights of a third party.",
+        "clause_type": "indemnity"
+      },
+      {
+        "quote": "The Provider may increase the fees at any time on thirty (30) days written notice.\nThe Customer has no right to terminate on account of a fee increase.",
+        "clause_type": "fees"
+      },
+      {
+        "quote": "The Provider shall delete all Customer Data seven (7) days after termination. The\nCustomer may request an export within that period.",
+        "clause_type": "data_export_and_deletion"
+      }
+    ],
+    "abstentions": [
+      {
+        "clause_type": "sub_processors",
+        "reason": "The sub-processor list is referenced as published on the Provider's website but is not attached or reproduced; the identities, locations, and transfer mechanisms of sub-processors cannot be reviewed."
+      },
+      {
+        "clause_type": "data_protection",
+        "reason": "No Data Processing Addendum, Annex, or standard contractual clauses are attached; Art. 28 detail (processing purposes, categories of data, international transfer safeguards, audit rights, breach notification) cannot be assessed."
+      },
+      {
+        "clause_type": "service_level",
+        "reason": "No SLA schedule or service-credit exhibit is included; downtime measurement method, exclusions, and remedies for missing 99.5% are indeterminate."
+      },
+      {
+        "clause_type": "fees",
+        "reason": "No pricing schedule or order form is provided, so the baseline fees, payment terms, and the practical magnitude of the increase right cannot be evaluated."
+      },
+      {
+        "clause_type": "security",
+        "reason": "No security schedule, control list, or certification evidence is attached, so 'industry standard' cannot be benchmarked."
+      },
+      {
+        "clause_type": "governing_law_and_dispute_resolution",
+        "reason": "The document contains no governing law, jurisdiction, or dispute-resolution provision; enforceability of the liability cap, indemnity, and data licence cannot be assessed without it."
+      },
+      {
+        "clause_type": "termination_for_cause",
+        "reason": "No termination-for-breach, suspension, or effect-of-termination provision (other than data deletion) appears in the excerpt provided."
+      },
+      {
+        "clause_type": "confidentiality",
+        "reason": "No confidentiality clause is present in the document supplied; unable to determine how Customer Data is protected outside the data protection section."
+      }
+    ]
+  },
+  "output_sha256": "8331b1c703378796388bec5aecc634a45f4f524104d30dcbed3b8b5299361fdc",
+  "error": null,
+  "integrity_sha256": "32740dfbd80cfb115e16d3c34d4a8de3b41a732e996348b1da3507e4500b9bd4"
+}

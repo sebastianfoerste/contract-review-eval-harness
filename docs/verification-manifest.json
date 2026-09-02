@@ -37,12 +37,23 @@
     {
       "path": "examples/raw-output/MANIFEST.json",
       "label": "Hashes of the preserved raw adapter output"
+    },
+    {
+      "path": "examples/live-run-claude-opus-5-2026-09-01.json",
+      "label": "Machine-readable live-run report, generated from captures"
+    },
+    {
+      "path": "robustness/replay-spec.v1.json",
+      "label": "Replay specification the live-run report is generated from"
     }
   ],
   "validation_commands": [
     "make test",
     "make demo",
     "make anchor-check",
+    "make live-run-check",
+    "make replay-check",
+    "make capture-check",
     "make certificate-verify",
     "make robustness-check",
     "make check"

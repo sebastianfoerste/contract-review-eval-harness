@@ -23,3 +23,6 @@ wheels/
 
 # Environment files
 .env
+
+# Capture artifacts from local runs. Public examples are committed under examples/captures/.
+/captures/
