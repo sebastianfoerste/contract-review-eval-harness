@@ -45,12 +45,17 @@
     {
       "path": "robustness/replay-spec.v1.json",
       "label": "Replay specification the live-run report is generated from"
+    },
+    {
+      "path": "annotations/README.md",
+      "label": "Annotation status: candidate obligations, blind pack, and the unmet second-annotator gate"
     }
   ],
   "validation_commands": [
     "make test",
     "make demo",
     "make anchor-check",
+    "make gold-v2-check",
     "make live-run-check",
     "make replay-check",
     "make capture-check",

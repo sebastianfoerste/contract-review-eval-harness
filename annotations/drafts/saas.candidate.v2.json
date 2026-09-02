@@ -1,0 +1,202 @@
+{
+  "schema": "contract-review-eval.expected-answer.v2",
+  "case": "saas",
+  "review_context": {
+    "party": "Customer (Northwind Materials GmbH)",
+    "commercial_perspective": "Receiving side; conservative pre-signature review.",
+    "governing_law": "Germany",
+    "jurisdiction": "Germany",
+    "objective": "Pre-signature review of a vendor paper contract for a business-critical system.",
+    "risk_appetite": "conservative",
+    "playbook_id": null,
+    "legal_position_date": "2026-09-02",
+    "annotator_id": "annotator-a",
+    "annotation_status": "candidate",
+    "adjudication_status": "not_started"
+  },
+  "comment": "CANDIDATE, NOT AUTHORITATIVE. Offsets derived mechanically from v1 anchors; severities carried over from a single annotator. Requires blind second annotation and adjudication before replacing expected/*.json.",
+  "thresholds": {},
+  "obligations": [
+    {
+      "obligation_id": "saas.service_levels",
+      "label": "Service Levels",
+      "description": "Derived from v1 clause service_levels.",
+      "start": 323,
+      "end": 380,
+      "quote": "commercially reasonable efforts to maintain 99.5% monthly",
+      "aliases": [
+        "service_level",
+        "service_level_agreement",
+        "uptime"
+      ],
+      "risk": null,
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.data_protection",
+      "label": "Data Protection",
+      "description": "Derived from v1 clause data_protection.",
+      "start": 467,
+      "end": 529,
+      "quote": "process Customer Personal Data only on documented instructions",
+      "aliases": [],
+      "risk": null,
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.limitation_of_liability",
+      "label": "Limitation Of Liability",
+      "description": "Derived from v1 clause limitation_of_liability.",
+      "start": 684,
+      "end": 714,
+      "quote": "shall not exceed the fees paid",
+      "aliases": [],
+      "risk": {
+        "severity": "medium",
+        "rationale": "medium — a twelve month fee cap is common market practice, but it carves out nothing for data breach, confidentiality or IP indemnity, which is worse than market and should be negotiated.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.term",
+      "label": "Term",
+      "description": "Derived from v1 clause term.",
+      "start": 779,
+      "end": 831,
+      "quote": "initial term of this Agreement is twelve (12) months",
+      "aliases": [],
+      "risk": null,
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.auto_renewal",
+      "label": "Auto Renewal",
+      "description": "Derived from v1 clause auto_renewal.",
+      "start": 893,
+      "end": 952,
+      "quote": "renews automatically for successive twelve (12) month terms",
+      "aliases": [],
+      "risk": {
+        "severity": "high",
+        "rationale": "high — a ninety day notice window against a twelve month term means the decision point falls at month nine, and a single missed date commits the customer to another full year.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.subprocessors",
+      "label": "Subprocessors",
+      "description": "Derived from v1 clause subprocessors.",
+      "start": 1090,
+      "end": 1150,
+      "quote": "may appoint sub-processors to process Customer Personal Data",
+      "aliases": [
+        "sub_processing",
+        "sub_processors"
+      ],
+      "risk": {
+        "severity": "high",
+        "rationale": "high — appointing sub-processors with website publication and no notice gives the customer no opportunity to object and does not meet Art. 28(2) GDPR, which the data protection clause purports to comply with.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.security",
+      "label": "Security",
+      "description": "Derived from v1 clause security.",
+      "start": 1285,
+      "end": 1346,
+      "quote": "industry standard security measures appropriate to a\nprovider",
+      "aliases": [
+        "security_measures"
+      ],
+      "risk": {
+        "severity": "medium",
+        "rationale": "medium — 'industry standard measures appropriate to a provider of its size' is unmeasurable and gives the customer nothing to audit against, but it is a drafting weakness rather than an absent obligation.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.ip_and_model_training",
+      "label": "Ip And Model Training",
+      "description": "Derived from v1 clause ip_and_model_training.",
+      "start": 1449,
+      "end": 1490,
+      "quote": "perpetual, irrevocable, worldwide licence",
+      "aliases": [
+        "intellectual_property",
+        "intellectual_property_and_service_improvement",
+        "model_training"
+      ],
+      "risk": {
+        "severity": "high",
+        "rationale": "high — a perpetual irrevocable licence to train models on Customer Data expressly including Customer Personal Data has no lawful basis under the data protection clause in section 2, which limits processing to documented instructions. The two clauses contradict each other, and this one would make the provider a controller for that processing.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.indemnity",
+      "label": "Indemnity",
+      "description": "Derived from v1 clause indemnity.",
+      "start": 1679,
+      "end": 1719,
+      "quote": "indemnify and hold harmless the Provider",
+      "aliases": [
+        "indemnification"
+      ],
+      "risk": {
+        "severity": "high",
+        "rationale": "high — the customer indemnifying the provider against third-party claims that the provider's own service infringes reverses the normal allocation. The party that built the service and can clear the rights bears none of the risk.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.fees",
+      "label": "Fees",
+      "description": "Derived from v1 clause fees.",
+      "start": 1898,
+      "end": 1966,
+      "quote": "may increase the fees at any time on thirty (30) days written notice",
+      "aliases": [
+        "fees_and_charges"
+      ],
+      "risk": {
+        "severity": "high",
+        "rationale": "high — an uncapped increase at any time on thirty days notice with no corresponding termination right is a unilateral right to reprice a locked-in customer.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    },
+    {
+      "obligation_id": "saas.data_export_on_termination",
+      "label": "Data Export On Termination",
+      "description": "Derived from v1 clause data_export_on_termination.",
+      "start": 2092,
+      "end": 2149,
+      "quote": "delete all Customer Data seven (7) days after termination",
+      "aliases": [
+        "data_export",
+        "deletion_and_export"
+      ],
+      "risk": {
+        "severity": "medium",
+        "rationale": "medium — a seven day deletion window with export only on request risks irreversible data loss on a missed deadline; thirty days with a standing export right is the ordinary position.",
+        "source_category": "market_practice",
+        "source_reference": null
+      },
+      "adjudication_note": null
+    }
+  ]
+}

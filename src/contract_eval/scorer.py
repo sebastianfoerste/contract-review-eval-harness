@@ -112,6 +112,9 @@ def risk_metrics(expected: dict[str, str], predicted: dict[str, str]) -> RiskSco
 
 import string
 
+_PUNCTUATION = frozenset(string.punctuation + "“”‘’–—")
+
+
 def normalize_text(text: str) -> str:
     t = text.lower()
     for p in string.punctuation + "“”‘’–—":
@@ -206,3 +209,61 @@ def span_coverage(
         coverage=len(covered) / total if total else 0.0,
         unlocated_citations=unlocated,
     )
+
+
+@dataclass
+class NormalizedIndex:
+    """Normalized text plus the raw character index each normalized character came from.
+
+    Matching has to happen on normalized text, because a quotation legitimately differs
+    from the source in case, punctuation and line wrapping. Reporting has to happen in
+    raw offsets, because that is where a gold obligation actually lives. Without the
+    map between them, a normalized match cannot be located in the document, which is
+    why the previous anchors could only be found by a second normalized search.
+
+    `raw_positions[i]` is the raw index of normalized character `i`. Indices are Python
+    characters, so a source containing an umlaut or a typographic dash maps correctly.
+    """
+
+    normalized: str
+    raw_positions: list[int]
+
+    def to_raw_span(self, start: int, end: int) -> tuple[int, int]:
+        if start < 0 or end > len(self.normalized) or start >= end:
+            raise ValueError(f"normalized span [{start},{end}) is outside the text")
+        raw_start = self.raw_positions[start]
+        raw_end = self.raw_positions[end - 1] + 1
+        return raw_start, raw_end
+
+    def find_all(self, needle: str) -> list[tuple[int, int]]:
+        """Every raw span whose normalized text equals `needle`."""
+        if not needle:
+            return []
+        spans: list[tuple[int, int]] = []
+        cursor = self.normalized.find(needle)
+        while cursor != -1:
+            spans.append(self.to_raw_span(cursor, cursor + len(needle)))
+            cursor = self.normalized.find(needle, cursor + 1)
+        return spans
+
+
+def build_normalized_index(source_text: str) -> NormalizedIndex:
+    """Normalize once, retaining the raw position of every surviving character."""
+    chars: list[str] = []
+    positions: list[int] = []
+    pending_space = False
+
+    for raw_index, char in enumerate(source_text):
+        lowered = char.lower()
+        if lowered in _PUNCTUATION or lowered.isspace():
+            # Collapse any run of punctuation and whitespace to a single separator.
+            pending_space = bool(chars)
+            continue
+        if pending_space:
+            chars.append(" ")
+            positions.append(raw_index)
+            pending_space = False
+        chars.append(lowered)
+        positions.append(raw_index)
+
+    return NormalizedIndex("".join(chars), positions)

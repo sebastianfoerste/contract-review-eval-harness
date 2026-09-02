@@ -34,6 +34,9 @@ jobs:
       - name: Run comparison regression test
         run: uv run python -m contract_eval compare
 
+      - name: Verify every v2 obligation offset resolves in its source
+        run: uv run python scripts/check_gold_v2.py
+
       - name: Verify capture states and atomic persistence
         run: uv run pytest tests/test_capture.py -q
 

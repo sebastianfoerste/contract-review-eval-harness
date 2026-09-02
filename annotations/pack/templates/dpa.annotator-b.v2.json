@@ -1,0 +1,20 @@
+{
+  "schema": "contract-review-eval.expected-answer.v2",
+  "case": "dpa",
+  "review_context": {
+    "party": "Controller (Northwind Materials GmbH)",
+    "commercial_perspective": "Receiving side; conservative pre-signature review.",
+    "governing_law": "Germany, Regulation (EU) 2016/679",
+    "jurisdiction": "Germany",
+    "objective": "Art. 28 GDPR compliance review before appointing the processor.",
+    "risk_appetite": "conservative",
+    "playbook_id": null,
+    "legal_position_date": "2026-09-02",
+    "annotator_id": "annotator-b",
+    "annotation_status": "draft",
+    "adjudication_status": "not_started"
+  },
+  "comment": "Blind annotation by Annotator B. Record every atomic obligation you would review in this agreement, with raw character offsets into the contract as provided. Assign a severity only where you would flag a risk, and state why in writing.",
+  "thresholds": {},
+  "obligations": []
+}
