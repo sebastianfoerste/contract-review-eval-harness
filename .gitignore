@@ -26,3 +26,6 @@ wheels/
 
 # Capture artifacts from local runs. Public examples are committed under examples/captures/.
 /captures/
+
+# Exported annotation bundle, regenerate with make annotation-bundle
+/annotations/bundle/

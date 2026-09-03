@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check annotation-pack migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -15,6 +15,7 @@ gold-v2-check: ; uv run python scripts/check_gold_v2.py
 evidence-check: ; uv run pytest tests/test_evidence_binding.py tests/test_policy_v3.py -q
 adjudication-check: ; uv run pytest tests/test_adjudication.py -q
 annotation-pack: ; uv run python scripts/build_annotation_pack.py
+annotation-bundle: ; uv run python scripts/export_annotation_bundle.py
 migrate-gold-v2: ; uv run python scripts/migrate_gold_to_v2.py
 certificate-verify: ; uv run python -m contract_eval verify-certificate --certificate examples/release-certificate.json
 robustness: ; uv run python -m contract_eval robustness --campaign robustness/campaign.v1.json --out examples
