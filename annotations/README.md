@@ -10,6 +10,7 @@ directory decides anything yet.
 | `drafts/*.candidate.v2.json` | Candidate. Single annotator, mechanically derived offsets. |
 | `pack/` | Built, not sent. Transmission requires explicit approval. |
 | Second annotation | **Not started.** Hard external dependency. |
+| Adjudication tooling | Implemented and tested. Waiting on a return to process. |
 | Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
 | Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
 | Adjudication | Not started. |
@@ -70,3 +71,27 @@ scorer reports `evidence_ambiguous` rather than crediting whichever sorts first.
 That is correct: until adjudication sets their boundaries, evidence genuinely cannot
 tell the two duties apart. The scorer refusing to guess is what keeps the candidate
 set from reading as more settled than it is.
+
+## When Annotator B returns
+
+The processing side is built and tested; only the annotation itself is missing.
+
+1. Place their files at `annotations/returned/annotator-b/<case>.annotator-b.v2.json`.
+2. Run `uv run python scripts/compare_annotations.py annotations/returned/annotator-b`.
+
+That validates every returned offset against the contract, freezes the return's hash
+before comparing so the comparison cannot later be re-run against an edited file, and
+writes a ledger per case to `annotations/ledgers/`.
+
+Obligations are matched by span overlap rather than by identifier, because two people
+working blind will not choose the same names and matching on names would manufacture
+disagreement where there is none.
+
+The statistics are descriptive. Obligation agreement, exact risk agreement, severity
+agreement and linearly weighted Cohen's kappa summarise how two readings differ; they
+do not establish that either is correct. Kappa reports `not defined for this sample`
+rather than a flattering number when the sample is degenerate, which it will be if
+either annotator used one severity throughout.
+
+The ledger is the output that matters. Each row is a decision someone has to make in
+writing, and the gold set cannot be frozen while any row is unadjudicated.
