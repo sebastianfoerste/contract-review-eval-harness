@@ -37,6 +37,9 @@ jobs:
       - name: Verify every v2 obligation offset resolves in its source
         run: uv run python scripts/check_gold_v2.py
 
+      - name: Verify the candidate campaign matches its sources and gold
+        run: uv run python scripts/check_campaign_v2.py
+
       - name: Verify capture states and atomic persistence
         run: uv run pytest tests/test_capture.py -q
 
