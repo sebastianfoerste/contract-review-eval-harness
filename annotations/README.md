@@ -37,7 +37,7 @@ They are now `dpa.breach_notification` and `dpa.dpia_assistance`. Their severiti
 carried over from the composite clause and marked as **not separately calibrated**.
 Assigning them independently is an adjudication decision, not a migration decision.
 
-## The pack is blind by construction
+## Blindness is procedural, not technical
 
 `pack/MANIFEST.json` lists every file it contains with a hash, and names every category
 withheld: the current gold, the candidate obligations, the aliases, the severity
@@ -45,7 +45,28 @@ rationales, all model output, all scores, and the maintainer's own annotation gu
 which discusses scoring and would leak both the metric surface and the first annotator's
 approach. The pack ships a purpose-written annotator guideline instead.
 
-`tests/test_annotation_pack.py` asserts the exclusion holds rather than trusting it.
+`tests/test_annotation_pack.py` asserts that none of that content appears inside the
+pack directory.
+
+**That is a narrower property than blindness.** This repository is public, and
+`annotations/pack/` sits one directory from `annotations/drafts/` and `expected/`. The
+synthetic contracts are public too, so a reviewer who searches for a distinctive clause
+reaches the repository and from there the answer set. Nothing prevents it.
+
+`make annotation-bundle` exports a standalone archive that avoids handing over a map:
+the withheld list names categories rather than the paths that hold them, and the
+guideline asks the reviewer not to search rather than telling them where not to look.
+The repository copy keeps the path-level detail, because there it is an audit record.
+
+What the export cannot hide is that schema identifiers in the templates carry the
+project name, and the contracts are public. **Blindness therefore rests on the
+reviewer's undertaking, not on access control, and every agreement statistic computed
+from this annotation carries that limitation.** Anyone asking how blindness was enforced
+should be told exactly this.
+
+Removing the limitation would mean moving `expected/` and `annotations/drafts/` out of
+the public repository, or issuing the pack from a separate private one, until
+adjudication completes.
 
 ## Why policy v3 is inert
 
