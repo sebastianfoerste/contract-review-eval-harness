@@ -1,6 +1,6 @@
 [project]
 name = "contract-eval"
-version = "0.6.0"
+version = "0.7.0rc1"
 description = "Evaluation harness that measures the quality of AI contract review — clause extraction, risk flags, source citations — against a hand-authored answer set. Synthetic data, deterministic by default."
 readme = "README.md"
 authors = [
