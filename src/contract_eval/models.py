@@ -26,23 +26,42 @@ class ReviewContext(BaseModel):
 
 
 class Citation(BaseModel):
-    quote: str  # text the model claims appears in the source
-    clause_type: str
+    quote: str = Field(
+        description=(
+            "Text copied verbatim from the contract, character for character. "
+            "Do not paraphrase, reorder or abbreviate."
+        )
+    )
+    clause_type: str = Field(
+        description="snake_case identifier of the clause this quote supports."
+    )
 
 
 class RiskFlag(BaseModel):
-    clause_type: str
+    clause_type: str = Field(
+        description="snake_case identifier of the clause, for example limitation_of_liability."
+    )
     severity: Severity
     rationale: str
 
 
 class Clause(BaseModel):
-    clause_type: str
-    text: str
+    # The schema is the single definition of the response shape, so the naming
+    # convention lives here rather than in prose. Without it a structured-output
+    # model returns readable labels such as "Definition of Confidential Information",
+    # which is a correct review that scores 0.00 against a snake_case gold set.
+    clause_type: str = Field(
+        description=(
+            "snake_case identifier of the clause type, lowercase, words separated by "
+            "underscores, no spaces or punctuation. For example: confidentiality, "
+            "governing_law, limitation_of_liability."
+        )
+    )
+    text: str = Field(description="One short sentence describing the clause.")
 
 
 class Abstention(BaseModel):
-    clause_type: str
+    clause_type: str = Field(description="snake_case identifier of the affected clause.")
     reason: str
 
 
