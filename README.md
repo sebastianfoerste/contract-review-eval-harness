@@ -143,7 +143,9 @@ uv run python -m contract_eval robustness --live --runs 3 --out live-results
 
 The model is selectable, so the same gold set can be replayed across versions and
 compared. Pass `--model`, or set `CONTRACT_EVAL_MODEL`; the default is
-`claude-opus-5`.
+`claude-opus-5`. Reasoning effort is set with `CONTRACT_EVAL_EFFORT` (default
+`high`) and is recorded in every capture, because it changes the output and a
+score is not comparable across two runs that used different levels.
 
 ```bash
 uv run python -m contract_eval evaluate --case all --live --model claude-opus-5
