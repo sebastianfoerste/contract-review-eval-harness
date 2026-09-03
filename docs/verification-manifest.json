@@ -56,6 +56,7 @@
     "make demo",
     "make anchor-check",
     "make gold-v2-check",
+    "make evidence-check",
     "make live-run-check",
     "make replay-check",
     "make capture-check",

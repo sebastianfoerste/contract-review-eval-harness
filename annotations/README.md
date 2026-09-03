@@ -10,6 +10,8 @@ directory decides anything yet.
 | `drafts/*.candidate.v2.json` | Candidate. Single annotator, mechanically derived offsets. |
 | `pack/` | Built, not sent. Transmission requires explicit approval. |
 | Second annotation | **Not started.** Hard external dependency. |
+| Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
+| Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
 | Adjudication | Not started. |
 
 ## Why the candidates are not gold
@@ -43,3 +45,28 @@ which discusses scoring and would leak both the metric surface and the first ann
 approach. The pack ships a purpose-written annotator guideline instead.
 
 `tests/test_annotation_pack.py` asserts the exclusion holds rather than trusting it.
+
+## Why policy v3 is inert
+
+The evidence-bound scorer and policy v3 are implemented and tested, but
+`evaluate_v3` raises `GoldNotAdjudicated` for any gold set whose
+`annotation_status` is not `frozen` and whose `adjudication_status` is not
+`complete`. Every committed candidate set fails that check, and a test asserts it on
+the real files.
+
+The refusal is the feature. Policy v3 is stricter than v2: it requires perfect
+obligation precision and recall, perfect risk precision, recall and severity, and
+every finding bound to exactly one obligation by its own cited evidence. Running that
+against candidates derived by one annotator from that annotator's own earlier gold
+would produce a stricter-looking instrument whose stricter judgment is still one
+unreviewed opinion.
+
+## What the DPA split currently demonstrates
+
+`dpa.breach_notification` and `dpa.dpia_assistance` were split from one v1 clause and
+share its span. A citation into that passage therefore overlaps both equally, and the
+scorer reports `evidence_ambiguous` rather than crediting whichever sorts first.
+
+That is correct: until adjudication sets their boundaries, evidence genuinely cannot
+tell the two duties apart. The scorer refusing to guess is what keeps the candidate
+set from reading as more settled than it is.
