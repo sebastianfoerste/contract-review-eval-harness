@@ -14,9 +14,9 @@
     "contracts/nda_sample.md": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
     "contracts/saas_sample.md": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
     "primary-law-ledger.md": "29233a0ec9008c546c5655c8ed344c2d9cb649bce99c89b97d19f570fd2ac846",
-    "templates/dpa.annotator-b.v2.json": "b8b02ffd7cdeb8f4c1f9cb908d250ac50fe3333ecfc0f46c54cdbc4bf76b1afd",
-    "templates/nda.annotator-b.v2.json": "6c6d0dc555c61b6acbd54d2f92ca9cd81c6965afcf4d73d12c2e66dc02a8d2a8",
-    "templates/saas.annotator-b.v2.json": "652d73be5a44a5fab67bd1bca5631d6ea9dd826670ad7c02bc68bc77b9a118e4"
+    "templates/dpa.annotator-b.v2.json": "f5fb948a0c8f20a7d41c98a7bcc2317ba56d2802e11889b0be53823a883284c9",
+    "templates/nda.annotator-b.v2.json": "864ff6804e77732e4abd1052bbb21fb2e6490db40e42429e9fa320730f2d5be2",
+    "templates/saas.annotator-b.v2.json": "e5345c7dce4f249337a59473a2f080d2117c6f85f9b9075c1a0d21bb29261f3d"
   },
   "excluded_from_pack": [
     "expected/*.json (the current authoritative gold set)",
@@ -29,5 +29,5 @@
     "docs/ANNOTATION_GUIDELINE.md (maintainer guideline; discusses scoring and aliases)"
   ],
   "instructions": "Work only from the contracts and the guideline in this pack. Do not consult the repository's expected/ directory, any model output, or any published score before returning your annotations.",
-  "manifest_sha256": "b1a5bf40d035731050b3d1d43a1a095166750850bd402da30e2c062fc76eba20"
+  "manifest_sha256": "239bc79a4fb5622331a2a12c361b5b4b7d183179ac354c7f4164877efc7a56ba"
 }

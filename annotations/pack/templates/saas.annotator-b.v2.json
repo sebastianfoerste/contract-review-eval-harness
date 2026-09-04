@@ -3,7 +3,7 @@
   "case": "saas",
   "review_context": {
     "party": "Customer (Northwind Materials GmbH)",
-    "commercial_perspective": "Upgraded from a v1 gold set.",
+    "commercial_perspective": "Review for the Customer (Northwind Materials GmbH). Judge each clause from that side.",
     "governing_law": "Germany",
     "jurisdiction": "Germany",
     "objective": "Pre-signature review of a vendor paper contract for a business-critical system.",
@@ -14,7 +14,7 @@
     "annotation_status": "draft",
     "adjudication_status": "not_started"
   },
-  "comment": "Blind annotation by Annotator B. Record every atomic obligation you would review in this agreement, with raw character offsets into the contract as provided. Assign a severity only where you would flag a risk, and state why in writing.",
+  "comment": "Independent blind annotation, second annotator. Record every atomic obligation you would review in this agreement, with raw character offsets into the contract as provided. Assign a severity only where you would flag a risk, and state why in writing.",
   "thresholds": {},
   "obligations": []
 }
