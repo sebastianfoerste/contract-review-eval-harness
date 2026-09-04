@@ -57,6 +57,12 @@ def main() -> int:
                        .read_text(encoding="utf-8"))
         )
         context = candidate.review_context.model_dump(mode="json")
+        # v1 never recorded a commercial perspective, so the migration filled it with
+        # its own provenance. That string means nothing to an annotator and is not what
+        # the field is for. The standpoint is already carried by party and objective.
+        context["commercial_perspective"] = (
+            f"Review for the {context['party']}. Judge each clause from that side."
+        )
         context["annotator_id"] = SECOND.name
         context["annotation_status"] = "draft"
 
@@ -65,7 +71,7 @@ def main() -> int:
             "case": case,
             "review_context": context,
             "comment": (
-                "Blind annotation by Annotator B. Record every atomic obligation you "
+                "Independent blind annotation, second annotator. Record every atomic obligation you "
                 "would review in this agreement, with raw character offsets into the "
                 "contract as provided. Assign a severity only where you would flag a "
                 "risk, and state why in writing."
