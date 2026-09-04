@@ -61,19 +61,33 @@ def test_the_pipeline_reports_no_decision_while_the_gold_is_a_candidate():
     assert "single-annotator candidate" in markdown
 
 
-def test_v2_stubs_preserve_the_v1_fixtures_designed_imperfections():
-    """Converted mechanically, so the two paths stay comparable."""
+def test_the_v2_review_is_upgraded_from_the_v1_fixture_not_a_second_file():
+    """One fixture per case cannot drift from itself.
+
+    The v2 stubs used to be generated and committed alongside the v1 ones, so the two
+    could disagree with nothing to catch it.
+    """
+    from contract_eval.models import ReviewOutput
+    from contract_eval.upgrade import upgrade_review
+
+    assert not list(Path("fixtures").glob("*_stub.v2.json")), (
+        "v2 fixtures are upgraded on load; a committed copy could drift"
+    )
+
     for case in ALL_CASES:
-        v1 = json.loads(Path(f"fixtures/{case}_stub.json").read_text())
-        v2 = json.loads(Path(f"fixtures/{case}_stub.v2.json").read_text())
+        v1 = ReviewOutput.model_validate(
+            json.loads(Path(f"fixtures/{case}_stub.json").read_text())
+        )
+        upgraded = upgrade_review(v1)
+        from_adapter = get_adapter(False).review_v2(
+            source_text=Path(f"data/{case}_sample.md").read_text(), case=case
+        )
 
-        assert len(v2["clauses"]) == len(v1["clauses"])
-        assert len(v2["citations"]) == len(v1["citations"])
-        assert len(v2["risk_flags"]) == len(v1["risk_flags"])
-
-        v1_severities = [f["severity"] for f in v1["risk_flags"]]
-        v2_severities = [f["severity"] for f in v2["risk_flags"]]
-        assert v1_severities == v2_severities, "severities must not drift in conversion"
+        assert upgraded == from_adapter
+        assert len(upgraded.clauses) == len(v1.clauses)
+        assert [f.severity for f in upgraded.risk_flags] == [
+            f.severity for f in v1.risk_flags
+        ], "severities must not drift in the upgrade"
 
 
 def test_findings_without_citations_become_visibly_unbound():
@@ -91,3 +105,41 @@ def test_gold_offsets_are_validated_when_the_pipeline_loads_them():
         source = Path(f"data/{case}_sample.md").read_text()
         for obligation in gold.obligations:
             assert source[obligation.start : obligation.end] == obligation.quote
+
+
+def test_a_v1_gold_set_can_enter_the_v2_path():
+    """v1 is an input format now, not a parallel world.
+
+    Before this, conversion lived in a script and only fixtures could cross between
+    the two representations. A real v1 gold set could not be scored by the evidence
+    path at all.
+    """
+    from contract_eval.models import ExpectedAnswer
+    from contract_eval.upgrade import upgrade_gold
+
+    for case in ALL_CASES:
+        source = Path(f"data/{case}_sample.md").read_text()
+        v1 = ExpectedAnswer.model_validate(
+            json.loads(Path(f"expected/{case}.json").read_text())
+        )
+        upgraded = upgrade_gold(case, v1, source)
+
+        assert len(upgraded.obligations) == len(v1.clause_types)
+        upgraded.validate_against_source(source)
+        # A v1 severity has no recorded provenance, so it must not claim to rest on law.
+        for obligation in upgraded.obligations:
+            if obligation.risk:
+                assert obligation.risk.source_category == "legal_judgment"
+
+
+def test_an_unlocatable_v1_clause_fails_the_upgrade_loudly():
+    from contract_eval.models import ExpectedAnswer
+    from contract_eval.upgrade import UpgradeError, upgrade_gold
+
+    v1 = ExpectedAnswer.model_validate({
+        "clause_types": ["term"],
+        "risk_flags": {},
+        "clause_anchors": {"term": "a phrase that appears nowhere in the contract"},
+    })
+    with pytest.raises(UpgradeError, match="matches 0 places"):
+        upgrade_gold("nda", v1, Path("data/nda_sample.md").read_text())

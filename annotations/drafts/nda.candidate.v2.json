@@ -3,24 +3,24 @@
   "case": "nda",
   "review_context": {
     "party": "Disclosing Party (Northwind Materials GmbH)",
-    "commercial_perspective": "Receiving side; conservative pre-signature review.",
+    "commercial_perspective": "Upgraded from a v1 gold set.",
     "governing_law": "Germany",
     "jurisdiction": "Germany",
     "objective": "Pre-signature review before disclosing technical information to a prospective supplier.",
     "risk_appetite": "conservative",
     "playbook_id": null,
-    "legal_position_date": "2026-09-02",
+    "legal_position_date": "2026-09-04",
     "annotator_id": "annotator-a",
     "annotation_status": "candidate",
     "adjudication_status": "not_started"
   },
-  "comment": "CANDIDATE, NOT AUTHORITATIVE. Offsets derived mechanically from v1 anchors; severities carried over from a single annotator. Requires blind second annotation and adjudication before replacing expected/*.json.",
+  "comment": "CANDIDATE, NOT AUTHORITATIVE. Offsets derived from v1 anchors; severities carried over from a single annotator. Requires blind second annotation and adjudication before replacing expected/*.json.",
   "thresholds": {},
   "obligations": [
     {
       "obligation_id": "nda.definition",
       "label": "Definition",
-      "description": "Derived from v1 clause definition.",
+      "description": "Upgraded from v1 clause definition.",
       "start": 370,
       "end": 419,
       "quote": "any and all information disclosed by either party",
@@ -39,7 +39,7 @@
     {
       "obligation_id": "nda.confidentiality",
       "label": "Confidentiality",
-      "description": "Derived from v1 clause confidentiality.",
+      "description": "Upgraded from v1 clause confidentiality.",
       "start": 567,
       "end": 613,
       "quote": "shall keep all Confidential Information secret",
@@ -52,7 +52,7 @@
     {
       "obligation_id": "nda.term",
       "label": "Term",
-      "description": "Derived from v1 clause term.",
+      "description": "Upgraded from v1 clause term.",
       "start": 800,
       "end": 836,
       "quote": "shall\nremain in effect in perpetuity",
@@ -68,7 +68,7 @@
     {
       "obligation_id": "nda.return_destruction",
       "label": "Return Destruction",
-      "description": "Derived from v1 clause return_destruction.",
+      "description": "Upgraded from v1 clause return_destruction.",
       "start": 916,
       "end": 980,
       "quote": "return or destroy all\nConfidential Information in its possession",
@@ -82,7 +82,7 @@
     {
       "obligation_id": "nda.governing_law",
       "label": "Governing Law",
-      "description": "Derived from v1 clause governing_law.",
+      "description": "Upgraded from v1 clause governing_law.",
       "start": 1101,
       "end": 1140,
       "quote": "laws of\nthe Federal Republic of Germany",
@@ -93,7 +93,7 @@
     {
       "obligation_id": "nda.permitted_disclosure",
       "label": "Permitted Disclosure",
-      "description": "Derived from v1 clause permitted_disclosure.",
+      "description": "Upgraded from v1 clause permitted_disclosure.",
       "start": 1250,
       "end": 1315,
       "quote": "required by law, court order, or a competent regulatory authority",
@@ -112,7 +112,7 @@
     {
       "obligation_id": "nda.residual_knowledge",
       "label": "Residual Knowledge",
-      "description": "Derived from v1 clause residual_knowledge.",
+      "description": "Upgraded from v1 clause residual_knowledge.",
       "start": 1551,
       "end": 1598,
       "quote": "retained in the unaided memory of its personnel",
@@ -130,7 +130,7 @@
     {
       "obligation_id": "nda.no_license",
       "label": "No License",
-      "description": "Derived from v1 clause no_license.",
+      "description": "Upgraded from v1 clause no_license.",
       "start": 1689,
       "end": 1742,
       "quote": "grants the Receiving Party any licence or other right",
@@ -143,7 +143,7 @@
     {
       "obligation_id": "nda.injunctive_relief",
       "label": "Injunctive Relief",
-      "description": "Derived from v1 clause injunctive_relief.",
+      "description": "Upgraded from v1 clause injunctive_relief.",
       "start": 1858,
       "end": 1904,
       "quote": "damages may be an inadequate remedy for breach",
@@ -154,7 +154,7 @@
     {
       "obligation_id": "nda.assignment",
       "label": "Assignment",
-      "description": "Derived from v1 clause assignment.",
+      "description": "Upgraded from v1 clause assignment.",
       "start": 2120,
       "end": 2173,
       "quote": "including a competitor of the disclosing counterparty",
@@ -170,7 +170,7 @@
     {
       "obligation_id": "nda.notices",
       "label": "Notices",
-      "description": "Derived from v1 clause notices.",
+      "description": "Upgraded from v1 clause notices.",
       "start": 2276,
       "end": 2319,
       "quote": "effective when sent by email to the address",

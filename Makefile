@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo stubs-v2 annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -14,7 +14,6 @@ live-run-check: ; uv run python scripts/check_live_run_report.py
 gold-v2-check: ; uv run python scripts/check_gold_v2.py
 evidence-check: ; uv run pytest tests/test_evidence_binding.py tests/test_policy_v3.py tests/test_v2_pipeline.py -q
 obligations-demo: ; uv run python -m contract_eval evaluate-obligations --case all
-stubs-v2: ; uv run python scripts/convert_stubs_to_v2.py
 adjudication-check: ; uv run pytest tests/test_adjudication.py -q
 campaign-v2: ; uv run python scripts/generate_campaign_v2.py
 campaign-v2-check: ; uv run python scripts/check_campaign_v2.py

@@ -222,6 +222,22 @@ the case set. The [annotation guideline](docs/ANNOTATION_GUIDELINE.md) records h
 clause types are chosen, how severities are calibrated, and why a stub fixture is
 never tuned to clear a threshold.
 
+## One representation, two input formats
+
+The harness briefly carried two parallel worlds: a v1 review and a v2 review, a v1 gold
+set and a v2 gold set, with conversion trapped in scripts so only fixtures could cross
+between them. A real v1 review could not enter the evidence path at all.
+
+`contract_eval.upgrade` makes v1 an input format rather than a parallel system. A v1
+review gains synthesised citation ids and evidence links inferred from its `clause_type`;
+a v1 gold set gains raw offsets located through the normalised index. Both then run the
+same scorer.
+
+The upgrade is honest about what v1 did not record. A v1 severity has no provenance, so
+it upgrades to `legal_judgment` rather than claiming to rest on a provision, and a
+finding whose clause type matches no citation gets no evidence, which is what it always
+had.
+
 ## The evidence-bound path
 
 ```bash

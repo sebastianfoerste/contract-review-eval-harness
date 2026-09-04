@@ -3,24 +3,24 @@
   "case": "dpa",
   "review_context": {
     "party": "Controller (Northwind Materials GmbH)",
-    "commercial_perspective": "Receiving side; conservative pre-signature review.",
+    "commercial_perspective": "Upgraded from a v1 gold set.",
     "governing_law": "Germany, Regulation (EU) 2016/679",
     "jurisdiction": "Germany",
     "objective": "Art. 28 GDPR compliance review before appointing the processor.",
     "risk_appetite": "conservative",
     "playbook_id": null,
-    "legal_position_date": "2026-09-02",
+    "legal_position_date": "2026-09-04",
     "annotator_id": "annotator-a",
     "annotation_status": "candidate",
     "adjudication_status": "not_started"
   },
-  "comment": "CANDIDATE, NOT AUTHORITATIVE. Offsets derived mechanically from v1 anchors; severities carried over from a single annotator. Requires blind second annotation and adjudication before replacing expected/*.json.",
+  "comment": "CANDIDATE, NOT AUTHORITATIVE. Offsets derived from v1 anchors; severities carried over from a single annotator. Requires blind second annotation and adjudication before replacing expected/*.json.",
   "thresholds": {},
   "obligations": [
     {
       "obligation_id": "dpa.documented_instructions",
       "label": "Documented Instructions",
-      "description": "Derived from v1 clause documented_instructions.",
+      "description": "Upgraded from v1 clause documented_instructions.",
       "start": 378,
       "end": 436,
       "quote": "process personal data only on documented instructions from",
@@ -34,7 +34,7 @@
     {
       "obligation_id": "dpa.confidentiality",
       "label": "Confidentiality",
-      "description": "Derived from v1 clause confidentiality.",
+      "description": "Upgraded from v1 clause confidentiality.",
       "start": 723,
       "end": 790,
       "quote": "committed themselves to confidentiality or are under an appropriate",
@@ -45,7 +45,7 @@
     {
       "obligation_id": "dpa.security_measures",
       "label": "Security Measures",
-      "description": "Derived from v1 clause security_measures.",
+      "description": "Upgraded from v1 clause security_measures.",
       "start": 893,
       "end": 972,
       "quote": "appropriate technical and organisational measures\nto ensure a level of security",
@@ -59,7 +59,7 @@
     {
       "obligation_id": "dpa.subprocessor_authorization",
       "label": "Subprocessor Authorization",
-      "description": "Derived from v1 clause subprocessor_authorization.",
+      "description": "Upgraded from v1 clause subprocessor_authorization.",
       "start": 1162,
       "end": 1205,
       "quote": "engage sub-processors at its own discretion",
@@ -70,15 +70,15 @@
       "risk": {
         "severity": "high",
         "rationale": "high — Art. 28(3)(d) and Art. 28(2) require the controller's prior specific or general written authorisation. The clause appoints sub-processors at the processor's discretion and has the controller waive its right to object, which removes the authorisation entirely rather than channelling it.",
-        "source_category": "law",
-        "source_reference": "Regulation (EU) 2016/679, Art. 28(3)"
+        "source_category": "legal_judgment",
+        "source_reference": null
       },
       "adjudication_note": null
     },
     {
       "obligation_id": "dpa.data_subject_rights_assistance",
       "label": "Data Subject Rights Assistance",
-      "description": "Derived from v1 clause data_subject_rights_assistance.",
+      "description": "Upgraded from v1 clause data_subject_rights_assistance.",
       "start": 1698,
       "end": 1729,
       "quote": "rights laid down in Chapter III",
@@ -103,8 +103,8 @@
       "risk": {
         "severity": "medium",
         "rationale": "CARRIED OVER FROM THE COMPOSITE v1 CLAUSE dpa.breach_and_dpia_assistance. Severity for this atomic duty is NOT yet calibrated separately and must be adjudicated. Original note: medium — Art. 28(3)(f) and Art. 33(2) require notification without undue delay. A fourteen day window is materially worse than the controller's own 72 hour obligation can absorb and should be negotiated, but a reviewer who accepted it with reasons would not be negligent.",
-        "source_category": "law",
-        "source_reference": "Regulation (EU) 2016/679, Art. 28(3)"
+        "source_category": "legal_judgment",
+        "source_reference": null
       },
       "adjudication_note": "Shares a span with the sibling duty split from the same v1 clause; boundaries require adjudication."
     },
@@ -122,15 +122,15 @@
       "risk": {
         "severity": "medium",
         "rationale": "CARRIED OVER FROM THE COMPOSITE v1 CLAUSE dpa.breach_and_dpia_assistance. Severity for this atomic duty is NOT yet calibrated separately and must be adjudicated. Original note: medium — Art. 28(3)(f) and Art. 33(2) require notification without undue delay. A fourteen day window is materially worse than the controller's own 72 hour obligation can absorb and should be negotiated, but a reviewer who accepted it with reasons would not be negligent.",
-        "source_category": "law",
-        "source_reference": "Regulation (EU) 2016/679, Art. 28(3)"
+        "source_category": "legal_judgment",
+        "source_reference": null
       },
       "adjudication_note": "Shares a span with the sibling duty split from the same v1 clause; boundaries require adjudication."
     },
     {
       "obligation_id": "dpa.deletion_return",
       "label": "Deletion Return",
-      "description": "Derived from v1 clause deletion_return.",
+      "description": "Upgraded from v1 clause deletion_return.",
       "start": 2096,
       "end": 2157,
       "quote": "retain personal data\nfor its own legitimate business purposes",
@@ -140,15 +140,15 @@
       "risk": {
         "severity": "high",
         "rationale": "high — Art. 28(3)(g) requires deletion or return at the controller's choice at the end of the services. Indefinite retention for the processor's own purposes, including model training, converts the processor into a controller for that processing without a lawful basis.",
-        "source_category": "law",
-        "source_reference": "Regulation (EU) 2016/679, Art. 28(3)"
+        "source_category": "legal_judgment",
+        "source_reference": null
       },
       "adjudication_note": null
     },
     {
       "obligation_id": "dpa.audit_rights",
       "label": "Audit Rights",
-      "description": "Derived from v1 clause audit_rights.",
+      "description": "Upgraded from v1 clause audit_rights.",
       "start": 2375,
       "end": 2423,
       "quote": "On-site inspections and audits by the\nController",
@@ -159,15 +159,15 @@
       "risk": {
         "severity": "high",
         "rationale": "high — Art. 28(3)(h) requires the processor to allow for and contribute to audits, including inspections, conducted by the controller or a mandated auditor. Certification-first audit regimes are ordinary market practice and would be medium; this clause expressly excludes inspections, which removes a mandatory element rather than channelling it.",
-        "source_category": "law",
-        "source_reference": "Regulation (EU) 2016/679, Art. 28(3)"
+        "source_category": "legal_judgment",
+        "source_reference": null
       },
       "adjudication_note": null
     },
     {
       "obligation_id": "dpa.international_transfers",
       "label": "International Transfers",
-      "description": "Derived from v1 clause international_transfers.",
+      "description": "Upgraded from v1 clause international_transfers.",
       "start": 2539,
       "end": 2598,
       "quote": "transfer personal data to its affiliates in third countries",
@@ -177,15 +177,15 @@
       "risk": {
         "severity": "high",
         "rationale": "high — Chapter V requires an adequacy decision or an Art. 46 safeguard to be in place before a transfer occurs. Permitting transfers now and addressing the mechanism 'if and when the need arises' inverts that sequence.",
-        "source_category": "law",
-        "source_reference": "Regulation (EU) 2016/679, Art. 28(3)"
+        "source_category": "legal_judgment",
+        "source_reference": null
       },
       "adjudication_note": null
     },
     {
       "obligation_id": "dpa.governing_law",
       "label": "Governing Law",
-      "description": "Derived from v1 clause governing_law.",
+      "description": "Upgraded from v1 clause governing_law.",
       "start": 2768,
       "end": 2811,
       "quote": "This DPA is governed by the laws of Germany",

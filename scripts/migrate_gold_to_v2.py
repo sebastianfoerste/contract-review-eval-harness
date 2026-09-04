@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from contract_eval.cases import ALL_CASES  # noqa: E402
 from contract_eval.models import ExpectedAnswer  # noqa: E402
-from contract_eval.scorer import build_normalized_index, normalize_text  # noqa: E402
+from contract_eval.upgrade import upgrade_gold  # noqa: E402
 
 OUT = ROOT / "annotations" / "drafts"
 
@@ -43,101 +43,54 @@ SOURCE_REFERENCE = {
 }
 
 
-def locate(index, anchor: str, clause: str) -> tuple[int, int]:
-    """Resolve a v1 anchor to raw offsets.
-
-    The anchor was written to match normalised text, so a raw `find` fails wherever
-    the clause wraps across a line. Matching normalised and mapping back is the only
-    way to recover the offsets the obligation actually occupies.
-    """
-    spans = index.find_all(normalize_text(anchor))
-    if not spans:
-        raise SystemExit(f"{clause}: anchor not found: {anchor!r}")
-    if len(spans) > 1:
-        raise SystemExit(f"{clause}: anchor is ambiguous, {len(spans)} matches: {anchor!r}")
-    return spans[0]
-
-
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     total = 0
 
     for case in ALL_CASES:
         source = (ROOT / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
-        index = build_normalized_index(source)
         v1 = ExpectedAnswer.model_validate(
             json.loads((ROOT / "expected" / f"{case}.json").read_text(encoding="utf-8"))
         )
-        aliases_by_target: dict[str, list[str]] = {}
-        for alias, target in v1.clause_aliases.items():
-            aliases_by_target.setdefault(target, []).append(alias)
+        # The straight upgrade lives in the library and is shared with every other
+        # v1 entry point. This script adds only what is specific to migration: the
+        # composite DPA clause covering two distinct Art. 28(3)(f) duties.
+        upgraded = upgrade_gold(case, v1, source)
+        payload = upgraded.model_dump(mode="json", by_alias=True)
 
         obligations = []
-        for clause in v1.clause_types:
-            anchor = v1.clause_anchors[clause]
-            start, end = locate(index, anchor, clause)
-            base_id = f"{case}.{clause}"
-            severity = v1.risk_flags.get(clause)
-            rationale = v1.severity_rationale.get(clause)
-
-            targets = SPLITS.get(base_id, [(base_id, clause.replace("_", " ").title(), "")])
+        for obligation in payload["obligations"]:
+            targets = SPLITS.get(obligation["obligation_id"])
+            if not targets:
+                obligations.append(obligation)
+                continue
             for obligation_id, label, description in targets:
-                risk = None
-                if severity:
-                    note = rationale or ""
-                    if len(targets) > 1:
-                        note = (
-                            f"CARRIED OVER FROM THE COMPOSITE v1 CLAUSE {base_id}. "
-                            f"Severity for this atomic duty is NOT yet calibrated "
-                            f"separately and must be adjudicated. Original note: {note}"
-                        )
-                    risk = {
-                        "severity": severity,
-                        "rationale": note,
-                        "source_category": SOURCE_CATEGORY[case],
-                        "source_reference": SOURCE_REFERENCE.get(case),
-                    }
-                obligations.append({
-                    "obligation_id": obligation_id,
-                    "label": label,
-                    "description": description or f"Derived from v1 clause {clause}.",
-                    "start": start,
-                    "end": end,
-                    "quote": source[start:end],
-                    "aliases": sorted(aliases_by_target.get(clause, [])),
-                    "risk": risk,
-                    "adjudication_note": (
-                        "Shares a span with the sibling duty split from the same v1 clause; "
-                        "boundaries require adjudication."
-                        if len(targets) > 1 else None
-                    ),
-                })
+                clone = dict(obligation)
+                clone["obligation_id"] = obligation_id
+                clone["label"] = label
+                clone["description"] = description
+                if clone.get("risk"):
+                    risk = dict(clone["risk"])
+                    risk["rationale"] = (
+                        f"CARRIED OVER FROM THE COMPOSITE v1 CLAUSE "
+                        f"{obligation['obligation_id']}. Severity for this atomic duty "
+                        f"is NOT yet calibrated separately and must be adjudicated. "
+                        f"Original note: {risk['rationale']}"
+                    )
+                    clone["risk"] = risk
+                clone["adjudication_note"] = (
+                    "Shares a span with the sibling duty split from the same v1 clause; "
+                    "boundaries require adjudication."
+                )
+                obligations.append(clone)
 
-        context = v1.review_context
-        payload = {
-            "schema": "contract-review-eval.expected-answer.v2",
-            "case": case,
-            "review_context": {
-                "party": context.party,
-                "commercial_perspective": "Receiving side; conservative pre-signature review.",
-                "governing_law": context.governing_law,
-                "jurisdiction": "Germany",
-                "objective": context.objective,
-                "risk_appetite": context.risk_appetite,
-                "playbook_id": None,
-                "legal_position_date": "2026-09-02",
-                "annotator_id": "annotator-a",
-                "annotation_status": "candidate",
-                "adjudication_status": "not_started",
-            },
-            "comment": (
-                "CANDIDATE, NOT AUTHORITATIVE. Offsets derived mechanically from v1 anchors; "
-                "severities carried over from a single annotator. Requires blind second "
-                "annotation and adjudication before replacing expected/*.json."
-            ),
-            "thresholds": dict(v1.thresholds),
-            "obligations": obligations,
-        }
+        payload["obligations"] = obligations
+        payload["comment"] = (
+            "CANDIDATE, NOT AUTHORITATIVE. Offsets derived from v1 anchors; severities "
+            "carried over from a single annotator. Requires blind second annotation and "
+            "adjudication before replacing expected/*.json."
+        )
+
         path = OUT / f"{case}.candidate.v2.json"
         path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         total += len(obligations)
