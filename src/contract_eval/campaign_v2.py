@@ -223,11 +223,10 @@ def verify_against_sources(
         o.obligation_id for gold in golds.values() for o in gold.obligations
     }
     for scenario in campaign.scenarios:
-        unknown = sorted(
-            set(scenario.target_obligation_ids) | set(scenario.declared_affected_ids)
-            - known_ids
-        )
-        unknown = [oid for oid in unknown if oid not in known_ids]
+        # Parenthesised deliberately: `-` binds tighter than `|`, so writing
+        # `a | b - known` means `a | (b - known)` and leaves the first set unfiltered.
+        referenced = set(scenario.target_obligation_ids) | set(scenario.declared_affected_ids)
+        unknown = sorted(referenced - known_ids)
         if unknown:
             raise CampaignError(
                 f"{scenario.scenario_id}: references unknown obligations {unknown}"

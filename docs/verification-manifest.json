@@ -62,6 +62,7 @@
     "make gold-v2-check",
     "make evidence-check",
     "make campaign-v2-check",
+    "make obligations-demo",
     "make live-run-check",
     "make replay-check",
     "make capture-check",
