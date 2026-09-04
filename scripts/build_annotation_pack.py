@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from contract_eval.capture import canonical_sha256, text_sha256  # noqa: E402
 from contract_eval.cases import ALL_CASES  # noqa: E402
+from contract_eval.annotators import SECOND  # noqa: E402
 from contract_eval.gold_v2 import ExpectedAnswerV2  # noqa: E402
 
 OUT = ROOT / "annotations" / "pack"
@@ -56,7 +57,7 @@ def main() -> int:
                        .read_text(encoding="utf-8"))
         )
         context = candidate.review_context.model_dump(mode="json")
-        context["annotator_id"] = "annotator-b"
+        context["annotator_id"] = SECOND.name
         context["annotation_status"] = "draft"
 
         template = {
@@ -72,7 +73,7 @@ def main() -> int:
             "thresholds": {},
             "obligations": [],
         }
-        path = OUT / "templates" / f"{case}.annotator-b.v2.json"
+        path = OUT / "templates" / f"{case}.{SECOND.slot}.v2.json"
         blob = json.dumps(template, indent=2, ensure_ascii=False) + "\n"
         path.write_text(blob, encoding="utf-8")
         files[f"templates/{case}.annotator-b.v2.json"] = text_sha256(blob)
@@ -92,7 +93,8 @@ def main() -> int:
     manifest = {
         "schema": "contract-review-eval.annotation-pack.v1",
         "pack_id": "blind-annotation-2026-09-02",
-        "annotator": "annotator-b",
+        "annotator": SECOND.name,
+        "annotator_slot": SECOND.slot,
         "cases": list(ALL_CASES),
         "files": dict(sorted(files.items())),
         "excluded_from_pack": EXCLUDED,

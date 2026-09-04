@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+from contract_eval.annotators import SECOND
+
 PACK = Path("annotations/pack")
 
 
@@ -42,7 +44,7 @@ def test_pack_templates_carry_no_obligations():
     for path in sorted((PACK / "templates").glob("*.json")):
         template = json.loads(path.read_text())
         assert template["obligations"] == [], f"{path.name} must start empty"
-        assert template["review_context"]["annotator_id"] == "annotator-b"
+        assert template["review_context"]["annotator_id"] == SECOND.name
 
 
 def test_pack_contains_no_model_output_or_scores():
@@ -82,3 +84,23 @@ def test_pack_ships_the_contracts_verbatim():
         assert (PACK / "contracts" / f"{case}_sample.md").read_text() == (
             Path(f"data/{case}_sample.md").read_text()
         )
+
+
+def test_naming_an_annotator_does_not_leak_their_judgment_into_the_pack():
+    """Credit is metadata. It must not become a channel for the first annotator's work.
+
+    The pack names Karsten Schmidt as its intended recipient. It must still contain
+    nothing Sebastian Förste concluded, or the blindness the naming sits alongside
+    would be undone by the naming itself.
+    """
+    from contract_eval.annotators import FIRST, SECOND
+
+    blob = _pack_text()
+
+    assert SECOND.name in blob, "the pack should name its recipient"
+    assert FIRST.name not in blob, "the first annotator's identity does not belong here"
+
+    for case in ("nda", "saas", "dpa"):
+        gold = json.loads(Path(f"expected/{case}.json").read_text())
+        for rationale in gold["severity_rationale"].values():
+            assert rationale[:60] not in blob

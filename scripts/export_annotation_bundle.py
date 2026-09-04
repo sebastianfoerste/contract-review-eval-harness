@@ -24,6 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from contract_eval.annotators import SECOND  # noqa: E402
 from contract_eval.capture import canonical_sha256, text_sha256  # noqa: E402
 
 PACK = ROOT / "annotations" / "pack"
@@ -78,7 +79,8 @@ def main() -> int:
     manifest = {
         "schema": "contract-review-eval.annotation-pack.v1",
         "pack_id": "blind-annotation-2026-09-03",
-        "annotator": "annotator-b",
+        "annotator": SECOND.name,
+        "annotator_slot": SECOND.slot,
         "files": dict(sorted(files.items())),
         "withheld": WITHHELD,
         "instructions": INSTRUCTIONS,

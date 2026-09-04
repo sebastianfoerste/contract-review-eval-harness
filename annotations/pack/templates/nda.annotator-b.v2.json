@@ -3,14 +3,14 @@
   "case": "nda",
   "review_context": {
     "party": "Disclosing Party (Northwind Materials GmbH)",
-    "commercial_perspective": "Receiving side; conservative pre-signature review.",
+    "commercial_perspective": "Upgraded from a v1 gold set.",
     "governing_law": "Germany",
     "jurisdiction": "Germany",
     "objective": "Pre-signature review before disclosing technical information to a prospective supplier.",
     "risk_appetite": "conservative",
     "playbook_id": null,
-    "legal_position_date": "2026-09-02",
-    "annotator_id": "annotator-b",
+    "legal_position_date": "2026-09-04",
+    "annotator_id": "Karsten Schmidt",
     "annotation_status": "draft",
     "adjudication_status": "not_started"
   },
