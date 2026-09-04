@@ -222,6 +222,20 @@ the case set. The [annotation guideline](docs/ANNOTATION_GUIDELINE.md) records h
 clause types are chosen, how severities are calibrated, and why a stub fixture is
 never tuned to clear a threshold.
 
+## The evidence-bound path
+
+```bash
+uv run python -m contract_eval evaluate-obligations --case all
+```
+
+Scores a review through cited evidence rather than clause labels. A finding binds to an
+obligation only when the citations it names resolve to that obligation's span, so what
+a review calls a clause cannot earn or lose it credit, and an assertion with nothing
+quoted behind it is visibly unbound.
+
+It prints no release decision. Policy v3 refuses to certify against a single-annotator
+gold set, and the scorecard says so rather than omitting the section.
+
 ## Gold schema v2, in preparation
 
 Schema v2 replaces named clauses with atomic obligations anchored to raw character

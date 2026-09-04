@@ -448,6 +448,15 @@ def main() -> None:
         metavar="1..5",
         help="adapter runs per original and mutated contract",
     )
+    obl = sub.add_parser(
+        "evaluate-obligations",
+        help="score a case through the evidence-bound v2 path",
+    )
+    obl.add_argument("--case", default="nda", help="case name, or all")
+    obl.add_argument("--live", action="store_true", help="use the live adapter")
+    obl.add_argument("--model", default=None, help="model id for --live")
+    obl.add_argument("--out", default=None, type=Path, help="output directory")
+
     vc = sub.add_parser(
         "verify-capture",
         help="verify a captured review's schema, integrity and embedded inputs",
@@ -527,6 +536,21 @@ def main() -> None:
             f"wrote {args.out / 'adversarial-robustness-report.md'} "
             f"({report['suite_decision']})"
         )
+    elif args.cmd == "evaluate-obligations":
+        from contract_eval.obligation_cli import evaluate_obligations, render
+
+        cases = ALL_CASES if args.case == "all" else [args.case]
+        for case in cases:
+            result = evaluate_obligations(case, live=args.live, model=args.model)
+            if args.out:
+                args.out.mkdir(parents=True, exist_ok=True)
+                (args.out / f"obligation-scorecard-{case}.json").write_text(
+                    json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+                )
+                (args.out / f"obligation-scorecard-{case}.md").write_text(render(result))
+                print(f"wrote {args.out / f'obligation-scorecard-{case}.md'}")
+            else:
+                print(render(result))
     elif args.cmd == "verify-capture":
         from contract_eval.replay import load, verify_capture
 

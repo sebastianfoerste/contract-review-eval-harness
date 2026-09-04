@@ -14,6 +14,7 @@ directory decides anything yet.
 | Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
 | Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
 | Campaign v2 | Generated as a candidate. Regenerate after adjudication. |
+| v2 evaluation path | Wired end to end. Runs today; certifies nothing. |
 | Adjudication | Not started. |
 
 ## Why the candidates are not gold

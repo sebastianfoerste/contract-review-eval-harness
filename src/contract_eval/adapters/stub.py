@@ -5,6 +5,7 @@ from pathlib import Path
 
 from contract_eval.capture import ProviderRequest, ProviderResponse, text_sha256
 from contract_eval.models import ReviewOutput
+from contract_eval.review_v2 import ReviewOutputV2
 
 STUB_MODEL = "stub-fixture"
 
@@ -42,3 +43,12 @@ class StubAdapter:
     def review(self, source_text: str, case: str) -> ReviewOutput:
         data = json.loads((self._dir / f"{case}_stub.json").read_text())
         return ReviewOutput.model_validate(data)
+
+    def review_v2(self, source_text: str, case: str) -> ReviewOutputV2:
+        """The same fixture in evidence-linked form.
+
+        Derived mechanically from the v1 stub by scripts/convert_stubs_to_v2.py, so
+        the deliberate imperfections are identical and the two paths stay comparable.
+        """
+        data = json.loads((self._dir / f"{case}_stub.v2.json").read_text())
+        return ReviewOutputV2.model_validate(data)
