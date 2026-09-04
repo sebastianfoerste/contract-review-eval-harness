@@ -9,7 +9,7 @@ directory decides anything yet.
 | --- | --- |
 | `drafts/*.candidate.v2.json` | Candidate. Single annotator, mechanically derived offsets. |
 | `pack/` | Built, not sent. Transmission requires explicit approval. |
-| Second annotation | Reviewer identified. Pack not yet sent. |
+| Second annotation | Karsten Schmidt, agreed and named. Pack not yet sent. |
 | Adjudication tooling | Implemented and tested. Waiting on a return to process. |
 | Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
 | Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
@@ -95,15 +95,23 @@ That is correct: until adjudication sets their boundaries, evidence genuinely ca
 tell the two duties apart. The scorer refusing to guess is what keeps the candidate
 set from reading as more settled than it is.
 
-## The reviewer is identified, and stays pseudonymous here
+## Who wrote what
 
-A second reviewer has been identified and is recorded in this repository only as
-`annotator-b`. Their name is deliberately not committed: a public repository is a
-permanent, searchable record, and being named in one is a decision for them to make
-rather than for this project to make on their behalf.
+| Slot | Annotator | Role |
+| --- | --- | --- |
+| `annotator-a` | Sebastian Förste | Author of the v1 gold sets and the candidate v2 obligations. |
+| `annotator-b` | Karsten Schmidt | Independent second annotator, working blind from the pack. |
 
-If they would rather be credited, replacing the pseudonym is a one-line change once
-they have said so.
+Both are named with their agreement. A public repository is a permanent, searchable
+record, so a reviewer is named only once they have said yes.
+
+Identity and role stay separate. `src/contract_eval/annotators.py` is the single place
+either name appears; directory and file names key off the stable slot instead, so
+adding or replacing a reviewer never renames artifacts or breaks the comparison script.
+
+Naming the annotators is not a substitute for blindness. Karsten works from the bundle
+alone, and the limitation recorded below still applies to any statistic drawn from the
+comparison.
 
 ## When Annotator B returns
 

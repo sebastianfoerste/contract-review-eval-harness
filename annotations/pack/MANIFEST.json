@@ -1,7 +1,8 @@
 {
   "schema": "contract-review-eval.annotation-pack.v1",
   "pack_id": "blind-annotation-2026-09-02",
-  "annotator": "annotator-b",
+  "annotator": "Karsten Schmidt",
+  "annotator_slot": "annotator-b",
   "cases": [
     "nda",
     "saas",
@@ -13,9 +14,9 @@
     "contracts/nda_sample.md": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
     "contracts/saas_sample.md": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
     "primary-law-ledger.md": "29233a0ec9008c546c5655c8ed344c2d9cb649bce99c89b97d19f570fd2ac846",
-    "templates/dpa.annotator-b.v2.json": "7d727529c633a06f802626408b82176a4649afc4187bf79d15f802f50e599693",
-    "templates/nda.annotator-b.v2.json": "a556832389439a95872757f4e0e6a3e1a38f208bac45aa2e63da930264e70471",
-    "templates/saas.annotator-b.v2.json": "d35231b6c806c1eaf95ad291aa729f065c3bb8d62db0c8120f57998cc1360cec"
+    "templates/dpa.annotator-b.v2.json": "b8b02ffd7cdeb8f4c1f9cb908d250ac50fe3333ecfc0f46c54cdbc4bf76b1afd",
+    "templates/nda.annotator-b.v2.json": "6c6d0dc555c61b6acbd54d2f92ca9cd81c6965afcf4d73d12c2e66dc02a8d2a8",
+    "templates/saas.annotator-b.v2.json": "652d73be5a44a5fab67bd1bca5631d6ea9dd826670ad7c02bc68bc77b9a118e4"
   },
   "excluded_from_pack": [
     "expected/*.json (the current authoritative gold set)",
@@ -28,5 +29,5 @@
     "docs/ANNOTATION_GUIDELINE.md (maintainer guideline; discusses scoring and aliases)"
   ],
   "instructions": "Work only from the contracts and the guideline in this pack. Do not consult the repository's expected/ directory, any model output, or any published score before returning your annotations.",
-  "manifest_sha256": "6bc5957125609ecf54728985fc06d5bcc7763f357a83c3ca94fbee1886ea74cb"
+  "manifest_sha256": "b1a5bf40d035731050b3d1d43a1a095166750850bd402da30e2c062fc76eba20"
 }

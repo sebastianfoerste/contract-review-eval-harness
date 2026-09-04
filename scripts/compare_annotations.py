@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from contract_eval.adjudication import compare, render_ledger  # noqa: E402
 from contract_eval.capture import text_sha256  # noqa: E402
 from contract_eval.cases import ALL_CASES  # noqa: E402
+from contract_eval.annotators import SECOND  # noqa: E402
 from contract_eval.gold_v2 import ExpectedAnswerV2  # noqa: E402
 
 DRAFTS = ROOT / "annotations" / "drafts"
@@ -42,7 +43,7 @@ def main() -> int:
     unresolved_total = 0
 
     for case in ALL_CASES:
-        b_path = returned / f"{case}.annotator-b.v2.json"
+        b_path = returned / f"{case}.{SECOND.slot}.v2.json"
         if not b_path.is_file():
             print(f"{case}: no return from annotator B at {b_path}")
             return 1

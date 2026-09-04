@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from contract_eval.cases import ALL_CASES  # noqa: E402
+from contract_eval.annotators import FIRST  # noqa: E402
 from contract_eval.models import ExpectedAnswer  # noqa: E402
 from contract_eval.upgrade import upgrade_gold  # noqa: E402
 
@@ -55,7 +56,7 @@ def main() -> int:
         # The straight upgrade lives in the library and is shared with every other
         # v1 entry point. This script adds only what is specific to migration: the
         # composite DPA clause covering two distinct Art. 28(3)(f) duties.
-        upgraded = upgrade_gold(case, v1, source)
+        upgraded = upgrade_gold(case, v1, source, annotator_id=FIRST.name)
         payload = upgraded.model_dump(mode="json", by_alias=True)
 
         obligations = []
