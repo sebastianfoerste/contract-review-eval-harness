@@ -92,6 +92,13 @@ def main() -> int:
     (OUT / "ANNOTATOR_GUIDELINE.md").write_text(guideline, encoding="utf-8")
     files["ANNOTATOR_GUIDELINE.md"] = text_sha256(guideline)
 
+    # Offsets are the one part of this format that is genuinely unpleasant by hand, and
+    # the part where a mistake is invisible: a span off by a few characters still parses
+    # and still scores, as a different duty. Ship the tool rather than the tedium.
+    helper = (ROOT / "scripts" / "pack_offsets_helper.py").read_text(encoding="utf-8")
+    (OUT / "offsets.py").write_text(helper, encoding="utf-8")
+    files["offsets.py"] = text_sha256(helper)
+
     ledger = _primary_law_ledger()
     (OUT / "primary-law-ledger.md").write_text(ledger, encoding="utf-8")
     files["primary-law-ledger.md"] = text_sha256(ledger)
@@ -146,6 +153,16 @@ Give each obligation:
 - `quote`: that exact slice, copied verbatim.
 
 Anchor the span at the operative words of the duty rather than at a heading.
+
+Counting offsets by hand is miserable, so the pack includes `offsets.py`. Copy the
+words you want, run it, and it returns the numbers:
+
+```
+python3 offsets.py nda "Recipient shall not disclose"
+```
+
+It refuses to guess. A quote that matches twice comes back as ambiguous rather than
+resolved to the first hit, because the wrong span scores silently as a different duty.
 
 ## Assigning severity
 

@@ -22,6 +22,16 @@ Give each obligation:
 
 Anchor the span at the operative words of the duty rather than at a heading.
 
+Counting offsets by hand is miserable, so the pack includes `offsets.py`. Copy the
+words you want, run it, and it returns the numbers:
+
+```
+python3 offsets.py nda "Recipient shall not disclose"
+```
+
+It refuses to guess. A quote that matches twice comes back as ambiguous rather than
+resolved to the first hit, because the wrong span scores silently as a different duty.
+
 ## Assigning severity
 
 Assign a severity only where you would flag the clause to the client. Leave `risk`
