@@ -9,10 +9,11 @@
     "dpa"
   ],
   "files": {
-    "ANNOTATOR_GUIDELINE.md": "bb08d37658fe052050e790597c07979b447579e0eb6f8f2494a5ca3d5e4f8d0e",
+    "ANNOTATOR_GUIDELINE.md": "1b7f6fd38e9df6a8f93c82df9e26e2239b4f339d29710d6937bcba900fe66ef0",
     "contracts/dpa_sample.md": "17a0c7b0dc7e74fe23fda6fcb394d331ada6e7286c2fb6a9497a9e58ed96f79e",
     "contracts/nda_sample.md": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
     "contracts/saas_sample.md": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+    "offsets.py": "9bcd34aa32ad21151eb6e7e9e28a8bb266df8159567212de1260f394520ef3f5",
     "primary-law-ledger.md": "29233a0ec9008c546c5655c8ed344c2d9cb649bce99c89b97d19f570fd2ac846",
     "templates/dpa.annotator-b.v2.json": "f5fb948a0c8f20a7d41c98a7bcc2317ba56d2802e11889b0be53823a883284c9",
     "templates/nda.annotator-b.v2.json": "864ff6804e77732e4abd1052bbb21fb2e6490db40e42429e9fa320730f2d5be2",
@@ -29,5 +30,5 @@
     "docs/ANNOTATION_GUIDELINE.md (maintainer guideline; discusses scoring and aliases)"
   ],
   "instructions": "Work only from the contracts and the guideline in this pack. Do not consult the repository's expected/ directory, any model output, or any published score before returning your annotations.",
-  "manifest_sha256": "239bc79a4fb5622331a2a12c361b5b4b7d183179ac354c7f4164877efc7a56ba"
+  "manifest_sha256": "a77643eb6c15258cd62b8092ca53aafc4aefa0ab06a9e67fa07b02dc75618c61"
 }
