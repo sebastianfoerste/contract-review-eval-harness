@@ -9,7 +9,7 @@ directory decides anything yet.
 | --- | --- |
 | `drafts/*.candidate.v2.json` | Candidate. Single annotator, mechanically derived offsets. |
 | `pack/` | Built, not sent. Transmission requires explicit approval. |
-| Second annotation | **Not started.** Hard external dependency. |
+| Second annotation | Reviewer identified. Pack not yet sent. |
 | Adjudication tooling | Implemented and tested. Waiting on a return to process. |
 | Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
 | Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
@@ -94,6 +94,16 @@ scorer reports `evidence_ambiguous` rather than crediting whichever sorts first.
 That is correct: until adjudication sets their boundaries, evidence genuinely cannot
 tell the two duties apart. The scorer refusing to guess is what keeps the candidate
 set from reading as more settled than it is.
+
+## The reviewer is identified, and stays pseudonymous here
+
+A second reviewer has been identified and is recorded in this repository only as
+`annotator-b`. Their name is deliberately not committed: a public repository is a
+permanent, searchable record, and being named in one is a decision for them to make
+rather than for this project to make on their behalf.
+
+If they would rather be credited, replacing the pseudonym is a one-line change once
+they have said so.
 
 ## When Annotator B returns
 

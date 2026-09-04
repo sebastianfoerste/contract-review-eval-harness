@@ -45,10 +45,12 @@ class StubAdapter:
         return ReviewOutput.model_validate(data)
 
     def review_v2(self, source_text: str, case: str) -> ReviewOutputV2:
-        """The same fixture in evidence-linked form.
+        """The same fixture, upgraded.
 
-        Derived mechanically from the v1 stub by scripts/convert_stubs_to_v2.py, so
-        the deliberate imperfections are identical and the two paths stay comparable.
+        Upgraded on load rather than kept as a second committed file. One fixture per
+        case cannot drift from itself, and the deliberate imperfections are by
+        construction identical across the two paths.
         """
-        data = json.loads((self._dir / f"{case}_stub.v2.json").read_text())
-        return ReviewOutputV2.model_validate(data)
+        from contract_eval.upgrade import upgrade_review
+
+        return upgrade_review(self.review(source_text=source_text, case=case))
