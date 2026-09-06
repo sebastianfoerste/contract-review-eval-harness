@@ -8,8 +8,8 @@ directory decides anything yet.
 | Artifact | Status |
 | --- | --- |
 | `drafts/*.candidate.v2.json` | Candidate. Single annotator, mechanically derived offsets. |
-| `pack/` | Built, not sent. Transmission requires explicit approval. |
-| Second annotation | Karsten Schmidt, agreed and named. Pack not yet sent. |
+| `pack/` | Built. Sent to the second annotator on 2026-09-06. |
+| Second annotation | Karsten Schmidt, agreed and named. Pack sent 2026-09-06. Awaiting return. |
 | Adjudication tooling | Implemented and tested. Waiting on a return to process. |
 | Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
 | Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
