@@ -22,6 +22,14 @@ make demo
 
 Runs end to end, offline and deterministically.
 
+## Interactive Web Explorer: Evidence Lab
+
+For an interactive, browser-based exploration of these evaluation cases without installing Python or running live models, use the companion web app:
+
+- **Evidence Lab Workspace**: [`contract-eval-web`](../contract-eval-web) (TypeScript / React / OpenAI Sites workspace)
+- **Browser Features**: Inspect synthetic contracts, toggle failure scenarios (*baseline*, *no-evidence*, *missed-risks*, *conflicting-flags*), compare scoring changes side-by-side, inspect quote grounding, and download Markdown/JSON evaluation reports.
+- **Parity Guarantee**: The web workspace executes a deterministic scoring engine mathematically verified against this Python harness (`score_review`). Run `make web-check` to verify synchronization, or `make web-export` to sync benchmark vectors.
+
 ## What the demo produces
 
 The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).

@@ -384,6 +384,16 @@ def verify_robustness(
 def main() -> None:
     parser = argparse.ArgumentParser(prog="contract-eval")
     sub = parser.add_subparsers(dest="cmd", required=True)
+    reference = sub.add_parser("reference-status", help="verify the annotation evidence chain and report release eligibility")
+    reference.add_argument("--require-final", action="store_true", help="fail until every reference is verified and frozen")
+    reference.add_argument("--out", type=Path, help="write the verified status JSON")
+    intake = sub.add_parser("reference-import", help="import all original second-annotator returns without overwriting evidence")
+    intake.add_argument("--returned", required=True, type=Path)
+    prepare = sub.add_parser("reference-prepare", help="write blank adjudication records bound to the imported comparison")
+    prepare.add_argument("--out", required=True, type=Path)
+    freeze = sub.add_parser("reference-freeze", help="verify written decisions and atomically freeze all references")
+    freeze.add_argument("--gold-dir", required=True, type=Path)
+    freeze.add_argument("--decisions-dir", required=True, type=Path)
     
     ev = sub.add_parser("evaluate", help="score an adapter's review against the expected answers")
     ev.add_argument("--case", default="nda", help="case name (nda, saas, all)")
@@ -536,6 +546,27 @@ def main() -> None:
             f"wrote {args.out / 'adversarial-robustness-report.md'} "
             f"({report['suite_decision']})"
         )
+    elif args.cmd in ("reference-status", "reference-import", "reference-prepare", "reference-freeze"):
+        from contract_eval.reference_evidence import (
+            reference_status, import_returns, adjudication_templates, freeze_references, encoded,
+        )
+        try:
+            if args.cmd == "reference-import":
+                import_returns(Path.cwd(), args.returned)
+            elif args.cmd == "reference-prepare":
+                adjudication_templates(Path.cwd(), args.out)
+            elif args.cmd == "reference-freeze":
+                freeze_references(Path.cwd(), args.gold_dir, args.decisions_dir)
+            result = reference_status(Path.cwd())
+            if args.cmd == "reference-status" and args.out:
+                args.out.parent.mkdir(parents=True, exist_ok=True)
+                args.out.write_bytes(encoded(result))
+            print(encoded(result).decode("utf-8"), end="")
+            if result["stage"] == "invalid" or (args.cmd == "reference-status" and args.require_final and not result["finalReleaseEligible"]):
+                sys.exit(1)
+        except (OSError, ValueError) as exc:
+            print(f"Reference evidence error: {exc}", file=sys.stderr)
+            sys.exit(1)
     elif args.cmd == "evaluate-obligations":
         from contract_eval.obligation_cli import evaluate_obligations, render
 

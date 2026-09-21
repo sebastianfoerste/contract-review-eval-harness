@@ -31,11 +31,17 @@ from contract_eval.evidence import bind_review
 from contract_eval.gold_v2 import ExpectedAnswerV2
 from contract_eval.obligation_scorer import score_obligations
 from contract_eval.policy_v3 import GoldNotAdjudicated, evaluate_v3
+from contract_eval.reference_evidence import EVIDENCE, load_verified_gold, reference_status
 
 DRAFTS = Path("annotations") / "drafts"
 
 
 def load_gold_v2(case: str, root: Path = Path(".")) -> ExpectedAnswerV2:
+    from contract_eval.cases import ALL_CASES
+    if case not in ALL_CASES:
+        raise ValueError(f"Unknown case: {case}")
+    if (root / EVIDENCE / "frozen").exists():
+        return load_verified_gold(root, case)
     path = root / DRAFTS / f"{case}.candidate.v2.json"
     gold = ExpectedAnswerV2.model_validate(json.loads(path.read_text(encoding="utf-8")))
     source = (root / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
@@ -89,6 +95,10 @@ def evaluate_obligations(
     }
 
     try:
+        reference = reference_status(root)
+        result["reference_evidence"] = reference
+        if not reference["finalReleaseEligible"]:
+            raise GoldNotAdjudicated(f"Reference evidence is {reference['stage']}; verified blind second annotation returns and written adjudication are required.")
         result["certificate"] = evaluate_v3(
             gold, binding, unsupported_citations=coverage.unsupported_citations
         )
