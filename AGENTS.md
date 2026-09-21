@@ -13,10 +13,12 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `tests/` — pytest.
 
 ## Rules
-- Python 3.12+, type hints throughout, Pydantic for data models.
+- Python 3.13+, type hints throughout, Pydantic for data models.
 - Default path is offline and deterministic: no network, no API key. `--live` is strictly opt-in and must never break default paths (import the SDK lazily).
 - Synthetic data only. Never add a real agreement or client data.
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.
+- The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`.
 
 ## Commands
-`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live`.
+`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make web-check` · `make web-export` · `make check`.
+

@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check web-check web-export check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -25,4 +25,7 @@ robustness: ; uv run python -m contract_eval robustness --campaign robustness/ca
 robustness-check:
 	uv run python -m contract_eval verify-robustness --report examples/adversarial-robustness-report.json --campaign robustness/campaign.v1.json
 	uv run python scripts/check_robustness_report.py
-check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check
+web-check: ; uv run python scripts/check_web_sync.py
+web-export: ; uv run python ../contract-eval-web/scripts/export-benchmark.py --repo .
+check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check web-check
+

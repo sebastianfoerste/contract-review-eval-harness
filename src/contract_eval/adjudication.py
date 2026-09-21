@@ -23,7 +23,7 @@ from contract_eval.gold_v2 import ExpectedAnswerV2, Obligation
 MATCH_THRESHOLD = 0.5
 
 DisagreementKind = Literal[
-    "only_in_a", "only_in_b", "boundary", "risk_presence", "severity", "source_category"
+    "only_in_a", "only_in_b", "boundary", "risk_presence", "severity", "source_category", "source_reference", "risk_rationale"
 ]
 
 
@@ -174,6 +174,16 @@ def compare(a: ExpectedAnswerV2, b: ExpectedAnswerV2) -> AgreementReport:
             report.disagreements.append(Disagreement(
                 "source_category", obligation_a.obligation_id, obligation_b.obligation_id,
                 f"A rests on {risk_a.source_category}, B on {risk_b.source_category}",
+            ))
+        if risk_a.source_reference != risk_b.source_reference:
+            report.disagreements.append(Disagreement(
+                "source_reference", obligation_a.obligation_id, obligation_b.obligation_id,
+                f"A cites {risk_a.source_reference!r}, B cites {risk_b.source_reference!r}",
+            ))
+        if risk_a.rationale != risk_b.rationale:
+            report.disagreements.append(Disagreement(
+                "risk_rationale", obligation_a.obligation_id, obligation_b.obligation_id,
+                "The written risk rationales differ; review both original annotations.",
             ))
 
     total = len(pairs) + len(report.only_in_a) + len(report.only_in_b)
