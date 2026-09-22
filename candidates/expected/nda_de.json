@@ -1,0 +1,14 @@
+{
+  "comment": "CANDIDATE, NOT REGISTERED. Gold answer to be authored by Sebastian Foerste. Empty fields are deliberate; see candidates/README.md.",
+  "review_context": {
+    "party": "Offenlegende Partei (Halvern Antriebstechnik GmbH)",
+    "governing_law": "England and Wales (as drafted)",
+    "objective": "Pre-signature review of a German-language NDA before disclosing prototypes to a prospective supplier.",
+    "risk_appetite": ""
+  },
+  "clause_types": [],
+  "risk_flags": {},
+  "severity_rationale": {},
+  "clause_aliases": {},
+  "clause_anchors": {}
+}
