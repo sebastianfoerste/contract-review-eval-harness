@@ -1,0 +1,204 @@
+{
+  "schema": "contract-review-eval.matter-expected.v1",
+  "matter_id": "northwind-saas",
+  "round_id": "round2",
+  "status": {
+    "annotator_id": "Sebastian Foerste",
+    "annotation_status": "draft",
+    "adjudication_status": "not_started",
+    "legal_position_date": "2026-10-06"
+  },
+  "comment": "Round 2 gold answers: vendor response and changed facts for the Northwind Materials SaaS procurement matter.",
+  "issues": [
+    {
+      "issue_id": "r2.data_centre_audit_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Data centre exclusion from on-site audits acceptable with certifications",
+      "description": "Vendor excludes data centres from on-site audits, which Internal Audit accepts if current ISO 27001 and SOC 2 reports are provided annually.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "vendor_response",
+          "quote": "Data centres are excluded from on-site audits",
+          "start": 1720,
+          "end": 1765
+        }
+      ],
+      "expected_action": "negotiate",
+      "playbook_rule": "PB-06",
+      "rationale": "In response R-6, Cverbio conceded on-site audits at its offices while excluding data centres. Client update U-3 permits this compromise provided annual ISO 27001 and SOC 2 reports are supplied; counsel must negotiate those certificate obligations into the contract.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-06"
+    },
+    {
+      "issue_id": "r2.fee_increase_cap_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Proposed 7% annual fee increase cap exceeds playbook limit",
+      "description": "Vendor proposes capping fee increases at 7% per year, exceeding the 5% playbook fallback cap.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "vendor_response",
+          "quote": "increases are\nlimited to 7% per year",
+          "start": 1842,
+          "end": 1878
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-09",
+      "rationale": "In response R-7, Cverbio caps annual fee increases at 7%. PB-09 fallback is 5% and the limit specifically requires escalating any cap above 5%.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-09"
+    },
+    {
+      "issue_id": "r2.breach_notification_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Proposed 72-hour breach notification period exceeds playbook limit",
+      "description": "Vendor offers notification within 72 hours, which exceeds the 48-hour playbook limit.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "vendor_response",
+          "quote": "personal data breach within 72 hours of\nbecoming aware of it",
+          "start": 1341,
+          "end": 1401
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-05",
+      "rationale": "In response R-4, Cverbio offers a 72-hour notification period. PB-05 fallback is 48 hours and the limit mandates escalating any period longer than 48 hours, as a 72-hour window leaves Northwind zero time to meet its own Art. 33 GDPR deadline.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-05"
+    },
+    {
+      "issue_id": "r2.missing_subprocessors_annex_escalation",
+      "task": "escalation",
+      "split": "dev",
+      "title": "Omitted Annex 3 sub-processors list",
+      "description": "Vendor response refers to Annex 3 for the sub-processors list, but the annex was not attached.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_update",
+          "quote": "Annex 3 was not attached to the Cverbio response",
+          "start": 1284,
+          "end": 1332
+        }
+      ],
+      "expected_action": "escalate",
+      "rationale": "Response R-3 refers to the current sub-processor list in Annex 3, but client update U-5 confirms the annex was omitted, leaving sub-processors unverified.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r2.health_data_liability_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Health surveillance records require liability escalation",
+      "description": "Operations decided to upload employee occupational health surveillance records, triggering mandatory escalation of all liability terms.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_update",
+          "quote": "platform will also hold occupational health\nsurveillance records for around 180 laboratory employees who work with hazardous\nsubstances",
+          "start": 384,
+          "end": 519
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-07",
+      "rationale": "Update U-1 introduces special categories of personal data (health surveillance records). Under PB-07, when special categories are processed, the fallback is unavailable and every liability position must be escalated to GC and CFO.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-07"
+    },
+    {
+      "issue_id": "r2.service_improvement_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Perpetual derivative products licence exceeds playbook fallback",
+      "description": "Vendor excludes personal data from service improvement licence but retains perpetual licence for derivative products.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "vendor_response",
+          "quote": "licence remains perpetual and irrevocable and continues to\ncover derivative products",
+          "start": 834,
+          "end": 918
+        }
+      ],
+      "expected_action": "negotiate",
+      "playbook_rule": "PB-02",
+      "rationale": "Response R-2 excludes Customer Personal Data, but retains a perpetual irrevocable licence covering derivative products. PB-02 requires negotiating this down to irreversibly anonymised statistical data that cannot identify Northwind.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-02"
+    },
+    {
+      "issue_id": "r2.missing_transfer_documents_escalation",
+      "task": "escalation",
+      "split": "eval",
+      "title": "Missing intra-group agreement and transfer impact assessment",
+      "description": "Vendor asserts cross-border access is covered by intra-group agreement, but neither agreement nor TIA has been provided.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_update",
+          "quote": "We have also not received\nCverbio's intra-group agreement or any transfer impact assessment",
+          "start": 1334,
+          "end": 1425
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-04",
+      "rationale": "Response R-8 relies on an intra-group agreement for cross-border support access from the US and India, but update U-5 confirms neither the agreement nor the transfer impact assessment has been provided.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-04"
+    },
+    {
+      "issue_id": "r2.works_council_unnotified_escalation",
+      "task": "escalation",
+      "split": "eval",
+      "title": "Works council remains unnotified with advanced go-live date",
+      "description": "Works council has not yet been informed of third-country access to employee data while go-live is accelerated to 15 January 2027.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_update",
+          "quote": "works council has not yet been informed that employee data can be accessed\nfrom outside the EEA",
+          "start": 1152,
+          "end": 1247
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-04",
+      "rationale": "PB-04 limit requires escalating unnotified third-country access to employee data; update U-4 confirms the works council remains unnotified with an earlier go-live date approaching.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-04"
+    },
+    {
+      "issue_id": "r2.transfer_mechanism_conflict",
+      "task": "conflict",
+      "split": "eval",
+      "title": "Intra-group agreement assertion conflicts with unexecuted transfer mechanism clause",
+      "description": "Response R-8 claims remote access is covered by intra-group agreement, while DPA section 9 leaves transfer mechanisms to be addressed if and when needed.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "vendor_response",
+          "quote": "covered by Cverbio's intra-group agreement",
+          "start": 2061,
+          "end": 2103
+        },
+        {
+          "document_id": "dpa",
+          "quote": "parties shall address any\nrequired transfer mechanism separately if and when the need arises",
+          "start": 2651,
+          "end": 2743
+        }
+      ],
+      "rationale": "Response R-8 asserts that international access is covered by Cverbio existing intra-group agreement, contradicting Section 9 of the DPA which states the parties will address transfer mechanisms if and when the need arises.",
+      "source_category": "legal_judgment"
+    }
+  ]
+}
