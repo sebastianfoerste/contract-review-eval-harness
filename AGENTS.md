@@ -18,7 +18,8 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - Synthetic data only. Never add a real agreement or client data.
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.
 - The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`.
+- `examples/web-parity-vectors.json` pins the scorer output in CI, where the web repository is absent. Regenerate it with `make parity-vectors` only for an intended scoring change, then run `make web-export`.
 
 ## Commands
-`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make web-check` · `make web-export` · `make check`.
+`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make parity-check` · `make web-check` · `make web-export` · `make check`.
 

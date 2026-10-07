@@ -53,7 +53,8 @@ This project consists of two synchronized repositories designed to fulfill disti
 
 2. **Automated Parity Verification**:
    - `contract-review-eval-harness/scripts/check_web_sync.py`: Verifies that `contract-eval-web` hashes match the harness, validates version alignment (`0.7.0rc1`), and re-evaluates all parity vectors.
-   - `make web-check`: Embedded directly in the harness's standard `make check` target.
+   - `make web-check`: Embedded directly in the harness's standard `make check` target. It needs the web repository checked out next to the harness, so it does not run in GitHub Actions.
+   - `contract-review-eval-harness/scripts/check_parity_vectors.py` (`make parity-check`): Runs in GitHub Actions. It fails when the committed `examples/web-parity-vectors.json` no longer reproduces byte-for-byte from the current scorer, which makes every scoring change a reviewed diff and the cue to re-export the web app.
    - `contract-eval-web/tests/scoring.test.mjs`: Node test suite that runs 32 tests verifying TypeScript scoring against the exported Python vectors.
 
 ---
