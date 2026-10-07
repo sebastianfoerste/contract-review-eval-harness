@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check web-check web-export check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check web-check web-export matter-check matter-demo check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -27,5 +27,10 @@ robustness-check:
 	uv run python scripts/check_robustness_report.py
 web-check: ; uv run python scripts/check_web_sync.py
 web-export: ; uv run python ../contract-eval-web/scripts/export-benchmark.py --repo .
-check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check web-check
+matter-check:
+	uv run python scripts/matter_sync.py
+	uv run python scripts/matter_sync.py --root tests/fixtures/mini_matter
+	uv run python -m contract_eval matter-check
+matter-demo: ; uv run python -m contract_eval matter-evaluate --root tests/fixtures/mini_matter --matter toy
+check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check matter-check web-check
 

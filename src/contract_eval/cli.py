@@ -503,10 +503,16 @@ def main() -> None:
         default="robustness/campaign.v1.json",
         type=Path,
     )
-    
+
+    from contract_eval import matter_cli
+
+    matter_cli.add_parsers(sub)
+
     args = parser.parse_args()
 
-    if args.cmd == "evaluate":
+    if args.cmd.startswith("matter-"):
+        sys.exit(matter_cli.run(args))
+    elif args.cmd == "evaluate":
         try:
             path = evaluate(
                 case=args.case,

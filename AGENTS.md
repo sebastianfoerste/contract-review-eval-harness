@@ -10,15 +10,18 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `src/contract_eval/scorer.py` — pure scoring functions: clause P/R/F1, risk-flag accuracy, citation grounding, hallucination count. Unit-tested.
 - `src/contract_eval/cli.py` — `evaluate()` pipeline + argparse `main`. `scorecard.py` renders markdown.
 - `data/<case>_sample.md` — synthetic contracts. `expected/<case>.json` — gold answers. `fixtures/<case>_stub.json` — stub model output.
-- `tests/` — pytest.
+- `src/contract_eval/matter.py`, `matter_scorer.py`, `matter_experiment.py`, `matter_cli.py`, `reviewer_sessions.py` — the matter path: several documents, rounds, conditions, evidence-bound scoring per document. See `docs/MATTER_EVALUATION.md`.
+- `matters/<id>/` — a synthetic matter: `matter.json` manifest, `documents/`, `prompts/`, `expected/<round>.json`, optional `fixtures/` and `reviews/`. Contracts under `data/` are referenced by path, never copied.
+- `tests/` — pytest. `tests/fixtures/mini_matter/` is a toy matter whose answers are test data.
 
 ## Rules
 - Python 3.13+, type hints throughout, Pydantic for data models.
 - Default path is offline and deterministic: no network, no API key. `--live` is strictly opt-in and must never break default paths (import the SDK lazily).
 - Synthetic data only. Never add a real agreement or client data.
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.
+- Matter answers under `matters/<id>/expected/` are written by the reviewing lawyer. Never generate them, and never write a stub fixture for a round whose answers are pending. After editing a matter document or an answer quote, run `uv run python scripts/matter_sync.py --write`.
 - The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`.
 
 ## Commands
-`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make web-check` · `make web-export` · `make check`.
+`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make web-check` · `make web-export` · `make matter-check` · `make matter-demo` · `make check`.
 

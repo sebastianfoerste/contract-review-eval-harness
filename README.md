@@ -260,6 +260,40 @@ quoted behind it is visibly unbound.
 It prints no release decision. Policy v3 refuses to certify against a single-annotator
 gold set, and the scorecard says so rather than omitting the section.
 
+## Matter evaluation, nothing scored yet
+
+```bash
+make matter-demo
+uv run python -m contract_eval matter-evaluate --round round2
+```
+
+The cases above each test one document. A matter tests several documents read for one
+client: where they contradict each other, what position the client should take on each
+term, and what cannot be answered from the file. The first matter,
+[`matters/northwind-saas/`](matters/northwind-saas/), puts the three certified
+contracts into one fictional procurement and adds a negotiation record, the vendor's
+security questionnaire, the client's instructions and its playbook. A second round
+adds the vendor's response and a change of facts by the client.
+
+The same round is scored under three conditions that differ only in the documents a
+system may see: the deal documents alone, then the factual record, then the client's
+position. An issue no finding could earn credit on from the documents shown is counted
+as unanswerable for that condition, so a low baseline score separates what could not
+have been known from what was missed.
+
+Scoring is evidence-bound per document. A citation names the document it quotes, and a
+real quote attributed to the wrong document is counted separately from an invented
+one. Issues are assigned to a development or an evaluation split when they are
+written, and a logged run that scores the evaluation split under a second
+configuration is printed as not held out.
+
+No score exists for this matter yet. Its answer sets are drafts, and no model output
+has been captured or scored against them. `make matter-demo` runs the pipeline on a
+toy matter under `tests/fixtures`, whose answers are test data.
+[`docs/MATTER_EVALUATION.md`](docs/MATTER_EVALUATION.md) sets out the method, how
+answers are written, how reviewer sessions are recorded, and which claim each stage
+supports.
+
 ## Gold schema v2, in preparation
 
 Schema v2 replaces named clauses with atomic obligations anchored to raw character

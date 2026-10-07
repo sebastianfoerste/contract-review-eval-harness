@@ -1,0 +1,23 @@
+{
+  "schema": "contract-review-eval.matter-review.v1",
+  "conflicts": [
+    {"finding_id": "k1", "summary": "The delivery periods differ.", "materiality": "high", "evidence": ["c1", "c2"]},
+    {"finding_id": "k2", "summary": "A fixed price and a surcharge right.", "materiality": "high", "evidence": ["c5", "c3"]}
+  ],
+  "positions": [
+    {"finding_id": "p1", "summary": "The surcharge breaks the playbook.", "action": "reject", "materiality": "high", "playbook_rule": "TB-02", "evidence": ["c3", "c7"]},
+    {"finding_id": "p2", "summary": "Ten days is acceptable.", "action": "accept", "materiality": "medium", "playbook_rule": "TB-01", "evidence": ["c1"]}
+  ],
+  "escalations": [
+    {"finding_id": "e1", "question": "Where is Annex R?", "reason": "The returns regime is in an annex that was not provided.", "evidence": ["c6"]},
+    {"finding_id": "e2", "question": "Is the price in euros?", "reason": "Asked although the agreement answers it.", "evidence": ["c5"]}
+  ],
+  "citations": [
+    {"citation_id": "c1", "document_id": "supply", "quote": "deliver the widgets within ten (10) days of each order"},
+    {"citation_id": "c2", "document_id": "schedule", "quote": "delivered within thirty (30) days of each order"},
+    {"citation_id": "c3", "document_id": "schedule", "quote": "fuel surcharge of up to two euros per widget"},
+    {"citation_id": "c5", "document_id": "supply", "quote": "The price is fixed at five euros per widget"},
+    {"citation_id": "c6", "document_id": "supply", "quote": "Returns are handled as set out in Annex R."},
+    {"citation_id": "c7", "document_id": "playbook", "quote": "Reject any surcharge during the first year."}
+  ]
+}
