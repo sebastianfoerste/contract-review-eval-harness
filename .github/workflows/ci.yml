@@ -63,3 +63,6 @@ jobs:
 
       - name: Check the committed robustness artifacts
         run: uv run python scripts/check_robustness_report.py
+
+      - name: Reject scorer drift against the committed web parity vectors
+        run: uv run python scripts/check_parity_vectors.py
