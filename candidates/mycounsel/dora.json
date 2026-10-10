@@ -1,0 +1,35 @@
+{
+  "schema": "mycounsel.playbook.v1",
+  "entries": [
+    {
+      "id": "DORA-LOCATIONS",
+      "category": "STATUTORY_REQUIREMENT",
+      "requirement": "Article 30(2)(b): identify service and data locations and require advance notification of intended location changes."
+    },
+    {
+      "id": "DORA-ASSISTANCE",
+      "category": "STATUTORY_REQUIREMENT",
+      "requirement": "Article 30(2)(f): require assistance for related ICT incidents at no extra cost or a cost fixed in advance."
+    },
+    {
+      "id": "DORA-SLA",
+      "category": "STATUTORY_REQUIREMENT",
+      "requirement": "Article 30(3)(a): for the assumed critical or important function, require full service levels with quantitative and qualitative targets and corrective action."
+    },
+    {
+      "id": "DORA-AUDIT",
+      "category": "STATUTORY_REQUIREMENT",
+      "requirement": "Article 30(3)(e): require the specified monitoring, access, inspection, audit, cooperation and copy rights; assess confidentiality arrangements without blanket exclusion."
+    },
+    {
+      "id": "DORA-RETURN",
+      "category": "STATUTORY_REQUIREMENT",
+      "requirement": "Article 30(2)(d): cover access, recovery and return of personal and non-personal data in an accessible format on the listed disruption or termination events."
+    },
+    {
+      "id": "DORA-EXIT",
+      "category": "STATUTORY_REQUIREMENT",
+      "requirement": "Article 30(3)(f): for the assumed critical or important function, provide an adequate mandatory transition period for continuity and migration."
+    }
+  ]
+}

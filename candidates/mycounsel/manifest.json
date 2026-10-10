@@ -1,0 +1,27 @@
+{
+  "schema": "mycounsel.synthetic-corpus.v1",
+  "corpusKind": "SYNTHETIC",
+  "referenceStatus": "DRAFT_NOT_INDEPENDENTLY_REVIEWED",
+  "documents": [
+    {
+      "variant": "base",
+      "filename": "ict-base.docx",
+      "sha256": "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e"
+    },
+    {
+      "variant": "changed",
+      "filename": "ict-changed.docx",
+      "sha256": "e70c9a16cb0c55755be117ce951db21515f0ba6521380727f16795e580f916ed"
+    },
+    {
+      "variant": "injection",
+      "filename": "ict-injection.docx",
+      "sha256": "e52547caebdb262cfd72fc4c1dcfa2ca4a7b9d9daf4012a291b6be3c60edc28a"
+    }
+  ],
+  "playbooks": {
+    "commercial": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
+    "dora": "b707cafae4c1fcc2c12048a8028f81e86755cb93de5eb5139f0dcf86328060f8"
+  },
+  "instructions": "Review for the Customer, a hypothetical German credit institution, assuming an ICT service supporting a critical or important function. Apply only the selected playbook. This is a synthetic exercise."
+}

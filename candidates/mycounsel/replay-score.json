@@ -1,0 +1,51 @@
+{
+  "schema": "mycounsel.candidate-score.v1",
+  "sourceSha256": "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e",
+  "playbookSha256": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
+  "attemptMode": "REPLAY",
+  "attemptOutcome": "COMPLETED",
+  "findingCount": 4,
+  "duplicateCount": 1,
+  "quotationValid": 3,
+  "quotationDenominator": 3,
+  "missingClauseValid": 1,
+  "missingClauseDenominator": 1,
+  "playbookReferenceValid": 3,
+  "issueMatch": null,
+  "findings": [
+    {
+      "index": 0,
+      "quotationValid": true,
+      "missingClauseValid": null,
+      "playbookReferenceValid": true,
+      "evidenceValid": true
+    },
+    {
+      "index": 1,
+      "quotationValid": true,
+      "missingClauseValid": null,
+      "playbookReferenceValid": true,
+      "evidenceValid": true
+    },
+    {
+      "index": 2,
+      "quotationValid": true,
+      "missingClauseValid": null,
+      "playbookReferenceValid": false,
+      "evidenceValid": false
+    },
+    {
+      "index": 3,
+      "quotationValid": null,
+      "missingClauseValid": true,
+      "playbookReferenceValid": true,
+      "evidenceValid": true
+    }
+  ],
+  "unavailable": {
+    "severityAccuracy": "Native output has no severity field",
+    "wholeDocumentClauseCoverage": "Native output has no complete clause inventory",
+    "amendmentQuality": "Requires separate lawyer review",
+    "tokenUsageAndCost": "The application gateway does not expose token usage or cost."
+  }
+}

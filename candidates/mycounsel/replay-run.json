@@ -1,0 +1,152 @@
+{
+  "schema": "mycounsel.candidate-run.v1",
+  "corpusKind": "SYNTHETIC",
+  "source": {
+    "sha256": "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e",
+    "filename": "ict-base.docx",
+    "clauses": [
+      {
+        "id": "49b47360b6f18639e5a16867393fce37e54ddaeb423ac8fdd467147903bfa551",
+        "paragraph": 0,
+        "text": "SYNTHETIC EXERCISE. No real parties, service or legal advice. ICT Services Agreement.",
+        "editable": true
+      },
+      {
+        "id": "0993565f9b5fae3567fb58e4474b1011f692f207b68649798c297f452a433732",
+        "paragraph": 1,
+        "text": "1. Scope. Example Bank AG, a hypothetical German credit institution, engages Example Systems GmbH to host and operate its customer payment processing platform. For this exercise the service supports a critical or important function. German law governs this agreement.",
+        "editable": true
+      },
+      {
+        "id": "9247a4f892a4d082c5c7ad4d132957fafe1ceffe2a7f9d19d59ab3bf0c917fbd",
+        "paragraph": 2,
+        "text": "2. Fees. The annual fee is EUR 120,000, payable quarterly in advance. The Provider may increase fees by any amount on ten days notice.",
+        "editable": true
+      },
+      {
+        "id": "a4f386ad27f2a6419af581f8758f47bfc1a82419b1e396d7d8e23bdd0ad2ecb6",
+        "paragraph": 3,
+        "text": "3. Term. The initial term is two years. It renews for another two years unless the Customer gives notice at least six months before expiry.",
+        "editable": true
+      },
+      {
+        "id": "b1038e66d302e963a3f2a25e129d33471ed727cb8638f0f0570daaa0b042a937",
+        "paragraph": 4,
+        "text": "4. Availability. The Provider aims for reasonable availability. It measures uptime at its discretion and provides no agreed numerical target or remediation timetable.",
+        "editable": true
+      },
+      {
+        "id": "44af06cf06ad9d1912ecb30187979376b321e20571616f1c157c308d301beec2",
+        "paragraph": 5,
+        "text": "5. Data locations. Services and data storage are currently provided in Germany. The Provider may relocate processing or storage without prior notice to the Customer.",
+        "editable": true
+      },
+      {
+        "id": "3e84d3afcf1a6cd25c8b4f28a305154b9077f2d1a327f061e2baee4e127dc953",
+        "paragraph": 6,
+        "text": "6. Incident assistance. The Provider will assist with service-related ICT incidents. The price and scope of assistance will be negotiated after the incident occurs.",
+        "editable": true
+      },
+      {
+        "id": "60a74666b32dd2ff234628987525df4f7cc12c005d21cc8b0bcc6cd1181935b5",
+        "paragraph": 7,
+        "text": "7. Security. The Provider maintains access controls and encrypted backups. It will implement and test a business contingency plan annually and supply the Customer with the test summary.",
+        "editable": true
+      },
+      {
+        "id": "83a2c3eacd1bab37a32fd5b88ca23d9a1a08b141e0788cd2d42a2eb5a8f46a3b",
+        "paragraph": 8,
+        "text": "8. Audit. The Customer may receive the Provider annual security certificate. Customer, appointed auditor and authority inspections and access to underlying records are excluded.",
+        "editable": true
+      },
+      {
+        "id": "048e8e8e1bd1aa52e7b701825ec95bb4a13d279b962a3abfed06295172878afc",
+        "paragraph": 9,
+        "text": "9. Liability. Provider liability for ordinary negligence is limited to one monthly fee. Liability for intent, gross negligence and injury to life, body or health remains subject to mandatory law.",
+        "editable": true
+      },
+      {
+        "id": "a51256f98e92ca9b302bdbbd99c2973da81e23ad0844dcb01f3c95d631d4b22f",
+        "paragraph": 10,
+        "text": "10. Suspension. The Provider may suspend the entire service immediately if any invoice is disputed or overdue, without notice or an opportunity to cure.",
+        "editable": true
+      },
+      {
+        "id": "88591e836902652d51282932a97e04f8e6ac3686d5e9fc948056e03528fe278e",
+        "paragraph": 11,
+        "text": "11. Data return. At termination the Customer may download its records for seven days. The Provider may then delete every copy. No export format or recovery assistance is agreed.",
+        "editable": true
+      },
+      {
+        "id": "d770f778828754b81b54484e7824c6be1eed909e7de06a953fc86296e00ff52a",
+        "paragraph": 12,
+        "text": "12. Notices and changes. Changes require written agreement. The Customer can raise service questions through its named relationship manager. This document contains the entire synthetic exercise.",
+        "editable": true
+      }
+    ]
+  },
+  "playbook": {
+    "sha256": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
+    "instructions": "{\n  \"schema\": \"mycounsel.playbook.v1\",\n  \"entries\": [\n    {\n      \"id\": \"COM-FEES\",\n      \"category\": \"NEGOTIATED_PREFERENCE\",\n      \"requirement\": \"Require an agreed limit on fee changes, reasonable advance notice and an exit option if the change is rejected.\"\n    },\n    {\n      \"id\": \"COM-RENEWAL\",\n      \"category\": \"NEGOTIATED_PREFERENCE\",\n      \"requirement\": \"Seek a shorter renewal period and a practical notice window; these are customer negotiation preferences.\"\n    },\n    {\n      \"id\": \"COM-SLA\",\n      \"category\": \"COMMERCIAL_RISK\",\n      \"requirement\": \"Flag the lack of measurable availability and a practical remediation timetable as a service continuity risk.\"\n    },\n    {\n      \"id\": \"COM-LIABILITY\",\n      \"category\": \"NEGOTIATED_PREFERENCE\",\n      \"requirement\": \"Seek a liability allocation proportionate to the service exposure; do not state that the preferred cap is mandated by law.\"\n    },\n    {\n      \"id\": \"COM-SUSPENSION\",\n      \"category\": \"COMMERCIAL_RISK\",\n      \"requirement\": \"Seek notice, a cure period and protection against suspension for a reasonably disputed invoice.\"\n    },\n    {\n      \"id\": \"COM-EXIT\",\n      \"category\": \"NEGOTIATED_PREFERENCE\",\n      \"requirement\": \"Seek a defined transition service with pricing and a customer-directed migration timetable.\"\n    }\n  ]\n}\n"
+  },
+  "instructions": "Review for the Customer, a hypothetical German credit institution, assuming an ICT service supporting a critical or important function. Apply only the selected playbook. This is a synthetic exercise.",
+  "instructionsSha256": "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0",
+  "run": {
+    "mode": "REPLAY",
+    "model": "hand-authored-replay-fixture",
+    "promptVersion": "contracts/candidates/2026-09-11",
+    "codeRevision": "041d0157c364f0919ba5227c7159c3d6906507c4",
+    "workingTreeDirty": true,
+    "startedAt": "2026-10-10T09:15:41.839Z",
+    "elapsedMs": 1,
+    "outcome": "COMPLETED",
+    "usage": null,
+    "usageUnavailableReason": "The application gateway does not expose token usage or cost."
+  },
+  "findings": [
+    {
+      "anchorId": "9247a4f892a4d082c5c7ad4d132957fafe1ceffe2a7f9d19d59ab3bf0c917fbd",
+      "insertionAnchorId": null,
+      "quote": "2. Fees. The annual fee is EUR 120,000, payable quarterly in advance. The Provider may increase fees by any amount on ten days notice.",
+      "missingClause": false,
+      "category": "NEGOTIATED_PREFERENCE",
+      "explanation": "Hand-authored demonstration candidate. Its legal merits require independent review.",
+      "proposedAmendment": "",
+      "playbookReference": "COM-FEES"
+    },
+    {
+      "anchorId": "9247a4f892a4d082c5c7ad4d132957fafe1ceffe2a7f9d19d59ab3bf0c917fbd",
+      "insertionAnchorId": null,
+      "quote": "2. Fees. The annual fee is EUR 120,000, payable quarterly in advance. The Provider may increase fees by any amount on ten days notice.",
+      "missingClause": false,
+      "category": "NEGOTIATED_PREFERENCE",
+      "explanation": "Hand-authored demonstration candidate. Its legal merits require independent review.",
+      "proposedAmendment": "",
+      "playbookReference": "COM-FEES"
+    },
+    {
+      "anchorId": "9247a4f892a4d082c5c7ad4d132957fafe1ceffe2a7f9d19d59ab3bf0c917fbd",
+      "insertionAnchorId": null,
+      "quote": "2. Fees. The annual fee is EUR 120,000, payable quarterly in advance. The Provider may increase fees by any amount on ten days notice.",
+      "missingClause": false,
+      "category": "NEGOTIATED_PREFERENCE",
+      "explanation": "Hand-authored demonstration candidate. Its legal merits require independent review.",
+      "proposedAmendment": "",
+      "playbookReference": "UNSUPPORTED-ENTRY"
+    },
+    {
+      "anchorId": null,
+      "insertionAnchorId": "d770f778828754b81b54484e7824c6be1eed909e7de06a953fc86296e00ff52a",
+      "quote": "",
+      "missingClause": true,
+      "category": "NEGOTIATED_PREFERENCE",
+      "explanation": "Hand-authored demonstration candidate. Its legal merits require independent review.",
+      "proposedAmendment": "",
+      "playbookReference": "COM-EXIT"
+    }
+  ],
+  "validation": {
+    "status": "REJECTED",
+    "errorCode": "CONTRACT_PLAYBOOK_REFERENCE"
+  }
+}
