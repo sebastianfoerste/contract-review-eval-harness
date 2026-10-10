@@ -1,7 +1,22 @@
 {
   "schema": "mycounsel.candidate-score.v1",
+  "recordingSha256": "1891bd4bd1143a0d5012ecc5ed93e4d60e213bc4c53900a15a448ecca2352d57",
+  "recordingHashFormat": "utf8-json-sorted-keys-v1",
   "sourceSha256": "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e",
   "playbookSha256": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
+  "instructionsSha256": "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0",
+  "run": {
+    "mode": "REPLAY",
+    "model": "hand-authored-replay-fixture",
+    "promptVersion": "contracts/candidates/2026-09-11",
+    "codeRevision": "041d0157c364f0919ba5227c7159c3d6906507c4",
+    "workingTreeDirty": true,
+    "startedAt": "2026-10-10T09:15:41.839Z",
+    "elapsedMs": 1,
+    "outcome": "COMPLETED",
+    "usage": null,
+    "usageUnavailableReason": "The application gateway does not expose token usage or cost."
+  },
   "attemptMode": "REPLAY",
   "attemptOutcome": "COMPLETED",
   "findingCount": 4,

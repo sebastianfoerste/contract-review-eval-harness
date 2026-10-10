@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from contract_eval.candidates import (
     CandidateRun, CandidateReference, comparison_key, digest,
-    evaluate_candidates, verify_document,
+    evaluate_candidates, recording_digest, verify_document,
 )
 
 CORPUS = Path(__file__).resolve().parents[1] / "candidates" / "mycounsel"
@@ -128,6 +128,17 @@ def test_replay_and_live_or_changed_instructions_are_not_comparable():
     assert comparison_key(artifact) == comparison_key(other)
     other.run.mode = "LIVE"
     assert comparison_key(artifact) != comparison_key(other)
+
+
+def test_score_binds_to_exact_attempt_and_source_revision():
+    artifact = run()
+    result = evaluate_candidates(artifact)
+    assert result["run"]["codeRevision"] == artifact.run.codeRevision
+    assert result["run"]["workingTreeDirty"] is True
+    assert result["instructionsSha256"] == artifact.instructionsSha256
+    other = deepcopy(artifact)
+    other.run.model = "another-model"
+    assert recording_digest(other) != result["recordingSha256"]
     other.run.mode = "REPLAY"
     other.instructionsSha256 = "0" * 64
     assert comparison_key(artifact) != comparison_key(other)

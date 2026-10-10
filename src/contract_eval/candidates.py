@@ -119,6 +119,16 @@ class CandidateRun(Strict):
         return self
 
 
+def recording_digest(artifact: CandidateRun) -> str:
+    """Bounded JSON values: sorted object keys, UTF-8, no insignificant spaces.
+
+    This hashes the entire validated recording, including code and attempt data.
+    It is not a signature or independent attestation of the producer.
+    """
+    return digest(json.dumps(artifact.model_dump(by_alias=True),
+                             ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+
+
 class ReferenceIssue(Strict):
     playbookReference: str
     anchorId: str | None
@@ -228,7 +238,11 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
         }
     return {
         "schema": "mycounsel.candidate-score.v1",
+        "recordingSha256": recording_digest(artifact),
+        "recordingHashFormat": "utf8-json-sorted-keys-v1",
         "sourceSha256": artifact.source.sha256, "playbookSha256": artifact.playbook.sha256,
+        "instructionsSha256": artifact.instructionsSha256,
+        "run": artifact.run.model_dump(),
         "attemptMode": artifact.run.mode, "attemptOutcome": artifact.run.outcome,
         "findingCount": len(findings), "duplicateCount": duplicate_count,
         "quotationValid": sum(r["quotationValid"] is True for r in rows),
