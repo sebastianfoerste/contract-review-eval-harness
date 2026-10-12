@@ -2,12 +2,11 @@
 
 [![CI](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml)
 
-See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
-
 Evaluation harness for legal AI contract review: clause scoring, citation grounding and hallucination counts against a gold answer set. Not legal advice; data is synthetic.
 
 **Public-safety posture:** synthetic contracts only, visible source provenance in every citation check, an explicit human review gate before reliance, and no legal advice.
 Verification manifest: [`docs/verification-manifest.json`](docs/verification-manifest.json).
+See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
 ![demo](docs/demo.png)
 
