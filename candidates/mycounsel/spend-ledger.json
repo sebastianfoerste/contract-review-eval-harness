@@ -1,0 +1,21 @@
+{
+  "schema": "mycounsel.spend-ledger.v1",
+  "currency": "EUR",
+  "capMinorUnits": 10000,
+  "maxPriceAgeDays": 30,
+  "prices": [
+    {
+      "model": "gemini-3.8-flash",
+      "provider": "gemini",
+      "region": "eu",
+      "currency": "EUR",
+      "listCurrency": "USD",
+      "inputMinorUnitsPerMillionTokens": 148,
+      "outputMinorUnitsPerMillionTokens": 737,
+      "verifiedOn": "2026-10-11",
+      "sourceUrl": "https://cloud.google.com/vertex-ai/generative-ai/pricing",
+      "conversionNote": "Gross list price for non-global endpoints, which is what Google's SKU catalogue meters for the eu multi-region: USD 1.65 input and USD 8.25 output per 1M tokens; the output rate covers response and reasoning tokens. The pricing page shows USD 0.825 and USD 4.125 through 2026-12-31 as a promotion granted through credits, which this row ignores. Converted at the ECB euro reference rate of 9 October 2026, EUR 1 = USD 1.1206, and rounded up to whole cents. Cross-check: Google's own EUR SKU prices read the same day were EUR 1.452 and EUR 7.26 per 1M tokens."
+    }
+  ],
+  "entries": []
+}

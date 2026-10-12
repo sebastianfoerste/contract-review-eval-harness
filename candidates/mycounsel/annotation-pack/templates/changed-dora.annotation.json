@@ -1,0 +1,15 @@
+{
+  "schema": "mycounsel.candidate-annotation.v1",
+  "variant": "changed",
+  "playbook": "dora",
+  "documentSha256": "497b6d3fcfc453e978333bf5d6ce618b3372c8298ccc3cf86cba4630b3556c60",
+  "playbookSha256": "69ec8f3380afc47fc356c96d8bdefc7ebcaae3213accb0e3f4e456fb09d4ab8d",
+  "corpusManifestSha256": "076c15b9851f9f56ee0453bffab1058f788368bff7d009017a3099d71e3689d3",
+  "guidelineSha256": "4bd70a40cf2995f2e4b798289038570c07a8a6735f1ea30780e8719850143af8",
+  "sourceRegisterSha256": "ca9760f48430747135d78460e5ff3468c0f3a5c9068c2743f42562456e96c8bd",
+  "annotator": "",
+  "annotatedOn": "",
+  "sawModelOutput": null,
+  "issues": [],
+  "uncertainties": ""
+}

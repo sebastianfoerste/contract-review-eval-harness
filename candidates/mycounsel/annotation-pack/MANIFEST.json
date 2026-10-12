@@ -1,0 +1,35 @@
+{
+  "schema": "mycounsel.annotation-pack.v1",
+  "corpusManifestSha256": "076c15b9851f9f56ee0453bffab1058f788368bff7d009017a3099d71e3689d3",
+  "guidelineSha256": "4bd70a40cf2995f2e4b798289038570c07a8a6735f1ea30780e8719850143af8",
+  "sourceRegisterSha256": "ca9760f48430747135d78460e5ff3468c0f3a5c9068c2743f42562456e96c8bd",
+  "files": {
+    "GUIDELINE.md": "4bd70a40cf2995f2e4b798289038570c07a8a6735f1ea30780e8719850143af8",
+    "documents/base.paragraphs.md": "ec574f8efd228fcd5e2ee7607a53c2a5a7a0c8883ce4083d1c8cdf93462d0526",
+    "documents/changed.paragraphs.md": "fd799eba0a8cfe33736dabf4342cce93e63c1dfebf0c7fab217bc268e3fc63a7",
+    "documents/ict-base.docx": "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e",
+    "documents/ict-changed.docx": "497b6d3fcfc453e978333bf5d6ce618b3372c8298ccc3cf86cba4630b3556c60",
+    "documents/ict-injection.docx": "e52547caebdb262cfd72fc4c1dcfa2ca4a7b9d9daf4012a291b6be3c60edc28a",
+    "documents/injection.paragraphs.md": "9fa6d4ad6ddf5fd0b9f638a8956ea83bea54605b407f94948b0813954e321e1f",
+    "instructions.md": "c3a7d3ac83154656e9b32d903864cea79cf7f5d8608b79e769800aa0c2a47d72",
+    "playbooks/commercial.json": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
+    "playbooks/commercial.md": "6b023f0ed526e4a2ad499818f8f5e144a81a5af4583270feb01f35776e505703",
+    "playbooks/dora.json": "69ec8f3380afc47fc356c96d8bdefc7ebcaae3213accb0e3f4e456fb09d4ab8d",
+    "playbooks/dora.md": "9e4d8598d537db87b21caa915a53935dfa12fc0083401c1fa5e5752393ece603",
+    "sources/eu-2022-2554-art30-oj-en.txt": "ab244092c503ac68ab78f890ff15f2b4821ba536aa17d4c3894efc43b632d019",
+    "sources/sources.json": "ca9760f48430747135d78460e5ff3468c0f3a5c9068c2743f42562456e96c8bd",
+    "templates/base-commercial.annotation.json": "c4a0a353ba6e4436ca17352ce8b1717765a833dcd3e4e48aa6cc04c73c4aae11",
+    "templates/base-dora.annotation.json": "8713989f88832637c05dc019a679a8965616473ce6fe3cf1c8042bf584f8a600",
+    "templates/changed-commercial.annotation.json": "c7496db515c506a73c395605205a828c3ce92562b35fd7594f994d57eeee9dbe",
+    "templates/changed-dora.annotation.json": "227aedfae03992b55c392fb0ba495b18c90c041dd1135297bd767f58b5c3f604",
+    "templates/injection-commercial.annotation.json": "9322f6182315fcb6e619103c309dc3e1d68721c01672e362005d42905e3cb6e9",
+    "templates/injection-dora.annotation.json": "45a200cb6d1b94b7612b2ba64fb10b2db3216bfe944d068d0b58188c0cb3dc0e"
+  },
+  "withheld": [
+    "replay-run.json (hand-authored demonstration findings)",
+    "replay-score.json (the evaluator's output for that replay)",
+    "README.md of the corpus (describes how the variants were constructed)",
+    "build_fixtures.py (constructs the variants)",
+    "any model output, experiment report or earlier annotation"
+  ]
+}

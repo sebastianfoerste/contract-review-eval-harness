@@ -1,0 +1,49 @@
+{
+  "schema": "mycounsel.source-register.v1",
+  "sources": [
+    {
+      "id": "SRC-DORA-ART30",
+      "instrument": "Regulation (EU) 2022/2554 (DORA)",
+      "provision": "Article 30",
+      "language": "en",
+      "edition": "Official Journal text, OJ L 333, 27.12.2022, CELEX 32022R2554",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32022R2554",
+      "fetchedAt": "2026-10-11T18:13:00Z",
+      "snapshot": "sources/eu-2022-2554-art30-oj-en.txt",
+      "snapshotTextSha256": "9867e4a9bbce73fd203b26d8d568c9d48417c184a9f9b75e559355340fcf32fb",
+      "status": "SOURCE_CHECKED_NOT_LAWYER_REVIEWED",
+      "currentTextChecked": true,
+      "currentTextNote": "Checked on 2026-10-11 against the Publications Office repository, the document store behind EUR-Lex. No act has amended Regulation (EU) 2022/2554. Nine corrigenda exist, R(01) to R(09), dated 4.5.2023 to 21.11.2025, none for the English language version. The only consolidated version is 02022R2554-20221227, in twelve languages without English. A second download of the English Official Journal text on the same day reproduced the snapshot hash. The EUR-Lex website answered automated requests with a browser check, so its own display of consolidated versions and corrigenda was not read.",
+      "usedBy": [
+        "DORA-LOCATIONS",
+        "DORA-ASSISTANCE",
+        "DORA-SLA",
+        "DORA-AUDIT",
+        "DORA-RETURN",
+        "DORA-EXIT"
+      ],
+      "pinpoints": {
+        "DORA-LOCATIONS": "Article 30(2)(b)",
+        "DORA-ASSISTANCE": "Article 30(2)(f)",
+        "DORA-SLA": "Article 30(3)(a)",
+        "DORA-AUDIT": "Article 30(3)(e)",
+        "DORA-RETURN": "Article 30(2)(d)",
+        "DORA-EXIT": "Article 30(3)(f)"
+      },
+      "applicabilityAssumptions": [
+        "The customer is a credit institution and therefore a financial entity (Article 2(1)(a) and Article 2(2)). Stipulated, not assessed.",
+        "The ICT service supports a critical or important function as defined in Article 3, point (22), so Article 30(3) applies in addition to Article 30(2). Stipulated, not assessed.",
+        "The customer is stipulated not to be a microenterprise within Article 3, point (60), so the derogation in Article 30(3), second subparagraph, which relates to point (e), does not apply.",
+        "Regulation (EU) 2022/2554 has applied since 17 January 2025 (Article 64, second paragraph)."
+      ],
+      "notCovered": [
+        "The other elements of Article 30: paragraph 1, paragraph 2 points (a), (c), (e), (g), (h) and (i), paragraph 3 points (b), (c) and (d), and paragraph 4.",
+        "Commission Delegated Regulation (EU) 2025/532 of 24 March 2025 on subcontracting, adopted on the basis of Article 30(5), OJ L, 2025/532, 2.7.2025, in force since 22 July 2025.",
+        "Commission Delegated Regulation (EU) 2024/1773 of 13 March 2024 on the policy on contractual arrangements, adopted on the basis of Article 28(10), OJ L, 2024/1773, 25.6.2024, in force since 15 July 2024.",
+        "Article 28(3), (7) and (8) of Regulation (EU) 2022/2554: the register of information, the circumstances in which the contract must be terminable, and exit plans.",
+        "National law and supervisory guidance, including BaFin circulars. The equally authentic German language version of the Regulation was not used."
+      ],
+      "reviewedOn": null
+    }
+  ]
+}
