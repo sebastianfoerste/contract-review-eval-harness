@@ -23,7 +23,7 @@ Runs end to end, offline and deterministically.
 
 ## Interactive Web Explorer: Evidence Lab
 
-The companion web app, `contract-eval-web`, lets you explore these cases in a browser without installing Python or calling a live model. It is maintained in a separate repository.
+The companion web app, `contract-eval-web`, lets you explore these cases in a browser without installing Python or calling a live model. It is maintained in a separate repository that is not public yet.
 
 - **Features**: inspect the synthetic contracts, switch between the *baseline*, *no-evidence*, *missed-risks* and *conflicting-flags* scenarios, compare scores side by side, inspect quote grounding, and download Markdown or JSON reports.
 - **Scoring parity**: the web app ports `score_review` to TypeScript. Its tests check the port against vectors this harness computes for every case and scenario. That covers the bounded public inputs, not arbitrary documents.
