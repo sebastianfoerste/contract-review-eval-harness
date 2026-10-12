@@ -122,6 +122,9 @@ class Comparison(Strict):
     onlyInB: list[Located]
     disagreements: list[Disagreement]
     statistics: Statistics
+    # Agreed issues that an annotator marked LOW. They need no decision and are shown to
+    # the adjudicator all the same.
+    lowConfidenceAgreed: list[Located] = Field(default_factory=list)
     # Free text the template could not hold. Outside the key comparison, shown in the ledger.
     uncertaintiesA: str
     uncertaintiesB: str
@@ -210,6 +213,9 @@ def _day(value: str) -> date | None:
         return date.fromisoformat(value)
     except ValueError:
         return None
+
+
+MIN_NAME_CHARS = 4
 
 
 def _person(name: str) -> str:
@@ -318,6 +324,8 @@ def compare(a: Annotation, b: Annotation) -> Comparison:
             "onlyInB": len(only["B"]),
             "positiveAgreement": 2 * len(agreed) / raised if raised else None,
         },
+        "lowConfidenceAgreed": [_located(key) for key in agreed
+                                if "LOW" in (issues["A"][key].confidence, issues["B"][key].confidence)],
         "uncertaintiesA": a.uncertainties,
         "uncertaintiesB": b.uncertainties,
     })
@@ -454,6 +462,15 @@ def resolve(a: Annotation, b: Annotation, adjudication: Adjudication, corpus_dir
         raise ValueError("adjudication has no reference to the note that identifies the independent annotator")
     if adjudication.adjudicatedOn < max(a.annotatedOn, b.annotatedOn):
         raise ValueError("adjudication is dated before an annotation it resolves")
+    # The evidence reference is copied into the reference and into every report. The
+    # guideline promises the annotators letters there, not names. Short labels are let
+    # through: a one-letter label would otherwise refuse every sentence.
+    evidence = _person(adjudication.reviewerEvidence)
+    named = [side for side, name in (("A", a.annotator), ("B", b.annotator))
+             if len(_person(name)) >= MIN_NAME_CHARS and _person(name) in evidence]
+    if named:
+        raise ValueError("the evidence reference repeats what annotator " + " and ".join(named) + " wrote as "
+                         "their name; point to the note that identifies the person instead")
 
     issues = {"A": {_key(issue): issue for issue in a.issues}, "B": {_key(issue): issue for issue in b.issues}}
     # Every issue of both annotations is resolved, not only the ones that enter the
@@ -479,6 +496,14 @@ def resolve(a: Annotation, b: Annotation, adjudication: Adjudication, corpus_dir
                 f"Adjudication, INCLUDE: {decision.reasoning.strip()}"
             )
             low_confidence += raiser.confidence == "LOW"
+    absent = {key[0] for key in rationales if key[2]}
+    located = {key[0] for key in rationales if not key[2]}
+    if absent & located:
+        # The guideline's tie-break holds for the reference as it holds for one annotation:
+        # no output could match an entry that is expected both ways.
+        raise ValueError(
+            "the reference would expect an entry both as a missing clause and at a paragraph: "
+            + ", ".join(sorted(absent & located)) + "; include one reading and exclude the other")
     reference = {
         "schema": REFERENCE_SCHEMA,
         "sourceSha256": comparison.documentSha256,
@@ -591,6 +616,15 @@ def render_ledger(comparison: Comparison) -> str:
             )
             lines += _quote(item.rationale, indent="   ")
         lines.append("")
+    if comparison.lowConfidenceAgreed:
+        lines += [
+            "## Agreed issues marked low confidence",
+            "",
+            "Both annotators raised these, and at least one of them was unsure. No decision is needed.",
+            "",
+            *[f"- {_cell(item.playbookReference)}, {_place(item.paragraph)}" for item in comparison.lowConfidenceAgreed],
+            "",
+        ]
     lines += [
         "## Recorded uncertainties",
         "",

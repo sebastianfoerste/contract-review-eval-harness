@@ -79,11 +79,12 @@ otherwise carries the reason it is absent. Cost is never part of a recording.
 ## Source register
 
 `sources.json` lists the primary source the DORA playbook relies on, with the
-URL, fetch time, snapshot path and SHA-256 of the provision text. The code holds
-the register to its claims: the snapshot must hash to the registered value, every
-entry it cites must exist in a playbook with a pinpoint, and every statutory
-playbook entry must be covered. A register that lags the playbook stops the pack
-from building.
+URL, fetch time, snapshot path and SHA-256 of the provision text. The code checks
+three things: the snapshot hashes to the registered value, every entry the
+register cites exists in a playbook with a pinpoint, and every statutory playbook
+entry is covered. A register that lags the playbook stops the pack from building.
+The register's status, its dates, its note on the currency of the text and the
+wording of each pinpoint are statements by the maintainer; no code checks them.
 
 The snapshot file under `sources/` holds the Official Journal text of Article 30
 of Regulation (EU) 2022/2554. On 11 October 2026 it was compared with a second
@@ -91,15 +92,28 @@ download from the Publications Office repository: identical, no amending act, no
 English corrigendum and no English consolidated version. The EUR-Lex website's own
 display was not read, because it answered automated requests with a browser
 check. The six playbook sentences were then aligned with the wording of
-Article 30(2)(b), (d), (f) and 30(3)(a), (e), (f).
+Article 30(2)(b), (d), (f) and 30(3)(a), (e), (f). The audit entry repeats points
+(i) to (iv) of Article 30(3)(e) with "customer" and "provider" in place of the
+defined terms.
 
 The register's status is `SOURCE_CHECKED_NOT_LAWYER_REVIEWED`. Open for the
 lawyer review, among others: whether a rate card satisfies "a cost that is
-determined ex-ante" in Article 30(2)(f), and how the unrestricted audit rights in
-Article 30(3)(e)(i) sit with the alternative assurance levels in point (ii). The
-register's `notCovered` list names what a playbook drawn from six points of
-Article 30 leaves out, including the two delegated regulations on subcontracting
-and on the policy on contractual arrangements.
+determined ex-ante" in Article 30(2)(f); how the unrestricted audit rights in
+Article 30(3)(e)(i) sit with the alternative assurance levels in point (ii); and
+whether a reviewer should expect the Lead Overseer of point (iii) to be named
+where the provider is not designated critical. The register's `notCovered` list
+names what a playbook drawn from six points of Article 30 leaves out, including
+the two delegated regulations on subcontracting and on the policy on contractual
+arrangements.
+
+The lawyer review comes before the pack is sent. `manifest.json`, `sources.json`
+and `annotation/GUIDELINE.md` are hashed into every template, annotation and
+reference. A later edit to any of them, a status change in the register included,
+is a new edition: annotations made from the earlier pack are refused, and an
+experiment built on references from them stops aggregating. Playbooks and
+documents are written by `build_fixtures.py`; change them there, then run
+`python candidates/mycounsel/build_fixtures.py`, `make candidate-pack` and
+`make candidate-bundle`, and plan the experiments again.
 
 ## Blind annotation
 
@@ -110,7 +124,9 @@ hashes every file and names what was withheld. `make candidate-pack-check`
 recomputes those hashes and rebuilds the pack in a scratch directory, so a pack
 that predates a change to the guideline, a playbook or the register fails.
 `make candidate-bundle` zips a pack that passes the same check and prints the
-archive's SHA-256.
+archive's SHA-256. The build refuses to replace a pack folder in which a template
+has been filled in: returned and own annotations are kept outside
+`annotation-pack/`.
 
 A template carries eight binding fields the annotator leaves unchanged: schema,
 variant, playbook and the hashes of the document, the playbook, the corpus
@@ -157,9 +173,12 @@ with one undecided entry per difference, bound to both annotation files by hash,
 and never overwrites a file. `resolve` refuses until every entry is decided
 `INCLUDE` or `EXCLUDE` with written reasons and the record names the adjudicator,
 the date, which annotator is independent of the maintainer and the note that
-identifies that person. The returned annotation files are never edited: any
-change breaks the hashes the record binds. The reference carries hashes and the
-letters A and B, not names.
+identifies that person. It also refuses a record that includes one entry both as
+a missing clause and at a paragraph, and an evidence note that repeats a name an
+annotator wrote. Agreed issues that either annotator marked low confidence are
+listed in the ledger without a decision. The returned annotation files are never
+edited: any change breaks the hashes the record binds. The reference carries
+hashes and the letters A and B, not names.
 
 Annotation files and adjudication records contain the names or labels their
 authors wrote. Whether they are committed to this public repository is the
@@ -181,9 +200,13 @@ uv run python -m contract_eval.candidate_experiment add-reference <dir> --playbo
 uv run python -m contract_eval.candidate_experiment reserve <dir> --arm baseline --id <reservation-id> \
   --provider gemini --region eu --max-input-tokens <n> --max-output-tokens <n>
 uv run python -m contract_eval.candidate_experiment register <dir>
-uv run python -m contract_eval.candidate_experiment aggregate <dir> --out <dir>/report.json --markdown <dir>/report.md
 uv run python -m contract_eval.candidate_experiment settle <dir> --arm baseline --id <settlement-id>
+uv run python -m contract_eval.candidate_experiment aggregate <dir> --out <dir>/report.json --markdown <dir>/report.md
 ```
+
+The attempts are dispatched between `reserve` and `register`, by the recorder in
+ZuRecht. `settle` comes before the last `aggregate`: a settlement changes the
+arm's ledger state, and a report written before it no longer reproduces.
 
 What each step freezes or refuses:
 
@@ -201,8 +224,18 @@ What each step freezes or refuses:
 - `reserve` is for LIVE experiments only. It requires a reference for every
   cell and no attempt file for the arm, writes the worst-case hold into the
   ledger together with a hash of the arm's whole definition, and binds the
-  reservation to the arm. `void` releases it while nothing was dispatched.
-- `register` checks each newly recorded attempt in full and binds it by hash.
+  reservation to the arm. `void` releases it while nothing was dispatched. The
+  ledger is saved before the experiment file; if the second save fails, the same
+  `reserve` command binds the reservation that exists, and `void` releases it.
+- `register` checks each newly recorded attempt in full and binds it by hash. For
+  a LIVE experiment it reads the ledger first, so it never binds an attempt that
+  aggregation would then refuse.
+- An empty slot file is a dispatch that left no recording. The recorder creates
+  the slot empty before its paid call and fills it afterwards, so an empty file
+  means the call may have been billed. `register` binds it, the report counts it
+  as a failed attempt that found nothing, and `settle` charges its full hold. A
+  slot file damaged in any other way is refused; empty it to account for the
+  dispatch. An attempt file is never deleted.
 - `aggregate` refuses an attempt whose prompt version, code revision, model,
   mode, document, playbook or business instructions differ from the
   preregistration; a LIVE attempt from a dirty working tree; a registered attempt
@@ -212,7 +245,12 @@ What each step freezes or refuses:
   without a reservation, a reservation that differs from the bound one, an arm
   whose definition changed after the reservation, an attempt that started before
   the reservation or on a price older than the ledger allows, a voided
-  reservation with attempts, and attempts registered after settlement.
+  reservation with attempts, and attempts registered after settlement. A
+  settlement is recomputed from the registered attempts at the reserved price:
+  another amount in the ledger, or other attempt files than the ones settled, is
+  refused. So is a reservation the ledger holds for this experiment that no arm
+  binds any more, and a reference that still expects an entry the design declares
+  repaired.
 
 The report gives every planned cell: planned, observed, completed, refused and
 failed attempts; findings, duplicates, trivial quotations, quotation and playbook
@@ -221,21 +259,31 @@ recorder's own flag; identical outputs across repetitions; provider-reported
 usage; and, where a reference is registered, precision and recall over all
 observed attempts, the same figures after application validation, and entry-level
 recall. Injection variants add how many completed attempts returned nothing and
-how many findings quoted the injected paragraph. A variant declared with
+how many findings were anchored on the injected paragraph. A variant declared with
 `--repaired` adds how many findings still cite the repaired entry. Baseline and
 iteration are compared only on identical inputs and only where both have a
-completed attempt; each difference is shown with the two values behind it.
+completed attempt; each difference is shown with the two values behind it and the
+observed and planned attempts of both arms. Entry-level figures count distinct
+entries and matching figures count entry and place, so neither bounds the other.
 
 `experiments/replay-dry-run/` is the zero-cost worked example: the one
 hand-authored replay registered in a twelve-slot REPLAY design. Its report shows
 one observed attempt and eleven not run, no reference and no comparison.
 `make candidate-experiment-check` re-aggregates every committed experiment and
-fails if a report differs by a byte.
+fails if a report differs by a byte. It also fails on a report or experiment file
+outside an experiment folder, on two folders with one experiment id, and on a
+ledger whose cap is not the portfolio's EUR 100.
 
 Limits. Time order and freezing are evidence from files the operator maintains,
 not a signature; committing the experiment file and the ledger before dispatch is
 what makes the order provable to someone else. A REPLAY experiment reserves
 nothing and has no such freeze. No tooling here verifies who an annotator is.
+Until an arm is settled, nothing but the commit history shows that a registered
+hash was reset by hand: commit after every step and settle an arm as soon as its
+attempts are registered. The rule texts and the 20-character floor are code. They
+are printed in every report, and the check fails when they change, but the arm
+hash does not cover them: a rule change after a reservation shows in the commit
+history, not in a refusal.
 
 ## Spend ledger
 
@@ -251,17 +299,23 @@ uv run python -m contract_eval.candidate_budget price --model gemini-3.8-flash -
 - A price row is read from the provider's page on the stated date. A row older
   than `maxPriceAgeDays` refuses to reserve, and an attempt dispatched on a row
   that old is refused at aggregation. A row cannot be changed while a reservation
-  made at other figures is open.
+  made at other figures is open. The ledger counts days in UTC. A row dated one
+  day ahead of the UTC day is accepted, because the operator's local day starts
+  earlier; a later date is refused.
 - The hold for one attempt is maximum input tokens times the input price plus
   the provider-side output ceiling times the output price, rounded up to a whole
   cent. The output ceiling includes the gateway's thinking headroom, because
   thinking is billed as output. A price converted from another list currency
   carries a 10 per cent allowance, stored with the reservation. The reservation
   is that hold times the arm's attempts times a retry multiplier.
-- A settlement is an upper estimate: reported usage at the reserved price,
-  rounded up once, plus the full hold for every observed attempt that reported
-  no usage. Planned attempts that never ran cost nothing. The provider's invoice
-  is authoritative.
+- A settlement is an estimate from one recorded response per attempt: reported
+  usage at the reserved price, rounded up once, plus the full hold for every
+  observed attempt that reported no usage or left no recording. A reported input
+  of zero is not believed; that attempt costs its hold or its reported output,
+  whichever is more. Planned attempts that never ran cost nothing. The retry
+  allowance ends at settlement. The provider's invoice is authoritative and the
+  ledger has no entry for it: the cap is a cap on estimated spend, and the
+  invoice is compared with the settlements before the next reservation.
 - Entries are appended in time order and validated as a history. A reservation
   that would pass the cap is refused. A settlement is a fact: it is recorded even
   above its reservation, and the status then reports the overrun.

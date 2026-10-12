@@ -33,7 +33,7 @@ SOURCE_SHA = "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e"
 CHANGED_SHA = "497b6d3fcfc453e978333bf5d6ce618b3372c8298ccc3cf86cba4630b3556c60"
 INJECTION_SHA = "e52547caebdb262cfd72fc4c1dcfa2ca4a7b9d9daf4012a291b6be3c60edc28a"
 PLAYBOOK_SHA = "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c"
-DORA_PLAYBOOK_SHA = "69ec8f3380afc47fc356c96d8bdefc7ebcaae3213accb0e3f4e456fb09d4ab8d"
+DORA_PLAYBOOK_SHA = "cc93a15be20d867d0d4be0826fa4992007c63293dfe9d7a4e8c460f8cb57abbd"
 # jq -rj .instructions replay-run.json | shasum -a 256
 INSTRUCTIONS_SHA = "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0"
 # jq -cS . replay-run.json and jq -cS .findings replay-run.json, without the final newline.
@@ -1558,3 +1558,24 @@ def test_cli_refuses_a_reference_for_another_document(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="different source or playbook"):
         cli(monkeypatch, REPLAY, "--document", BASE_DOCUMENT, "--reference", gold, "--out", out)
     assert not out.exists()
+
+
+# --- round two -----------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("field, value", [
+    ("inputTokens", True), ("outputTokens", "5"), ("inputTokens", 5.0), ("cacheReadTokens", "7"),
+    ("thinkingTokens", False), ("outputTokens", None),
+])
+def test_a_token_count_is_a_json_integer_and_nothing_that_merely_reads_as_one(field, value):
+    with pytest.raises(ValidationError):
+        with_run(usage=USAGE | {field: value}, usageUnavailableReason=None)
+
+
+def test_a_quotation_of_nothing_is_never_substantive():
+    from contract_eval.candidates import _substantive_quote
+    assert not _substantive_quote("", "")
+    assert not _substantive_quote("  \n ", "   ")
+    # A whole short paragraph is substantive, however its whitespace runs.
+    assert _substantive_quote("Short  text.", " Short text. ")
+    assert not _substantive_quote("Short", "Short text.")

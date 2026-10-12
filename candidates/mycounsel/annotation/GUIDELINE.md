@@ -34,9 +34,19 @@ One expected issue is one playbook entry applied to one place.
 - Two different paragraphs each fall short of the same entry: write two issues.
 - One paragraph falls short of two entries: write two issues.
 
-Tie-break: locate an issue at a paragraph whenever some paragraph deals with the
-entry's subject, however thinly. Use `missingClause` only when none does. One entry
-is never both missing and located in the same file; the template check refuses that.
+Tie-break: the subject of an entry is the specific right or obligation the entry
+asks for, not the wider topic it belongs to. Locate an issue at a paragraph whenever
+some paragraph deals with that subject, however thinly. Use `missingClause` only
+when none does. Where several paragraphs touch the subject, name the one that comes
+closest, and write a second issue only where another paragraph separately falls
+short. One entry is never both missing and located in the same file; the template
+check refuses that.
+
+An invented illustration, on a subject that is in neither playbook. An entry asks
+for the provider to hold insurance of a stated minimum amount. A paragraph that makes
+the provider liable for damage deals with liability, not with insurance: record a
+missing clause. A paragraph that requires insurance and states no amount deals with
+the subject and falls short: record the issue at that paragraph.
 
 Apply only the playbook named in the template. A commercial preference is not a
 statutory requirement and the other way round; do not borrow entries across
@@ -56,15 +66,24 @@ of the following hold:
    yours.
 2. The entry exists in the playbook and the finding files it under the entry's
    category.
-3. A finding on an existing paragraph quotes a passage of at least 20 characters that
-   appears verbatim in that paragraph, and proposes no separate insertion point.
-4. A missing-clause finding carries no quotation.
+3. A finding on an existing paragraph quotes a passage that appears verbatim in
+   that paragraph and proposes no separate insertion point. The passage has at
+   least 20 characters once runs of spaces and line breaks are read as one space,
+   or it is the whole paragraph where the paragraph is shorter.
+4. A missing-clause finding carries no quotation and names no paragraph as its
+   place. If it proposes where a new clause should go, that place is a paragraph of
+   the document.
 
 A finding that is repeated matches once, and each repetition counts against the
 candidate. Every finding that does not match counts against it too. An attempt that
 returns nothing has found none of your issues. The explanation and the amendment
 text of a finding are not matched at all; they go to lawyer review. The result is a
 matching proxy, not a judgment of legal correctness.
+
+The candidate is not told the tie-break above. A finding that raises the right
+entry at another place, or as missing where you located it, does not match. A
+second figure is therefore reported beside the first: whether each entry you
+expected was raised at all, whatever the place.
 
 ## Rationale, confidence and doubts
 
@@ -122,6 +141,10 @@ edited. Where the two files differ, each difference is decided in writing with
 reasons, and the record of those decisions is kept. Only then is a reference called
 independently reviewed. The reference carries hashes and the letters A and B, not
 names.
+
+Your returned file is kept with the experiment it supports and may be published
+with it, including what you wrote in `annotator`. Write your name there only if you
+agree to that; otherwise use the label agreed with the maintainer.
 
 ## Return
 

@@ -39,6 +39,9 @@ so.
   and, if the work is published, in its acknowledgements. Please tell me whether
   you agree and how you would like to be described. Without your agreement your
   contribution stays unnamed.
+- The templates you return are kept with the experiment record and may be
+  published with it, including the `annotator` field. Please write your name
+  there only if you agree to that. Otherwise use the label "[label]".
 
 Thank you, and do call if anything in the guideline is unclear.
 
@@ -48,9 +51,17 @@ Sebastian
 
 Notes for Sebastian before sending:
 
-- Attach `candidates/mycounsel/annotation-bundle/mycounsel-annotation-pack.zip`
-  (rebuild with `make candidate-bundle` after any change to the playbooks or the
-  source register; the command prints the archive's SHA-256).
+- Complete the legal review of the playbooks and the source register first. The
+  guideline, the register and the manifest are hashed into every template; an
+  edit after sending makes the returned annotations unusable.
+- Attach `candidates/mycounsel/annotation-bundle/mycounsel-annotation-pack.zip`.
+  After any change to the guideline, the playbooks, the documents or the source
+  register, rebuild in this order: `python candidates/mycounsel/build_fixtures.py`
+  (playbooks and documents are written there), `make candidate-pack`,
+  `make candidate-bundle`. The last command prints the archive's SHA-256.
+- Agree with the annotator whether the `annotator` field carries a name or a
+  label before the templates are filled, and replace "[label]" above.
 - Record the annotator's name, the date sent, the archive hash and the remit in a
   dated note. That note is what `reviewerEvidence` later points to.
-- Fill your own six templates before you open the annotator's return.
+- Fill your own six templates before you open the annotator's return, in a copy
+  outside `annotation-pack/`.

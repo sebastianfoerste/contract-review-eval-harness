@@ -21,7 +21,7 @@
   ],
   "playbooks": {
     "commercial": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
-    "dora": "69ec8f3380afc47fc356c96d8bdefc7ebcaae3213accb0e3f4e456fb09d4ab8d"
+    "dora": "cc93a15be20d867d0d4be0826fa4992007c63293dfe9d7a4e8c460f8cb57abbd"
   },
   "instructions": "Review for the Customer, a hypothetical German credit institution, assuming an ICT service supporting a critical or important function. Apply only the selected playbook. This is a synthetic exercise."
 }

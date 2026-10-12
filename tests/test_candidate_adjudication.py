@@ -669,3 +669,50 @@ def test_an_annotation_has_no_status_for_adjudication_to_read():
     assert "status" not in Annotation.model_fields and "reviewerEvidence" not in Annotation.model_fields
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
         first(status="INDEPENDENTLY_REVIEWED")
+
+
+# --- round two -----------------------------------------------------------------------------
+
+
+def test_resolve_refuses_one_entry_included_both_as_a_missing_clause_and_at_a_paragraph():
+    # The tie-break of the guideline holds for the reference as it holds for one annotation.
+    a, b = first(), second()
+    raw = record(a, b, {EXIT_MISSING: "INCLUDE", EXIT_AT_11: "INCLUDE", SLA: "EXCLUDE"})
+    with pytest.raises(ValueError, match="both as a missing clause and at a paragraph: COM-EXIT"):
+        resolved(a, b, raw)
+    either = record(a, b, {EXIT_MISSING: "EXCLUDE", EXIT_AT_11: "INCLUDE", SLA: "EXCLUDE"})
+    assert sorted((issue["playbookReference"], issue["missingClause"])
+                  for issue in resolved(a, b, either)["issues"]) == [("COM-EXIT", False), ("COM-FEES", False)]
+
+
+def test_the_ledger_lists_agreed_issues_that_either_annotator_marked_low():
+    comparison = compare(first(), low(second(), "COM-FEES"))
+    assert keys(comparison.lowConfidenceAgreed) == [FEES]
+    ledger = render_ledger(comparison)
+    assert "## Agreed issues marked low confidence" in ledger.splitlines()
+    assert "- COM-FEES, P2" in ledger.splitlines()
+    unmarked = compare(first(), second())
+    assert unmarked.lowConfidenceAgreed == []
+    assert "## Agreed issues marked low confidence" not in render_ledger(unmarked)
+
+
+def test_a_low_mark_on_an_issue_only_one_annotator_raised_is_not_an_agreed_low_issue():
+    assert compare(first(), low(second(), "COM-SLA")).lowConfidenceAgreed == []
+
+
+@pytest.mark.parametrize("note", [
+    "Note of 2026-10-11 on Test Annotator A",
+    "note of 2026-10-11 on test annotator b",
+    "TEST  ANNOTATOR  A, note of 2026-10-11",
+])
+def test_resolve_refuses_an_evidence_note_that_repeats_what_an_annotator_wrote_as_a_name(note):
+    # The note is copied into the reference and into every report, which carry letters, not names.
+    a, b = first(), second()
+    with pytest.raises(ValueError, match="repeats what annotator [AB] wrote as their name"):
+        resolved(a, b, record(a, b, reviewerEvidence=note))
+
+
+def test_a_short_label_in_the_annotator_field_does_not_refuse_an_evidence_note():
+    a, b = first(annotator="A1"), second(annotator="B2")
+    reference = resolved(a, b, record(a, b, reviewerEvidence="test-note A1 and B2 of 2026-10-11"))
+    assert reference["status"] == "INDEPENDENTLY_REVIEWED"

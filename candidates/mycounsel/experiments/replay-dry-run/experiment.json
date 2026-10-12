@@ -2,7 +2,7 @@
   "schema": "mycounsel.candidate-experiment.v1",
   "experimentId": "replay-dry-run",
   "corpusDir": "../..",
-  "corpusManifestSha256": "076c15b9851f9f56ee0453bffab1058f788368bff7d009017a3099d71e3689d3",
+  "corpusManifestSha256": "528c537edf925703248347463e4d7b5d4d41072491a121bfbdfaa2ba452e196e",
   "instructionsSha256": "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0",
   "design": {
     "mode": "REPLAY",

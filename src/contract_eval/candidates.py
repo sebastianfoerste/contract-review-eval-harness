@@ -87,10 +87,11 @@ class Usage(Strict):
     states it. The two shares are information and are never added to their totals again.
     """
 
-    inputTokens: int = Field(ge=0)
-    outputTokens: int = Field(ge=0)
-    cacheReadTokens: int | None = Field(default=None, ge=0)
-    thinkingTokens: int | None = Field(default=None, ge=0)
+    # Strict: a JSON true or the text "5" is not a count and must not be read as one.
+    inputTokens: int = Field(ge=0, strict=True)
+    outputTokens: int = Field(ge=0, strict=True)
+    cacheReadTokens: int | None = Field(default=None, ge=0, strict=True)
+    thinkingTokens: int | None = Field(default=None, ge=0, strict=True)
     providerRequestId: str | None = Field(default=None, max_length=200)
 
     @model_validator(mode="after")
@@ -310,7 +311,7 @@ MIN_QUOTE_CHARS = 20
 
 def _substantive_quote(quote: str, paragraph: str) -> bool:
     collapsed = " ".join(quote.split())
-    return len(collapsed) >= MIN_QUOTE_CHARS or collapsed == " ".join(paragraph.split())
+    return bool(collapsed) and (len(collapsed) >= MIN_QUOTE_CHARS or collapsed == " ".join(paragraph.split()))
 
 
 def findings_digest(artifact: CandidateRun) -> str | None:

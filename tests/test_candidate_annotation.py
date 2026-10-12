@@ -1252,3 +1252,44 @@ def test_cli_compile_refuses_to_overwrite_an_adjudication_record(tmp_path):
     record.write_text('{"schema": "mycounsel.candidate-adjudication.v1", "decisions": []}\n', encoding="utf-8")
     with pytest.raises(FileExistsError, match="refusing to overwrite"):
         main(["compile", str(path), "--corpus", str(CORPUS), "--out", str(record)])
+
+
+# --- round two -----------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("field, value", [
+    ("annotator", "Test Annotator"),
+    ("annotatedOn", "2026-10-20"),
+    ("sawModelOutput", False),
+    ("uncertainties", "Test doubt, not an annotation."),
+    ("issues", [{"playbookReference": "COM-FEES", "paragraph": 2, "missingClause": False,
+                 "rationale": "Test wording, not legal validation", "confidence": "HIGH"}]),
+])
+def test_build_refuses_to_replace_a_pack_in_which_a_template_has_been_filled(pack, field, value):
+    # An annotation filled in place is somebody's work; a rebuild would put an empty template over it.
+    out, _ = pack
+    path = out / "templates" / "base-commercial.annotation.json"
+    edit_json(path, lambda template: template.update({field: value}))
+    before = path.read_bytes()
+    with pytest.raises(FileExistsError, match="base-commercial.annotation.json has been filled in"):
+        build_pack(CORPUS, out)
+    assert path.read_bytes() == before
+
+
+def test_build_refuses_to_replace_a_pack_with_a_template_it_cannot_read(pack):
+    out, _ = pack
+    path = out / "templates" / "changed-dora.annotation.json"
+    path.write_text("Test text that is not JSON", encoding="utf-8")
+    with pytest.raises(FileExistsError, match="changed-dora.annotation.json has been filled in"):
+        build_pack(CORPUS, out)
+    assert path.read_text(encoding="utf-8") == "Test text that is not JSON"
+
+
+def test_a_finder_file_does_not_fail_pack_verification(pack):
+    out, _ = pack
+    (out / ".DS_Store").write_bytes(b"test bytes a file manager left behind")
+    (out / "templates" / ".DS_Store").write_bytes(b"test bytes a file manager left behind")
+    verify_pack(out, CORPUS)
+    (out / "templates" / "Thumbs.db").write_bytes(b"test bytes of another kind")
+    with pytest.raises(ValueError):
+        verify_pack(out, CORPUS)

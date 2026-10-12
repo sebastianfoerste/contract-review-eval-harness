@@ -261,11 +261,15 @@ def test_find_price_refuses_an_empty_price_table():
         find_price(book(prices=[]), **SELECTOR, today=TODAY)
 
 
-def test_find_price_accepts_a_row_verified_today_and_refuses_one_verified_tomorrow():
+def test_find_price_accepts_a_row_dated_one_local_day_ahead_and_refuses_two():
+    # The operator dates a row in local time and the ledger counts in UTC: just after a
+    # Berlin midnight the local day is one ahead for two hours. Two days ahead is a wrong date.
     today = book(prices=[price_row(verifiedOn="2026-10-12")])
     assert find_price(today, **SELECTOR, today=TODAY).verifiedOn == "2026-10-12"
+    ahead = book(prices=[price_row(verifiedOn="2026-10-13")])
+    assert find_price(ahead, **SELECTOR, today=TODAY).verifiedOn == "2026-10-13"
     with pytest.raises(ValueError, match="future"):
-        find_price(book(prices=[price_row(verifiedOn="2026-10-13")]), **SELECTOR, today=TODAY)
+        find_price(book(prices=[price_row(verifiedOn="2026-10-14")]), **SELECTOR, today=TODAY)
 
 
 def test_find_price_accepts_a_row_exactly_the_maximum_age_old_and_refuses_one_day_more():
@@ -285,7 +289,8 @@ def test_find_price_uses_the_maximum_age_of_the_ledger_it_reads():
 
 
 @pytest.mark.parametrize("on,fresh", [
-    (date(2026, 9, 11), False),      # the day before verification
+    (date(2026, 9, 10), False),      # two days before verification
+    (date(2026, 9, 11), True),       # one local day ahead of the UTC count
     (date(2026, 9, 12), True),       # the day of verification
     (date(2026, 10, 11), True),      # 29 days
     (date(2026, 10, 12), True),      # exactly 30 days
@@ -422,7 +427,7 @@ def test_reserve_refuses_a_zero_so_that_no_hold_can_be_zero(zero):
 
 @pytest.mark.parametrize("verified_on,message", [
     ("2026-09-11", "31 days ago"),
-    ("2026-10-13", "future"),
+    ("2026-10-14", "future"),
 ])
 def test_reserve_refuses_a_stale_or_future_price_and_changes_nothing(verified_on, message):
     ledger = book(prices=[price_row(verifiedOn=verified_on)])
@@ -1449,3 +1454,34 @@ def test_cli_has_no_command_that_moves_money(tmp_path, capsys, command):
     assert stopped.value.code == 2
     assert "invalid choice" in capsys.readouterr().err
     assert path.read_bytes() == before
+
+
+# --- round two ----------------------------------------------------------------------------
+
+
+def test_a_converted_price_cannot_be_reserved_without_an_allowance():
+    ledger = book(prices=[price_row(listCurrency="USD", conversionNote="test note: list figures, rate and its date")])
+    entry = hold(ledger).model_dump()
+    assert entry["conversionAllowancePercent"] == 10
+    entry["conversionAllowancePercent"] = 0
+    with pytest.raises(ValidationError, match="carries a conversion allowance"):
+        Entry.model_validate(entry)
+
+
+def test_a_reported_input_of_zero_costs_the_hold_or_its_reported_output_whichever_is_more():
+    ledger = book()
+    entry = hold(ledger)
+    per_attempt = entry.perAttemptMinorUnits
+    small = settlement_minor_units(entry, [(0, 10)])
+    assert small == {"amountMinorUnits": per_attempt, "attemptsWithoutUsage": 1, "attemptsAboveReservedMaxima": 0}
+    # Two million output tokens at 1500 per million are 3000 minor units, far above the hold.
+    large = settlement_minor_units(entry, [(0, 2_000_000)])
+    assert large["amountMinorUnits"] == 3000 and large["amountMinorUnits"] > per_attempt
+    assert large["attemptsWithoutUsage"] == 1 and large["attemptsAboveReservedMaxima"] == 1
+
+
+def test_the_portfolio_cap_is_the_cap_of_the_committed_ledger():
+    from contract_eval.candidate_budget import PORTFOLIO_CAP_MINOR_UNITS
+    assert PORTFOLIO_CAP_MINOR_UNITS == 10000
+    assert load_ledger(SEED).capMinorUnits == PORTFOLIO_CAP_MINOR_UNITS
+

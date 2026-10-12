@@ -41,6 +41,9 @@ LEDGER_SCHEMA = "mycounsel.spend-ledger.v1"
 ENTRY_ID = r"^[a-z0-9][a-z0-9-]{2,63}$"
 HEX64 = r"^[a-f0-9]{64}$"
 TOKENS_PER_PRICE_UNIT = 1_000_000
+# The portfolio's cumulative cap. The ledger file states its own cap so that tests can use
+# small ones; the committed ledger is held to this figure by the experiment check.
+PORTFOLIO_CAP_MINOR_UNITS = 10_000
 # Added to every amount derived from a price that was converted into EUR, so a rate that
 # moves between verification and billing cannot push spend past the cap. A reservation
 # stores the value it was made with; changing this constant never rewrites history.
@@ -137,6 +140,8 @@ class Entry(Strict):
                 raise ValueError("a reservation records " + ", ".join(absent))
             if self.price.listCurrency == "EUR" and self.conversionAllowancePercent != 0:
                 raise ValueError("a price listed in EUR carries no conversion allowance")
+            if self.price.listCurrency != "EUR" and self.conversionAllowancePercent == 0:
+                raise ValueError("a price converted into EUR carries a conversion allowance")
             expected = attempt_hold_minor_units(self.price, self.maxInputTokensPerAttempt,
                                                 self.maxOutputTokensPerAttempt, self.conversionAllowancePercent)
             if self.perAttemptMinorUnits != expected:
@@ -249,16 +254,22 @@ def remaining_minor_units(ledger: Ledger) -> int:
     return ledger.capMinorUnits - committed_minor_units(ledger)
 
 
+# A price row is dated by its operator in local time, the ledger counts in UTC. East of
+# Greenwich the local day starts earlier, so a row read just after midnight is one day
+# "ahead" for a few hours. That one day is accepted; anything further is a wrong date.
+LOCAL_DAY_AHEAD = 1
+
+
 def price_is_fresh(price: Price, on: date, max_age_days: int) -> bool:
     age = (on - date.fromisoformat(price.verifiedOn)).days
-    return 0 <= age <= max_age_days
+    return -LOCAL_DAY_AHEAD <= age <= max_age_days
 
 
 def find_price(ledger: Ledger, *, model: str, provider: str, region: str, today: date) -> Price:
     for price in ledger.prices:
         if price.key() == (model, provider, region):
             age = (today - date.fromisoformat(price.verifiedOn)).days
-            if age < 0:
+            if age < -LOCAL_DAY_AHEAD:
                 raise ValueError(f"price for {model} is dated in the future")
             if age > ledger.maxPriceAgeDays:
                 raise ValueError(f"price for {model} was verified {age} days ago; re-read the provider's page first")
@@ -298,11 +309,12 @@ def settlement_minor_units(reservation: Entry, usages: list[tuple[int, int] | No
 
     Each item is (input tokens, billed output tokens) as the provider reported them, or
     None for an attempt that ran without reporting usage. Reported usage is summed and
-    rounded up once. An attempt without usage, or with a reported input of zero, is
-    charged its full per-attempt hold, because a failed call can still have been billed
-    and no real call has an empty input. Attempts that never ran are not in the list and
-    cost nothing. Usage above the reserved maxima is charged as reported and counted,
-    since it means the hold was set too low.
+    rounded up once. An attempt without usage is charged its full per-attempt hold,
+    because a failed call can still have been billed. A reported input of zero is not
+    believed, since no real call has an empty input: that attempt is charged its hold or
+    what its reported output alone costs, whichever is more. Attempts that never ran are
+    not in the list and cost nothing. Usage above the reserved maxima is charged as
+    reported and counted, since it means the hold was set too low.
 
     The recording shows one response per attempt. A request the provider's client
     repeated internally may have been billed more than once; the reservation's retry
@@ -311,14 +323,18 @@ def settlement_minor_units(reservation: Entry, usages: list[tuple[int, int] | No
     if reservation.kind != "RESERVATION":
         raise ValueError("only a reservation can be settled")
     price = reservation.price
+    allowance = reservation.conversionAllowancePercent
     reported = [usage for usage in usages if usage is not None and usage[0] > 0]
-    silent = len(usages) - len(reported)
-    above = sum(1 for i, o in reported
+    unbelieved = [usage for usage in usages if usage is not None and usage[0] <= 0]
+    unreported = len(usages) - len(reported) - len(unbelieved)
+    above = sum(1 for i, o in reported + unbelieved
                 if i > reservation.maxInputTokensPerAttempt or o > reservation.maxOutputTokensPerAttempt)
-    amount = (_minor_units(sum(_token_price_units(price, i, o) for i, o in reported),
-                           reservation.conversionAllowancePercent)
-              + silent * reservation.perAttemptMinorUnits)
-    return {"amountMinorUnits": amount, "attemptsWithoutUsage": silent, "attemptsAboveReservedMaxima": above}
+    amount = (_minor_units(sum(_token_price_units(price, i, o) for i, o in reported), allowance)
+              + sum(max(reservation.perAttemptMinorUnits, _minor_units(_token_price_units(price, i, o), allowance))
+                    for i, o in unbelieved)
+              + unreported * reservation.perAttemptMinorUnits)
+    return {"amountMinorUnits": amount, "attemptsWithoutUsage": unreported + len(unbelieved),
+            "attemptsAboveReservedMaxima": above}
 
 
 def set_price(ledger: Ledger, price: Price) -> None:

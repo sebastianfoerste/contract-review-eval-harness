@@ -338,6 +338,16 @@ def build_pack(corpus_dir: Path, out: Path, guideline: Path | None = None) -> di
                 is_pack = False
             if not is_pack:
                 raise FileExistsError(f"refusing to replace {out}: it holds files and is not an annotation pack")
+            for template in sorted((out / "templates").glob("*.json")):
+                try:
+                    filled = json.loads(template.read_text(encoding="utf-8"))
+                except ValueError:
+                    filled = {"issues": ["unreadable"]}
+                if any(filled.get(name) for name in ("annotator", "annotatedOn", "issues", "uncertainties")) \
+                        or filled.get("sawModelOutput") is not None:
+                    raise FileExistsError(
+                        f"refusing to rebuild {out}: {template.name} has been filled in; "
+                        "move returned annotations out of the pack folder first")
         shutil.rmtree(out)
     for folder in ("documents", "playbooks", "templates", "sources"):
         (out / folder).mkdir(parents=True)
@@ -406,7 +416,7 @@ def verify_pack(out: Path, corpus_dir: Path | None = None) -> dict:
         raise ValueError("not an annotation pack manifest")
     listed = set(manifest["files"])
     present = {p.relative_to(out).as_posix() for p in out.rglob("*")
-               if p.is_file() and p.relative_to(out).as_posix() != "MANIFEST.json"}
+               if p.is_file() and p.name != ".DS_Store" and p.relative_to(out).as_posix() != "MANIFEST.json"}
     if listed != present:
         raise ValueError(f"pack files differ from the manifest: {sorted(listed ^ present)}")
     for relative, expected in manifest["files"].items():

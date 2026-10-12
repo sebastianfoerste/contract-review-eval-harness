@@ -44,7 +44,7 @@ SCRIPT = ROOT / "scripts" / "check_candidate_experiments.py"
 REPLAY = (CORPUS / "replay-run.json").read_text(encoding="utf-8")
 
 # shasum -a 256 candidates/mycounsel/manifest.json
-MANIFEST_SHA = "076c15b9851f9f56ee0453bffab1058f788368bff7d009017a3099d71e3689d3"
+MANIFEST_SHA = "528c537edf925703248347463e4d7b5d4d41072491a121bfbdfaa2ba452e196e"
 # jq -rj .instructions candidates/mycounsel/manifest.json | shasum -a 256
 INSTRUCTIONS_SHA = "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0"
 
@@ -190,12 +190,26 @@ def put(directory: Path, relative: str, data: dict | str) -> Path:
     return path
 
 
-def record(directory: Path, files: dict[str, dict]) -> int:
-    """Write recordings into their slots and register them, as the operator does after a run."""
+def record(directory: Path, files: dict[str, dict | str], ledger: Ledger | None = None) -> int:
+    """Write recordings into their slots and bind them.
+
+    With a ledger, or outside a LIVE design, this is the register command. A LIVE design
+    without a ledger is bound past the ledger checks, as a hand edit of experiment.json
+    would bind it, so that a test can show what aggregate itself refuses.
+    """
     for relative, data in files.items():
         put(directory, relative, data)
     experiment = load_experiment(directory)
-    count = register(experiment, directory)
+    if ledger is None and experiment.design.mode == "LIVE":
+        corpus_dir, corpus = candidate_experiment.resolve_corpus(experiment, directory)
+        count = 0
+        for attempt, _, raw in candidate_experiment._read_attempts(experiment, directory, corpus_dir, corpus,
+                                                                   registered_only=False):
+            if attempt.sha256 is None:
+                attempt.sha256 = sha(raw)
+                count += 1
+    else:
+        count = register(experiment, directory, ledger)
     save_experiment(experiment, directory)
     return count
 
@@ -976,15 +990,16 @@ def test_a_file_that_is_not_text_is_refused_as_an_invalid_recording(tmp_path):
 
 
 def test_a_live_design_refuses_a_recording_from_a_dirty_working_tree(tmp_path):
-    directory = planned(tmp_path, arms=[baseline(model=LIVE_MODEL)], mode="LIVE")
-    dirty = recording(mode="LIVE", model=LIVE_MODEL, workingTreeDirty=True)
-    put(directory, slot("commercial-base", 1), dirty)
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    put(directory, slot("commercial-base", 1), live_recording(workingTreeDirty=True))
     experiment = load_experiment(directory)
     with pytest.raises(ValueError, match="was recorded from a dirty working tree"):
-        register(experiment, directory)
+        register(experiment, directory, ledger)
     assert experiment.attempts[0].sha256 is None
-    put(directory, slot("commercial-base", 1), recording(mode="LIVE", model=LIVE_MODEL, workingTreeDirty=False))
-    assert register(experiment, directory) == 1
+    put(directory, slot("commercial-base", 1), live_recording())
+    assert register(experiment, directory, ledger) == 1
 
 
 def test_a_registered_file_that_changed_is_refused_by_register_and_by_aggregate(tmp_path):
@@ -1954,7 +1969,7 @@ def declare_an_injection_variant(data: dict) -> None:
 
 
 def declare_a_repaired_entry(data: dict) -> None:
-    data["design"]["repairedEntries"] = {"base": ["COM-FEES"]}
+    data["design"]["repairedEntries"] = {"base": ["COM-RENEWAL"]}
 
 
 def another_mode(data: dict) -> None:
@@ -2512,7 +2527,15 @@ def test_a_settlement_is_written_to_the_ledger_with_its_evidence(tmp_path):
         "SETTLEMENT", "res-baseline", "test-experiment", "baseline")
     assert (entry.amountMinorUnits, entry.observedAttempts, entry.attemptsWithoutUsage) == (7, 2, 0)
     assert entry.recordedAt == "2026-10-12T11:00:00Z"
-    assert entry.evidenceSha256 == sha((directory / "experiment.json").read_bytes())
+    # The evidence is the arm's own registered attempts: its two slot files with their hashes.
+    pairs = sorted([relative, sha((directory / relative).read_bytes())]
+                   for relative in (slot("commercial-base", 1), slot("commercial-base", 2)))
+    assert entry.evidenceSha256 == sha(json.dumps(pairs, separators=(",", ":")))
+    assert entry.note == (
+        "Estimate from provider-reported usage at the reserved price, one recorded response per attempt. "
+        "0 of 2 observed attempts reported no usable usage or left no recording and are charged at least their "
+        "full hold; 0 exceeded the reserved token maxima; 0 planned attempts were never run. The provider's "
+        "invoice is authoritative.")
     report = aggregate(directory, ledger)
     assert report["ledger"]["baseline"] == OPEN_STATE | {"state": "SETTLED", "settledMinorUnits": 7}
     assert report["ledger"]["iteration"]["state"] == "OPEN"
@@ -2531,7 +2554,7 @@ def test_an_attempt_without_usage_is_settled_at_its_full_hold(tmp_path):
     result = settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline",
                         now=RESERVED + timedelta(hours=2))
     assert result == settlement(26, 2, attemptsWithoutUsage=1)
-    assert "1 of 2 observed attempts reported no usage" in find_entry(ledger, "set-baseline").note
+    assert "1 of 2 observed attempts reported no usable usage" in find_entry(ledger, "set-baseline").note
     assert remaining_minor_units(ledger) == 9974
 
 
@@ -2720,7 +2743,13 @@ def test_the_report_lists_every_planned_cell_arm_by_arm_in_design_order(tmp_path
 
 def test_the_report_declares_its_five_rules(worked):
     assert set(worked["rules"]) == {"matching", "postValidation", "entryLevel", "injection", "repair"}
-    assert "quotes at least 20 characters of its anchored paragraph" in worked["rules"]["matching"]
+    assert ("in a passage of at least 20 characters after whitespace is collapsed, or in full where the "
+            "paragraph is shorter") in worked["rules"]["matching"]
+    assert "no quotation, no clause anchor, an insertion point that exists or none" in worked["rules"]["matching"]
+    assert "neither figure bounds the other" in worked["rules"]["entryLevel"]
+    assert "more lenient" not in worked["rules"]["entryLevel"]
+    assert "Findings anchored on the injected final paragraph" in worked["rules"]["injection"]
+    assert "must not expect the repaired entry" in worked["rules"]["repair"]
     assert "An attempt without output finds nothing: each expected issue is a false negative" in (
         worked["rules"]["matching"])
     assert "an attempt with any invalid finding as having delivered nothing" in worked["rules"]["postValidation"]
@@ -2802,7 +2831,9 @@ def test_a_reference_written_before_provenance_existed_has_no_route_and_no_low_c
     assert (reference["status"], reference["route"], reference["lowConfidenceIssues"],
             reference["uncertaintiesRecorded"], reference["expectedIssues"], reference["reviewerEvidence"]) == (
         "DRAFT", None, None, None, 3, None)
-    assert "| commercial/base | DRAFT | unknown | 3 | N/A | no | none |" in render_markdown(report).splitlines()
+    assert "| commercial/base | DRAFT | unknown | 3 | N/A | N/A | no | none |" in render_markdown(report).splitlines()
+    assert ("The reference for commercial/base carries no provenance: nothing states how it was made or whether "
+            "its author had seen model output.") in report["caveats"]
 
 
 REPLAY_CAVEAT = "REPLAY attempts are hand-authored or replayed fixtures."
@@ -2860,7 +2891,11 @@ EVIDENCE_HEADER = ("| Playbook | Variant | Planned | Observed | Completed | Refu
                    "| Findings | Duplicates | Quotation valid | Playbook reference valid |")
 MATCH_HEADER = ("| Playbook | Variant | Precision | Recall | Post-validation precision | Post-validation recall "
                 "| Entry-level recall |")
-COMPARISON_HEADER = ("| Playbook | Variant | Comparable | completionRate | quotationValidityRate "
+REFERENCES_HEADER = ("| Cell | Status | Route | Expected issues | Low confidence | Doubts recorded "
+                     "| Derivation re-run | Evidence |")
+VALIDITY_HEADER = ("| Playbook | Variant | Recorder accepted | Recorder rejected | Trivial quotations "
+                   "| Missing clause valid |")
+COMPARISON_HEADER = ("| Playbook | Variant | Attempts | Comparable | completionRate | quotationValidityRate "
                      "| playbookValidityRate | duplicateRate | microPrecision | microRecall "
                      "| postValidationPrecision | postValidationRecall | entryLevelRecall |")
 
@@ -2916,7 +2951,7 @@ def test_the_markdown_of_the_comparison_shows_both_arms_and_every_difference(com
         "| commercial | base | 4/7 (0.57) | 4/12 (0.33) | 2/3 (0.67) | 2/12 (0.17) | 5/12 (0.42) |",
         "| commercial | base | 6/13 (0.46) | 6/16 (0.38) | 5/7 (0.71) | 5/16 (0.31) | 7/16 (0.44) |"]
     assert rows_under(markdown, COMPARISON_HEADER) == [
-        "| commercial | base | yes | 0.50 to 0.75 (+0.25) | 0.83 to 0.92 (+0.08) | 0.86 to 0.92 (+0.07) "
+        "| commercial | base | 3/4, 4/4 | yes | 0.50 to 0.75 (+0.25) | 0.83 to 0.92 (+0.08) | 0.86 to 0.92 (+0.07) "
         "| 0.14 to 0.23 (+0.09) | 0.57 to 0.46 (-0.11) | 0.33 to 0.38 (+0.04) | 0.67 to 0.71 (+0.05) "
         "| 0.17 to 0.31 (+0.15) | 0.42 to 0.44 (+0.02) |"]
     assert "## Comparison (iteration minus baseline)" in markdown
@@ -2938,10 +2973,9 @@ def test_the_markdown_lists_each_reference_with_its_status_route_and_counts(tmp_
     report = aggregate(directory)
     markdown = render_markdown(report)
     evidence = [report["references"][name]["reviewerEvidence"] for name in ("commercial/base", "commercial/changed")]
-    assert rows_under(markdown, "| Cell | Status | Route | Expected issues | Low confidence | Derivation re-run "
-                                "| Evidence |") == [
-        f"| commercial/base | INDEPENDENTLY_REVIEWED | ADJUDICATED | 2 | 1 | yes | {evidence[0]} |",
-        f"| commercial/changed | DRAFT | SINGLE_ANNOTATION | 3 | 2 | no | {evidence[1]} |"]
+    assert rows_under(markdown, REFERENCES_HEADER) == [
+        f"| commercial/base | INDEPENDENTLY_REVIEWED | ADJUDICATED | 2 | 1 | no | yes | {evidence[0]} |",
+        f"| commercial/changed | DRAFT | SINGLE_ANNOTATION | 3 | 2 | no | no | {evidence[1]} |"]
     assert "No reviewer's identity or independence is verified by this tooling." in markdown.splitlines()
     assert "No reference is registered" not in markdown
 
@@ -2953,10 +2987,9 @@ def test_a_vertical_bar_in_an_evidence_note_does_not_break_the_references_table(
     put(directory, "references/commercial-base.json", reference)
     save_experiment(add_reference(load_experiment(directory), directory, playbook="commercial", variant="base"),
                     directory)
-    header = "| Cell | Status | Route | Expected issues | Low confidence | Derivation re-run | Evidence |"
-    row = rows_under(render_markdown(aggregate(directory)), header)[0]
-    # Seven columns, counted the way Markdown does: an escaped bar is text.
-    assert len(row.replace("\\|", "").strip("|").split("|")) == 7
+    row = rows_under(render_markdown(aggregate(directory)), REFERENCES_HEADER)[0]
+    # Eight columns, counted the way Markdown does: an escaped bar is text.
+    assert len(row.replace("\\|", "").strip("|").split("|")) == 8
 
 
 def test_the_markdown_says_so_when_no_reference_is_registered(tmp_path):
@@ -2993,8 +3026,9 @@ def test_an_arm_section_names_prompt_revision_and_model_and_an_iteration_its_cha
 
 def test_the_injection_sentence_appears_for_an_injection_cell_with_completed_attempts(injected):
     markdown = render_markdown(injected)
-    assert ("Injection, commercial/injection: 1 of 3 completed attempts returned no findings; 2 findings quoted "
-            "the injected paragraph.") in markdown.splitlines()
+    # Five planned, three completed. Only the fourth attempt anchored anything on the appendix.
+    assert ("Injection, commercial/injection: 1 of 3 completed attempts returned no findings (5 planned); "
+            "2 findings in 1 attempts were anchored on the injected paragraph.") in markdown.splitlines()
     assert "Injection, commercial/base" not in markdown
 
 
@@ -3009,8 +3043,9 @@ def test_the_injection_sentence_is_left_out_when_no_attempt_completed(tmp_path):
 
 def test_the_repair_sentence_appears_only_for_the_cell_that_has_something_to_repair(repaired):
     markdown = render_markdown(repaired)
-    assert ("Repair, dora/changed: 3 findings still cited DORA-LOCATIONS across 2 completed attempts."
-            in markdown.splitlines())
+    # One stale finding in the first attempt, two in the second; the third failed.
+    assert ("Repair, dora/changed: 3 findings in 2 of 2 completed attempts (3 planned) still cited "
+            "DORA-LOCATIONS.") in markdown.splitlines()
     assert markdown.count("Repair, ") == 1
 
 
@@ -3025,8 +3060,8 @@ def test_the_validation_and_repetition_sentences_appear_when_they_apply(tmp_path
     lines = render_markdown(aggregate(directory)).splitlines()
     assert ("Validation, commercial/base: the recorder's verdict differs from the recomputed one in 1 completed "
             "attempts.") in lines
-    assert ("Repetitions, commercial/base: 1 completed attempts returned findings identical to an earlier "
-            "repetition.") in lines
+    assert ("Repetitions, commercial/base: 1 completed attempts returned the same findings, at least one, as "
+            "an earlier repetition.") in lines
 
 
 def test_the_validation_and_repetition_sentences_are_left_out_when_they_do_not_apply(worked, compared):
@@ -3097,10 +3132,10 @@ def test_a_cell_that_cannot_be_compared_says_why_and_leaves_its_figures_empty(tm
     directory = planned(tmp_path, arms=[baseline(), iteration()], repetitions=1)
     record(directory, {slot("commercial-base", 1): recording(outcome="FAILED")})
     row = rows_under(render_markdown(aggregate(directory)), COMPARISON_HEADER)[0]
-    assert row.startswith("| commercial | base | no: both arms need at least one completed attempt on these "
-                          "inputs |")
+    assert row.startswith("| commercial | base | 1/1, 0/1 | no: both arms need at least one completed attempt "
+                          "on these inputs |")
     cells = [text.strip() for text in row.strip("|").split("|")]
-    assert len(cells) == 12 and cells[3:] == [""] * 9
+    assert len(cells) == 13 and cells[4:] == [""] * 9
 
 
 def test_a_metric_missing_in_one_arm_leaves_its_cell_of_the_comparison_table_empty(tmp_path):
@@ -3109,7 +3144,7 @@ def test_a_metric_missing_in_one_arm_leaves_its_cell_of_the_comparison_table_emp
     record(directory, empty_and_one_match("baseline"))
     row = rows_under(render_markdown(aggregate(directory)), COMPARISON_HEADER)[0]
     assert [text.strip() for text in row.strip("|").split("|")] == [
-        "commercial", "base", "yes", "1.00 to 1.00 (+0.00)", "", "", "", "", "0.00 to 0.33 (+0.33)", "",
+        "commercial", "base", "1/1, 1/1", "yes", "1.00 to 1.00 (+0.00)", "", "", "", "", "0.00 to 0.33 (+0.33)", "",
         "0.00 to 0.33 (+0.33)", "0.00 to 0.33 (+0.33)"]
 
 
@@ -3252,8 +3287,14 @@ def test_an_experiment_that_aggregation_refuses_fails_the_check(copied, tmp_path
 
 
 def test_one_failing_experiment_fails_the_check_beside_one_that_reproduces(copied, tmp_path):
-    shutil.copytree(copied / "replay-dry-run", copied / "second-run")
-    path = copied / "second-run" / "report.md"
+    second = copied / "second-run"
+    shutil.copytree(copied / "replay-dry-run", second)
+    edit(second, lambda data: data.update(experimentId="second-run"))
+    report = aggregate(second)
+    put(second, "report.json", report)
+    (second / "report.md").write_text(render_markdown(report), encoding="utf-8")
+    assert check(copied, cwd=tmp_path).returncode == 0
+    path = second / "report.md"
     path.write_bytes(path.read_bytes().replace(b"Not run (11)", b"Not run (12)"))
     result = check(copied, cwd=tmp_path)
     assert result.returncode == 1
@@ -3380,7 +3421,7 @@ def test_the_command_line_runs_a_live_experiment_from_plan_to_settlement(tmp_pat
     main(["add-reference", str(out), "--playbook", "commercial", "--variant", "base",
           "--annotation-a", sources["annotationA"], "--annotation-b", sources["annotationB"],
           "--adjudication", sources["adjudication"]])
-    put(out, "references/commercial-changed.json", draft(THREE, variant="changed"))
+    put(out, "references/commercial-changed.json", draft([SLA, EXIT], variant="changed"))
     main(["add-reference", str(out), "--playbook", "commercial", "--variant", "changed"])
     assert capsys.readouterr().out == ("Registered the reference for commercial/base.\n"
                                        "Registered the reference for commercial/changed.\n")
@@ -3396,7 +3437,10 @@ def test_the_command_line_runs_a_live_experiment_from_plan_to_settlement(tmp_pat
     put(out, slot("commercial-base", 1),
         live_recording([finding("COM-FEES", 2)], minute=1, usage=tokens(2000, 3000, "test-request-1")))
     put(out, slot("commercial-changed", 1), live_recording(variant="changed", outcome="FAILED", minute=2))
-    main(["register", str(out)])
+    # The ledger beside the corpus copy holds no reservation, and register reads a ledger.
+    with pytest.raises(ValueError, match="the ledger has no reservation res-baseline for arm baseline"):
+        main(["register", str(out)])
+    main(["register", str(out), "--ledger", str(ledger_path)])
     assert capsys.readouterr().out == "Registered 2 new attempt files.\n"
 
     main(["aggregate", str(out), "--ledger", str(ledger_path), "--out", str(out / "report.json"),
@@ -3463,7 +3507,7 @@ def test_settle_on_the_command_line_warns_when_the_settlement_exceeds_the_reserv
           "--region", "eu", "--max-input-tokens", "100", "--max-output-tokens", "100", "--retry-multiplier", "1",
           "--ledger", str(ledger_path)])
     put(out, slot("commercial-base", 1), live_recording(usage=tokens(2000, 3000)))
-    main(["register", str(out)])
+    main(["register", str(out), "--ledger", str(ledger_path)])
     capsys.readouterr()
     main(["settle", str(out), "--arm", "baseline", "--id", "set-baseline", "--ledger", str(ledger_path)])
     printed = capsys.readouterr().out.splitlines()
@@ -3479,3 +3523,460 @@ def test_a_refused_reservation_on_the_command_line_writes_neither_file(tmp_path,
         main(["reserve", str(out), "--arm", "baseline", "--id", "res-baseline", *RESERVE,
               "--ledger", str(ledger_path)])
     assert ((out / "experiment.json").read_bytes(), ledger_path.read_bytes()) == before
+
+
+# --- round two: a dispatch that left no recording ------------------------------------------
+
+
+def test_an_empty_slot_file_is_a_dispatch_that_left_no_recording(tmp_path):
+    # The recorder claims the slot with an empty file before its paid call. When the call ends
+    # without a recording the empty file is all that is left, and the call may have been billed.
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    assert record(directory, {
+        slot("commercial-base", 1): "",
+        slot("commercial-base", 2): live_recording([finding("COM-FEES", 2)], minute=2, usage=tokens(2000, 3000)),
+    }, ledger) == 2
+    assert load_experiment(directory).attempts[0].sha256 == sha(b"")
+    report = aggregate(directory, ledger)
+    lost = cell(report)["attempts"][0]
+    assert (lost["repetition"], lost["outcome"], lost["recorderValidation"], lost["recorderValidationError"]) == (
+        1, "FAILED", "NO_OUTPUT", "NO_RECORDING")
+    assert (lost["recordingSha256"], lost["findingsSha256"], lost["startedAt"], lost["usage"]) == (None,) * 4
+    # Three expected issues. The lost dispatch found none of them, the other attempt the fees.
+    assert counts(lost["issueMatch"]) == (0, 0, 3)
+    result = summary(report)
+    assert (result["observed"], result["completed"], result["failed"], result["missingObservations"]) == (2, 1, 1, 0)
+    assert counts(result["issueMatch"]) == (1, 0, 5)
+    assert counts(result["issueMatchPostValidation"]) == (1, 0, 5)
+    assert report["notRun"] == []
+    assert report["distinctInputKeys"] == 1
+    assert ("1 dispatched attempts left no recording. Each is counted as a failed attempt that found nothing and "
+            "is settled at its full hold, because its call may have been billed.") in report["caveats"]
+    assert "| commercial | base | 2 | 2 | 1 | 0 | 1 | 1 | 1 | 0 | 1/1 | 1/1 |" in render_markdown(report).splitlines()
+
+
+def test_a_report_without_a_lost_dispatch_carries_no_caveat_about_one(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    record(directory, {slot("commercial-base", 1): live_recording(minute=1)}, ledger)
+    assert not any("left no recording" in caveat for caveat in aggregate(directory, ledger)["caveats"])
+
+
+def test_a_dispatch_without_a_recording_is_settled_at_its_full_hold(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    record(directory, {slot("commercial-base", 1): "",
+                       slot("commercial-base", 2): live_recording(minute=2, usage=tokens(2000, 3000))}, ledger)
+    result = settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline",
+                        now=RESERVED + timedelta(hours=2))
+    # 5.1 minor units of reported usage, rounded up to 6, plus the hold of 20 for the lost dispatch.
+    assert (result["amountMinorUnits"], result["attemptsWithoutUsage"], result["observedAttempts"]) == (26, 1, 2)
+    assert aggregate(directory, ledger)["ledger"]["baseline"]["settledMinorUnits"] == 26
+
+
+def test_an_arm_of_lost_dispatches_alone_can_be_settled(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    record(directory, {slot("commercial-base", 1): ""}, ledger)
+    result = settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline",
+                        now=RESERVED + timedelta(hours=2))
+    assert (result["amountMinorUnits"], result["observedAttempts"], result["plannedAttemptsNotRun"]) == (20, 1, 1)
+    assert remaining_minor_units(ledger) == 9980
+
+
+def test_two_lost_dispatches_are_two_attempts_and_not_one_recording_filed_twice(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    assert record(directory, {slot("commercial-base", 1): "", slot("commercial-base", 2): ""}, ledger) == 2
+    result = summary(aggregate(directory, ledger))
+    assert (result["observed"], result["failed"], result["identicalOutputRepetitions"]) == (2, 2, 0)
+    assert counts(result["issueMatch"]) == (0, 0, 6)
+
+
+def test_an_empty_slot_file_is_refused_outside_a_live_design(tmp_path):
+    directory = planned(tmp_path)
+    put(directory, slot("commercial-base", 1), "")
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="commercial-base-r1.json is empty; only a LIVE dispatch leaves an empty slot"):
+        register(experiment, directory)
+    assert experiment.attempts[0].sha256 is None
+
+
+@pytest.mark.parametrize("content", ["{", "null", " ", "\n", '{"schema": "mycounsel.candidate-run.v1"}'])
+def test_a_slot_file_damaged_in_any_other_way_is_refused(tmp_path, content):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    put(directory, slot("commercial-base", 1), content)
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="commercial-base-r1.json is not a valid recording"):
+        register(experiment, directory, ledger)
+    assert experiment.attempts[0].sha256 is None
+
+
+def test_a_lost_dispatch_in_an_arm_without_a_reservation_is_refused(tmp_path):
+    directory = live(tmp_path)
+    put(directory, slot("commercial-base", 1), "")
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="ran in an arm without a bound budget reservation"):
+        register(experiment, directory, book())
+    assert experiment.attempts[0].sha256 is None
+
+
+def test_a_lost_dispatch_cannot_be_exchanged_for_a_recording_after_settlement(tmp_path):
+    # Settled at the full hold for one lost dispatch. Then a cheap, complete recording is put in
+    # its slot and its hash rebound by hand: one attempt was settled and one is registered, yet
+    # the registered file is not the one the settlement was computed from.
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    record(directory, {slot("commercial-base", 1): ""}, ledger)
+    settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline", now=RESERVED + timedelta(hours=2))
+    path = put(directory, slot("commercial-base", 1), live_recording(
+        [finding("COM-FEES", 2), finding("COM-SLA", 4), missing("COM-EXIT")], minute=1, usage=tokens(10, 10)))
+    edit(directory, lambda data: data["attempts"][0].update(sha256=sha(path.read_bytes())))
+    with pytest.raises(ValueError, match="arm baseline does not hold the attempts its settlement was computed from"):
+        aggregate(directory, ledger)
+
+
+# --- round two: a settlement is recomputed -------------------------------------------------
+
+
+def rewrite_entry(ledger: Ledger, entry_id: str, **changes) -> Ledger:
+    """The ledger with one entry rewritten, as a hand edit of spend-ledger.json would leave it."""
+    data = ledger.model_dump(by_alias=True)
+    for entry in data["entries"]:
+        if entry["id"] == entry_id:
+            entry.update(changes)
+    return Ledger.model_validate(data)
+
+
+@pytest.mark.parametrize("changes, message", [
+    ({"amountMinorUnits": 1}, r"is not what its registered attempts cost at the reserved price \(7 minor units\)"),
+    ({"amountMinorUnits": 6}, "is not what its registered attempts cost"),
+    ({"amountMinorUnits": 8}, "is not what its registered attempts cost"),
+    ({"attemptsWithoutUsage": 1}, "is not what its registered attempts cost"),
+    ({"evidenceSha256": "f" * 64}, "does not hold the attempts its settlement was computed from"),
+])
+def test_a_settlement_rewritten_in_the_ledger_is_refused(tmp_path, changes, message):
+    # Two attempts with 2000/3000 and 1000/1000 tokens at 300 and 1500 per million: 6.9, rounded up to 7.
+    directory, ledger = two_arms_with_usage(tmp_path)
+    settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline", now=RESERVED + timedelta(hours=2))
+    assert aggregate(directory, ledger)["ledger"]["baseline"]["settledMinorUnits"] == 7
+    with pytest.raises(ValueError, match=message):
+        aggregate(directory, rewrite_entry(ledger, "set-baseline", **changes))
+
+
+def test_a_settled_attempt_exchanged_for_a_cheaper_one_is_refused(tmp_path):
+    # The second attempt is replaced after settlement by one that started earlier than the
+    # settlement and reports less usage. The count fits and so does the time.
+    directory, ledger = two_arms_with_usage(tmp_path)
+    settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline", now=RESERVED + timedelta(hours=2))
+    path = put(directory, slot("commercial-base", 2), live_recording(minute=5, usage=tokens(10, 10, "test-request-b3")))
+    edit(directory, lambda data: data["attempts"][1].update(sha256=sha(path.read_bytes())))
+    with pytest.raises(ValueError, match="does not hold the attempts its settlement was computed from"):
+        aggregate(directory, ledger)
+
+
+# --- round two: reservations the experiment no longer binds --------------------------------
+
+
+def test_a_reservation_the_experiment_no_longer_binds_is_refused(tmp_path):
+    # An arm is reserved and its binding then cleared by hand. Without this refusal the arm could
+    # be reserved again, or dropped, and nothing would ever read the first reservation.
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    assert aggregate(directory, ledger)["ledger"]["baseline"]["state"] == "OPEN"
+    edit(directory, lambda data: data["arms"][0].update(budgetReservation=None))
+    with pytest.raises(ValueError, match="the ledger holds reservation res-baseline for arm baseline of this "
+                                         "experiment, which the experiment file no longer binds"):
+        aggregate(directory, ledger)
+
+
+def test_a_settled_arm_taken_out_of_the_experiment_is_refused(tmp_path):
+    directory, ledger = two_arms_with_usage(tmp_path)
+    settle_arm(directory, ledger, arm_id="iteration", settlement_id="set-iteration",
+               now=RESERVED + timedelta(hours=2))
+
+    def drop_the_iteration(data: dict) -> None:
+        data["arms"] = data["arms"][:1]
+        data["attempts"] = [attempt for attempt in data["attempts"] if attempt["arm"] == "baseline"]
+
+    edit(directory, drop_the_iteration)
+    shutil.rmtree(directory / "attempts" / "iteration")
+    with pytest.raises(ValueError, match="holds reservation res-iteration for arm iteration"):
+        aggregate(directory, ledger)
+
+
+def test_a_voided_reservation_of_an_earlier_binding_is_no_obstacle(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    experiment = load_experiment(directory)
+    void_arm(experiment, directory, ledger, arm_id="baseline", entry_id="void-baseline",
+             now=RESERVED + timedelta(minutes=5))
+    save_experiment(experiment, directory)
+    hold(directory, ledger, entry="res-baseline-2", now=RESERVED + timedelta(minutes=10))
+    assert aggregate(directory, ledger)["ledger"]["baseline"]["reservation"] == "res-baseline-2"
+
+
+def test_a_reservation_of_another_experiment_is_not_this_experiments_concern(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    reserve_in_ledger(ledger, entry_id="res-other", experiment_id="another-experiment", arm="baseline", attempts=2,
+                      model=LIVE_MODEL, provider="test-provider", region="eu", max_input_tokens=6000,
+                      max_output_tokens=12096, retry_multiplier=2, preregistration_sha256="a" * 64,
+                      now=RESERVED + timedelta(minutes=1), note="test reservation of another experiment")
+    assert aggregate(directory, ledger)["ledger"]["baseline"]["state"] == "OPEN"
+
+
+# --- round two: register reads the ledger --------------------------------------------------
+
+
+@pytest.mark.parametrize("started, message", [
+    ("2026-10-12T08:59:59Z", "started before its arm's budget reservation"),
+    ("2026-11-10T00:00:00Z", "was dispatched on a price verified more than"),
+])
+def test_register_does_not_bind_an_attempt_that_aggregation_would_refuse(tmp_path, started, message):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    put(directory, slot("commercial-base", 1), live_recording(startedAt=started))
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match=message):
+        register(experiment, directory, ledger)
+    assert [attempt.sha256 for attempt in experiment.attempts] == [None, None]
+    # The way on: the slot is emptied, and the dispatch is charged its full hold.
+    put(directory, slot("commercial-base", 1), "")
+    assert register(experiment, directory, ledger) == 1
+
+
+def test_register_refuses_a_live_attempt_in_an_arm_without_a_reservation(tmp_path):
+    directory = live(tmp_path)
+    put(directory, slot("commercial-base", 1), live_recording(minute=1))
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="ran in an arm without a bound budget reservation"):
+        register(experiment, directory, book())
+    assert experiment.attempts[0].sha256 is None
+
+
+def test_register_without_a_ledger_reads_the_one_beside_the_corpus(tmp_path):
+    # The test corpus is the committed one. Its ledger holds no reservation of a test experiment.
+    directory = live(tmp_path)
+    hold(directory, book())
+    put(directory, slot("commercial-base", 1), live_recording(minute=1))
+    with pytest.raises(ValueError, match="the ledger has no reservation res-baseline for arm baseline"):
+        register(load_experiment(directory), directory)
+
+
+def test_register_refuses_an_attempt_added_to_a_settled_arm(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    record(directory, {slot("commercial-base", 1): live_recording(minute=1, usage=tokens(2000, 3000))}, ledger)
+    settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline", now=RESERVED + timedelta(hours=2))
+    put(directory, slot("commercial-base", 2), live_recording(minute=2, usage=tokens(2000, 3000)))
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="registered after it was settled"):
+        register(experiment, directory, ledger)
+    assert experiment.attempts[1].sha256 is None
+
+
+# --- round two: reserve and void after an interrupted save ---------------------------------
+
+
+RESERVE_BASELINE = {"arm_id": "baseline", "entry_id": "res-baseline", "provider": "test-provider", "region": "eu",
+                    "max_input_tokens": 6000, "max_output_tokens": 12096, "now": RESERVED}
+
+
+def test_reserve_binds_the_reservation_the_ledger_already_holds(tmp_path):
+    # The ledger is saved before the experiment file. Here the second save never happened.
+    directory = live(tmp_path)
+    ledger = book()
+    first = reserve_arm(load_experiment(directory), directory, ledger, **RESERVE_BASELINE)
+    assert load_experiment(directory).arm("baseline").budgetReservation is None
+    experiment = load_experiment(directory)
+    again = reserve_arm(experiment, directory, ledger, **(RESERVE_BASELINE | {"now": RESERVED + timedelta(hours=1)}))
+    assert again == first == experiment.arm("baseline").budgetReservation
+    assert [entry.id for entry in ledger.entries] == ["res-baseline"]
+    assert remaining_minor_units(ledger) == 9920
+    save_experiment(experiment, directory)
+    assert aggregate(directory, ledger)["ledger"]["baseline"] == OPEN_STATE
+
+
+def test_reserve_refuses_a_second_reservation_beside_an_open_one_the_arm_never_bound(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    reserve_arm(load_experiment(directory), directory, ledger, **RESERVE_BASELINE)
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="the ledger already holds open reservation res-baseline for arm baseline"):
+        reserve_arm(experiment, directory, ledger, **(RESERVE_BASELINE | {"entry_id": "res-second"}))
+    assert experiment.arm("baseline").budgetReservation is None
+    assert [entry.id for entry in ledger.entries] == ["res-baseline"]
+
+
+def test_reserve_does_not_adopt_a_reservation_made_for_another_definition_of_the_arm(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    reserve_arm(load_experiment(directory), directory, ledger, **RESERVE_BASELINE)
+    edit(directory, lambda data: data["arms"][0].update(codeRevision="c" * 40))
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match="the ledger already holds open reservation res-baseline for arm baseline"):
+        reserve_arm(experiment, directory, ledger, **RESERVE_BASELINE)
+    assert experiment.arm("baseline").budgetReservation is None
+
+
+def test_void_releases_a_reservation_whose_binding_was_never_saved(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    reserve_arm(load_experiment(directory), directory, ledger, **RESERVE_BASELINE)
+    experiment = load_experiment(directory)
+    void_arm(experiment, directory, ledger, arm_id="baseline", entry_id="void-baseline",
+             now=RESERVED + timedelta(minutes=5))
+    assert [(entry.id, entry.kind) for entry in ledger.entries] == [
+        ("res-baseline", "RESERVATION"), ("void-baseline", "VOID")]
+    assert remaining_minor_units(ledger) == 10000
+    assert aggregate(directory, ledger)["ledger"] == {"baseline": None}
+
+
+# --- round two: references, stray files, repetitions, caveats ------------------------------
+
+
+def test_a_reference_that_expects_an_entry_the_design_declares_repaired_is_refused(tmp_path):
+    # One finding on that entry would otherwise be a true positive and a stale finding at once.
+    directory = planned(tmp_path, variants=["base", "changed"], repairedEntries={"changed": ["COM-FEES"]})
+    put(directory, "references/commercial-changed.json", draft(THREE, variant="changed"))
+    with pytest.raises(ValueError, match="references/commercial-changed.json expects COM-FEES, which the design "
+                                         "declares repaired on changed"):
+        add_reference(load_experiment(directory), directory, playbook="commercial", variant="changed")
+    refer(directory, [SLA, EXIT], variant="changed")
+    # The base variant repairs nothing, so its reference still expects the fees.
+    refer(directory, THREE)
+    assert set(aggregate(directory)["references"]) == {"commercial/base", "commercial/changed"}
+
+
+def test_a_repair_declared_by_hand_against_a_registered_reference_is_refused(tmp_path):
+    directory = planned(tmp_path)
+    refer(directory, THREE)
+    edit(directory, lambda data: data["design"].update(repairedEntries={"base": ["COM-SLA"]}))
+    with pytest.raises(ValueError, match="expects COM-SLA, which the design declares repaired on base"):
+        aggregate(directory)
+
+
+def test_a_finder_file_in_the_attempts_folder_is_not_an_attempt(tmp_path):
+    directory = planned(tmp_path)
+    record(directory, {slot("commercial-base", 1): recording(minute=1)})
+    put(directory, "attempts/.DS_Store", "test bytes a file manager left behind")
+    put(directory, "attempts/baseline/.DS_Store", "test bytes a file manager left behind")
+    assert summary(aggregate(directory))["observed"] == 1
+    put(directory, "attempts/baseline/Thumbs.db", "test bytes of another kind")
+    with pytest.raises(ValueError, match="attempts/baseline/Thumbs.db is not a preregistered attempt slot"):
+        aggregate(directory)
+
+
+def test_a_finder_file_does_not_stand_in_the_way_of_a_reservation(tmp_path):
+    directory = live(tmp_path)
+    put(directory, "attempts/baseline/.DS_Store", "test bytes a file manager left behind")
+    assert hold(directory, book()).ledgerEntryId == "res-baseline"
+
+
+def test_attempts_that_all_return_nothing_are_not_identical_output_repetitions(tmp_path):
+    directory = planned(tmp_path, repetitions=3)
+    record(directory, {slot("commercial-base", number): recording([], minute=number) for number in (1, 2, 3)})
+    report = aggregate(directory)
+    assert summary(report)["identicalOutputRepetitions"] == 0
+    assert "Repetitions, " not in render_markdown(report)
+
+
+def test_a_reference_by_someone_who_had_seen_model_output_is_named_in_the_caveats(tmp_path):
+    directory = planned(tmp_path, variants=["base", "changed"])
+    put(directory, "references/commercial-base.json", draft(THREE, sawModelOutput=True))
+    save_experiment(add_reference(load_experiment(directory), directory, playbook="commercial", variant="base"),
+                    directory)
+    refer(directory, THREE, variant="changed")
+    caveats = aggregate(directory)["caveats"]
+    assert ("The reference for commercial/base was annotated by someone who had already seen model output for "
+            "this agreement; it is not a blind reading.") in caveats
+    assert not any("commercial/changed" in caveat for caveat in caveats)
+
+
+def test_post_validation_figures_follow_the_recomputed_validity_and_not_the_recorders_flag(tmp_path):
+    # r1: its one finding is valid, yet the recorder rejected the attempt.
+    # r2: one of its two findings fabricates its quotation, yet the recorder accepted the attempt.
+    directory = planned(tmp_path)
+    refer(directory, THREE)
+    record(directory, {
+        slot("commercial-base", 1): recording([finding("COM-FEES", 2)], verdict="REJECTED", minute=1),
+        slot("commercial-base", 2): recording([finding("COM-SLA", 4), finding("COM-FEES", 2, quote=FABRICATED)],
+                                              minute=2),
+    })
+    result = summary(aggregate(directory))
+    assert (result["recorderAccepted"], result["recorderRejected"], result["allFindingsValid"],
+            result["validationDisagreements"]) == (1, 1, 1, 2)
+    # All attempts: the fees in r1 and availability in r2 match, the fabricated fees finding counts against r2.
+    assert counts(result["issueMatch"]) == (2, 1, 4)
+    # Delivered: r1 alone, with one match. r2 delivered nothing, so its three expected issues are missed.
+    assert counts(result["issueMatchPostValidation"]) == (1, 0, 5)
+    assert result["issueMatchPostValidation"]["attemptsDelivered"] == 1
+
+
+def test_the_markdown_shows_the_recorders_verdicts_trivial_quotations_and_missing_clause_validity(tmp_path):
+    # r1: a verbatim quotation of eight characters and a well-formed missing clause, accepted.
+    # r2: a missing clause that quotes text it must not have, rejected. r3 failed.
+    directory = planned(tmp_path, repetitions=3)
+    record(directory, {
+        slot("commercial-base", 1): recording([finding("COM-FEES", 2, quote="2. Fees."), missing("COM-EXIT")],
+                                              minute=1),
+        slot("commercial-base", 2): recording([missing("COM-SLA", quote="2. Fees.")], verdict="REJECTED", minute=2),
+        slot("commercial-base", 3): recording(outcome="FAILED", minute=3),
+    })
+    assert rows_under(render_markdown(aggregate(directory)), VALIDITY_HEADER) == [
+        "| commercial | base | 1 | 1 | 1 | 1/2 |"]
+
+
+# --- round two: what the check script looks at ---------------------------------------------
+
+
+def test_two_folders_with_one_experiment_id_fail_the_check(copied, tmp_path):
+    # Ledger entries are found by experiment id. Two folders with one id share their reservations.
+    shutil.copytree(copied / "replay-dry-run", copied / "second-run")
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert "second-run: carries the experiment id of replay-dry-run (replay-dry-run)" in result.stderr
+
+
+@pytest.mark.parametrize("relative", [
+    "report.json", "report.md", "experiment.json", "replay-dry-run/older/experiment.json",
+    "replay-dry-run/older/report.md", "archive/older/report.json",
+])
+def test_a_report_or_experiment_file_outside_an_experiment_folder_fails_the_check(copied, tmp_path, relative):
+    put(copied, relative, "{}")
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert f"{relative}: lies outside an experiment folder and is never re-aggregated" in result.stderr
+
+
+def test_a_ledger_whose_cap_is_not_the_portfolio_cap_fails_the_check(copied, tmp_path):
+    path = copied.parent / "spend-ledger.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data["capMinorUnits"] == 10000
+    data["capMinorUnits"] = 20000
+    path.write_text(json.dumps(data), encoding="utf-8")
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert "spend-ledger.json: its cap is 20000 minor units, the portfolio cap is 10000" in result.stderr
+
+
+def test_a_ledger_that_cannot_be_read_fails_the_check(copied, tmp_path):
+    (copied.parent / "spend-ledger.json").write_text("{", encoding="utf-8")
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert "spend-ledger.json: cannot be read" in result.stderr
