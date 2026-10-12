@@ -59,8 +59,10 @@ from contract_eval.candidates import (
     CandidateReference,
     CandidateRun,
     Playbook,
+    anchor_id,
     comparison_key,
     digest,
+    document_paragraphs,
     evaluate_candidates,
     findings_digest,
     parse_instant,
@@ -330,6 +332,11 @@ def resolve_corpus(experiment: Experiment, experiment_dir: Path) -> tuple[Path, 
         raise ValueError("corpus manifest changed since the experiment was planned")
     if digest(corpus.instructions) != experiment.instructionsSha256:
         raise ValueError("business instructions changed since the experiment was planned")
+    for book in experiment.design.playbooks:
+        if book not in corpus.playbooks:
+            raise ValueError(f"playbook {book} is not in the corpus")
+    for variant in experiment.design.variants:
+        corpus.document(variant)
     return corpus_dir, corpus
 
 
@@ -375,16 +382,33 @@ def add_iteration(experiment: Experiment, experiment_dir: Path, arm: Arm) -> Exp
 def _checked_reference(experiment: Experiment, experiment_dir: Path, corpus_dir: Path, corpus: Corpus,
                        ref: ReferenceRef) -> tuple[CandidateReference, bool]:
     """Load one reference and hold it to its bindings. Returns it with `derivationVerified`."""
-    raw = (experiment_dir / ref.file).read_bytes()
+    path = experiment_dir / ref.file
+    if not path.exists():
+        raise ValueError(f"registered reference {ref.file} is missing")
+    raw = path.read_bytes()
     if digest(raw) != ref.sha256:
         raise ValueError(f"reference {ref.file} does not match its registered hash")
     reference = CandidateReference.model_validate_json(raw.decode("utf-8"))
-    if reference.sourceSha256 != corpus.document(ref.variant).sha256:
+    document = corpus.document(ref.variant)
+    if reference.sourceSha256 != document.sha256:
         raise ValueError(f"reference {ref.file} is bound to a different document")
     if reference.playbookSha256 != corpus.playbooks[ref.playbook]:
         raise ValueError(f"reference {ref.file} is bound to a different playbook")
     if reference.provenance is not None and reference.provenance.corpusManifestSha256 != experiment.corpusManifestSha256:
         raise ValueError(f"reference {ref.file} was compiled from a different corpus edition")
+    # Every expected issue must be scorable against this cell. Otherwise the reference is
+    # frozen, the budget reserved, and the first refusal comes with the first paid attempt.
+    entries = {entry.id for entry in Playbook.model_validate_json(
+        (corpus_dir / f"{ref.playbook}.json").read_text(encoding="utf-8")).entries}
+    anchors = {anchor_id(document.sha256, number, text) for number, text in enumerate(
+        document_paragraphs((corpus_dir / document.filename).read_bytes()))}
+    for issue in reference.issues:
+        if issue.playbookReference not in entries:
+            raise ValueError(f"reference {ref.file} uses an unknown playbook entry")
+        if issue.missingClause != (issue.anchorId is None):
+            raise ValueError(f"reference {ref.file} has an invalid missing-clause shape")
+        if issue.anchorId is not None and issue.anchorId not in anchors:
+            raise ValueError(f"reference {ref.file} uses an unknown source anchor")
     if ref.sources is None:
         if reference.status == "INDEPENDENTLY_REVIEWED":
             raise ValueError(
@@ -458,12 +482,15 @@ def _read_attempts(experiment: Experiment, experiment_dir: Path, corpus_dir: Pat
                    *, registered_only: bool) -> list[tuple[AttemptRef, CandidateRun, bytes]]:
     """Load, check and de-duplicate attempt files. Refuses what the slots do not explain."""
     named = {attempt.file for attempt in experiment.attempts}
-    for arm in experiment.arms:
-        strays = [f for f in _arm_files(experiment_dir, arm.id) if f not in named]
-        if strays:
-            # One slot is one attempt. A second recording beside it would be a result
-            # nobody counted, so it is refused, never ignored.
-            raise ValueError(f"{strays[0]} is not a preregistered attempt slot")
+    folder = experiment_dir / "attempts"
+    present = sorted(p.relative_to(experiment_dir).as_posix() for p in folder.rglob("*") if p.is_file()) \
+        if folder.exists() else []
+    strays = [f for f in present if f not in named]
+    if strays:
+        # One slot is one attempt. A second recording beside it, or one filed under an arm
+        # the experiment does not declare, would be a result nobody counted, so it is
+        # refused, never ignored.
+        raise ValueError(f"{strays[0]} is not a preregistered attempt slot")
     loaded = []
     recordings: dict[str, str] = {}
     requests: dict[str, str] = {}
@@ -596,8 +623,16 @@ def _check_ledger(experiment: Experiment, ledger: Ledger, arm_id: str,
     closure = closure_of(ledger, reservation.id)
     if closure is not None and closure.kind == "VOID" and attempts:
         raise ValueError(f"reservation {reservation.id} was voided although arm {arm_id} has attempts")
-    if closure is not None and closure.kind == "SETTLEMENT" and len(attempts) > closure.observedAttempts:
-        raise ValueError(f"arm {arm_id} has attempts that were registered after it was settled")
+    if closure is not None and closure.kind == "SETTLEMENT":
+        if len(attempts) > closure.observedAttempts:
+            raise ValueError(f"arm {arm_id} has attempts that were registered after it was settled")
+        if len(attempts) < closure.observedAttempts:
+            raise ValueError(f"arm {arm_id} has fewer attempts than its settlement observed")
+        settled_at = parse_instant(closure.recordedAt)
+        for attempt, artifact in attempts:
+            # The count alone would let a settled attempt be swapped for a later one.
+            if parse_instant(artifact.run.startedAt) > settled_at:
+                raise ValueError(f"attempt {attempt.file} started after its arm was settled")
     reserved_at = parse_instant(reservation.recordedAt)
     for attempt, artifact in attempts:
         started = parse_instant(artifact.run.startedAt)
@@ -888,6 +923,11 @@ def settle_arm(experiment_dir: Path, ledger: Ledger, *, arm_id: str, settlement_
             "aboveReservation": estimate["amountMinorUnits"] > reservation.amountMinorUnits, **estimate}
 
 
+def _table_text(text: str) -> str:
+    """Free text inside one table cell: one line, and a bar that stays a character."""
+    return " ".join(text.split()).replace("|", "\\|")
+
+
 def _fmt(value: float | None) -> str:
     return "N/A" if value is None else f"{value:.2f}"
 
@@ -915,7 +955,8 @@ def render_markdown(report: dict) -> str:
         for cell, ref in report["references"].items():
             low = "N/A" if ref["lowConfidenceIssues"] is None else ref["lowConfidenceIssues"]
             lines.append(f"| {cell} | {ref['status']} | {ref['route'] or 'unknown'} | {ref['expectedIssues']} | {low} "
-                         f"| {'yes' if ref['derivationVerified'] else 'no'} | {ref['reviewerEvidence'] or 'none'} |")
+                         f"| {'yes' if ref['derivationVerified'] else 'no'} "
+                         f"| {_table_text(ref['reviewerEvidence'] or 'none')} |")
         lines += ["", "No reviewer's identity or independence is verified by this tooling.", ""]
     else:
         lines += ["No reference is registered: issue precision and recall are unavailable.", ""]

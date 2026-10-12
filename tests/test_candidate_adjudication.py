@@ -185,9 +185,6 @@ def test_prepare_orders_decisions_by_entry_and_place_before_raiser():
     ({"sawModelOutput": True}, "annotation B does not attest"),
     ({"sawModelOutput": None}, "annotation B does not attest"),
     ({"annotatedOn": ""}, "annotation B has no annotation date"),
-    # The annotation model checks the shape of the date only.
-    ({"annotatedOn": "2026-02-30"}, "annotation B is dated '2026-02-30', which is not a calendar date"),
-    ({"annotatedOn": "2026-10-11\n"}, "which is not a calendar date"),
 ])
 def test_prepare_refuses_annotations_that_could_never_be_resolved(overrides, message):
     a, b = first(), second(**overrides)
@@ -389,7 +386,6 @@ def test_resolve_refuses_missing_signature_or_independence_fields(overrides, mes
     ({"sawModelOutput": True}, "annotation B does not attest"),
     ({"sawModelOutput": None}, "annotation B does not attest"),
     ({"annotatedOn": ""}, "annotation B has no annotation date"),
-    ({"annotatedOn": "2026-02-30"}, "which is not a calendar date"),
 ])
 def test_resolve_refuses_an_annotator_who_saw_model_output_or_gave_no_date(overrides, message):
     a, b = first(), second()
@@ -583,3 +579,93 @@ def test_cli_outputs_never_replace_an_annotation_or_a_record(tmp_path):
     assert "Unresolved disagreements: 3" in ledger.read_text(encoding="utf-8")
     parsed = CandidateReference.model_validate_json(reference.read_text(encoding="utf-8"))
     assert parsed.status == "INDEPENDENTLY_REVIEWED"
+
+
+# --- Provenance and pack binding ------------------------------------------------------
+
+
+def test_resolved_reference_states_its_provenance():
+    a, b = first(), second()
+    provenance = resolved(a, b, record(a, b))["provenance"]
+    bindings = corpus_bindings(CORPUS)
+    assert provenance == {
+        "route": "ADJUDICATED",
+        "corpusManifestSha256": bindings["corpusManifestSha256"],
+        "guidelineSha256": bindings["guidelineSha256"],
+        "sourceRegisterSha256": bindings["sourceRegisterSha256"],
+        "lowConfidenceIssues": 0,
+        "uncertaintiesRecorded": False,
+        "annotatorSawModelOutput": False,
+    }
+
+
+def low(annotation_: Annotation, entry: str) -> Annotation:
+    raw = annotation_.model_dump(by_alias=True)
+    for issue in raw["issues"]:
+        if issue["playbookReference"] == entry:
+            issue["confidence"] = "LOW"
+    return Annotation.model_validate(raw)
+
+
+def test_low_confidence_counts_agreed_issues_of_either_annotator_and_included_issues_of_the_raiser():
+    # Agreed: COM-FEES. One-sided: COM-EXIT missing (A, included), COM-EXIT at 11 and COM-SLA (B, excluded).
+    a, b = first(), second()
+    count = lambda x, y: resolved(x, y, record(x, y))["provenance"]["lowConfidenceIssues"]  # noqa: E731
+    assert count(a, b) == 0
+    assert count(low(a, "COM-FEES"), b) == 1          # agreed issue, LOW for A only
+    assert count(a, low(b, "COM-FEES")) == 1          # agreed issue, LOW for B only
+    assert count(low(a, "COM-FEES"), low(b, "COM-FEES")) == 1   # still one issue
+    assert count(low(a, "COM-EXIT"), b) == 1          # included issue, LOW for its raiser
+    assert count(a, low(b, "COM-SLA")) == 0           # excluded issue does not enter the reference
+    assert count(low(low(a, "COM-FEES"), "COM-EXIT"), b) == 2
+
+
+@pytest.mark.parametrize("side", ["A", "B"])
+def test_recorded_uncertainties_of_either_annotator_are_flagged(side):
+    doubt = {"uncertainties": "Test doubt, not legal validation."}
+    a, b = first(**(doubt if side == "A" else {})), second(**(doubt if side == "B" else {}))
+    assert resolved(a, b, record(a, b))["provenance"]["uncertaintiesRecorded"] is True
+
+
+@pytest.mark.parametrize("binding", ["corpusManifestSha256", "guidelineSha256", "sourceRegisterSha256"])
+def test_compare_refuses_annotations_made_from_different_packs(binding):
+    a, b = first(), second(**{binding: "0" * 64})
+    with pytest.raises(ValueError, match=f"annotations were made from different packs \\({binding} differs\\)"):
+        compare(a, b)
+
+
+def test_resolve_refuses_annotations_made_from_a_pack_the_corpus_no_longer_builds():
+    stale = {"guidelineSha256": "0" * 64}
+    a, b = first(**stale), second(**stale)
+    with pytest.raises(ValueError, match="annotation was made from a different pack: guidelineSha256"):
+        resolved(a, b, record(a, b))
+
+
+def test_resolve_files_equals_resolve_with_the_hashes_of_the_file_bytes(tmp_path):
+    from contract_eval.candidate_adjudication import resolve_files
+    a, b = first(), second()
+    a_path, b_path, record_path = tmp_path / "a.json", tmp_path / "b.json", tmp_path / "record.json"
+    a_path.write_text(json.dumps(a.model_dump(by_alias=True), indent=2) + "\n", encoding="utf-8")
+    b_path.write_text(json.dumps(b.model_dump(by_alias=True), indent=2) + "\n", encoding="utf-8")
+    a_sha, b_sha = digest(a_path.read_bytes()), digest(b_path.read_bytes())
+    raw = prepare(a, b, a_sha, b_sha)
+    for entry in raw["decisions"]:
+        entry["decision"] = DECISIONS[(entry["playbookReference"], entry["paragraph"])]
+        entry["reasoning"] = REASONING
+    raw.update(adjudicator="Test Adjudicator", adjudicatedOn="2026-10-12",
+               independentAnnotator="A", reviewerEvidence=EVIDENCE)
+    record_path.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+    from_files = resolve_files(a_path, b_path, record_path, CORPUS)
+    direct = resolve(a, b, Adjudication.model_validate(raw), CORPUS, a_sha, b_sha, digest(record_path.read_bytes()))
+    assert from_files == direct
+    assert f"adjudication-sha256:{digest(record_path.read_bytes())}" in from_files["reviewerEvidence"]
+    # One changed byte in an annotation file and the record no longer binds it.
+    a_path.write_text(a_path.read_text(encoding="utf-8") + " ", encoding="utf-8")
+    with pytest.raises(ValueError, match="bound to different annotation files"):
+        resolve_files(a_path, b_path, record_path, CORPUS)
+
+
+def test_an_annotation_has_no_status_for_adjudication_to_read():
+    assert "status" not in Annotation.model_fields and "reviewerEvidence" not in Annotation.model_fields
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        first(status="INDEPENDENTLY_REVIEWED")

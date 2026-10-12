@@ -257,8 +257,6 @@ def test_annotated_on_accepts_a_calendar_date_and_the_empty_value_of_a_template(
     assert annotation(annotatedOn=value).annotatedOn == value
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: annotatedOn accepts the ISO week date 2026-W41-1, "
-                                       "which check passes and adjudication later refuses")
 def test_annotated_on_refuses_an_iso_week_date():
     with pytest.raises(ValidationError, match="annotatedOn must be an ISO date"):
         annotation(annotatedOn="2026-W41-1")
@@ -633,7 +631,6 @@ def test_pinpoints_must_cover_exactly_the_citing_entries(corpus_copy, change):
         load_source_register(corpus_copy)
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: a blank pinpoint counts as the pinpoint of a citing playbook entry")
 def test_a_blank_pinpoint_is_refused(corpus_copy):
     edit_source(corpus_copy, lambda source: source["pinpoints"].update({"DORA-EXIT": " "}))
     with pytest.raises(ValueError):
@@ -800,8 +797,6 @@ def test_a_rebuild_replaces_an_older_pack_completely(pack):
     verify_pack(out, CORPUS)
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: build deletes any existing --out folder, "
-                                       "also one that holds returned annotations")
 def test_build_does_not_delete_a_folder_that_is_not_an_annotation_pack(tmp_path):
     returned = tmp_path / "returned"
     returned.mkdir()
@@ -1100,8 +1095,6 @@ def test_a_manifest_that_differs_from_a_fresh_build_is_refused_against_the_corpu
         verify_pack(out, CORPUS)
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: verify compares parsed manifests, so MANIFEST.json can carry "
-                                       "text a fresh build does not write and still verify and bundle")
 def test_verify_refuses_a_manifest_file_with_text_a_fresh_build_does_not_write(pack):
     out, _ = pack
     path = out / "MANIFEST.json"
@@ -1253,8 +1246,6 @@ def test_cli_compile_refuses_to_overwrite_an_annotation_file(tmp_path):
         assert target.read_bytes() == before
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: compile --out overwrites an adjudication record, "
-                                       "which candidate_adjudication never replaces")
 def test_cli_compile_refuses_to_overwrite_an_adjudication_record(tmp_path):
     path = write(tmp_path / "base-commercial.annotation.json", filled())
     record = tmp_path / "base-commercial.adjudication.json"

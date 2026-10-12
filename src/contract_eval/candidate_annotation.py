@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import tempfile
 from datetime import date
@@ -41,6 +42,9 @@ CORPUS_SCHEMA = "mycounsel.synthetic-corpus.v1"
 REFERENCE_SCHEMA = "mycounsel.candidate-reference.v1"
 SOURCE_REGISTER_SCHEMA = "mycounsel.source-register.v1"
 HEX64 = r"^[a-f0-9]{64}$"
+ISO_DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
+# Files that hold what a person wrote. A derived file is never written over one of them.
+WRITTEN_INPUT_SCHEMAS = (ANNOTATION_SCHEMA, "mycounsel.candidate-adjudication.v1")
 # Where a corpus keeps the guideline its annotators work from.
 GUIDELINE_PATH = Path("annotation") / "GUIDELINE.md"
 SNAPSHOT_BODY_SEPARATOR = "\n---\n"
@@ -152,7 +156,7 @@ def load_source_register(corpus_dir: Path) -> SourceRegister | None:
         unknown = sorted(set(source.usedBy) - entries.keys())
         if unknown:
             raise ValueError(f"source {source.id} is cited for unknown playbook entries: {', '.join(unknown)}")
-        if set(source.pinpoints) != set(source.usedBy):
+        if set(source.pinpoints) != set(source.usedBy) or any(not p.strip() for p in source.pinpoints.values()):
             raise ValueError(f"source {source.id} needs exactly one pinpoint per citing playbook entry")
         covered.update(source.usedBy)
     statutory = {entry_id for entry_id, entry in entries.items() if entry.category == "STATUTORY_REQUIREMENT"}
@@ -221,12 +225,13 @@ class Annotation(Strict):
             # entry's subject, and call a clause missing only when none does.
             raise ValueError("an entry cannot be both missing and located at a paragraph: " + ", ".join(both))
         if self.annotatedOn:
+            # The shape first: fromisoformat alone also accepts 20261012 and 2026-W41-1.
+            if not ISO_DAY.fullmatch(self.annotatedOn):
+                raise ValueError("annotatedOn must be an ISO date")
             try:
                 date.fromisoformat(self.annotatedOn)
             except ValueError as error:
                 raise ValueError("annotatedOn must be an ISO date") from error
-            if len(self.annotatedOn) != 10:
-                raise ValueError("annotatedOn must be an ISO date")
         return self
 
 
@@ -322,6 +327,17 @@ def build_pack(corpus_dir: Path, out: Path, guideline: Path | None = None) -> di
     if digest(guideline.read_bytes()) != bindings["guidelineSha256"]:
         raise ValueError(f"the pack is built from the corpus guideline at {corpus_dir / GUIDELINE_PATH}")
     if out.exists():
+        if not out.is_dir():
+            raise FileExistsError(f"refusing to replace {out}: it is not a folder")
+        if any(out.iterdir()):
+            # An older pack is rebuilt in place. Anything else, for example a folder of
+            # returned annotations, is somebody's work and stays.
+            try:
+                is_pack = json.loads((out / "MANIFEST.json").read_text(encoding="utf-8")).get("schema") == PACK_SCHEMA
+            except (OSError, ValueError, AttributeError):
+                is_pack = False
+            if not is_pack:
+                raise FileExistsError(f"refusing to replace {out}: it holds files and is not an annotation pack")
         shutil.rmtree(out)
     for folder in ("documents", "playbooks", "templates", "sources"):
         (out / folder).mkdir(parents=True)
@@ -384,7 +400,8 @@ def verify_pack(out: Path, corpus_dir: Path | None = None) -> dict:
     built before the guideline, a playbook or the register changed, passes that check.
     With the corpus the pack is rebuilt in a scratch directory and must be identical.
     """
-    manifest = json.loads((out / "MANIFEST.json").read_text(encoding="utf-8"))
+    manifest_bytes = (out / "MANIFEST.json").read_bytes()
+    manifest = json.loads(manifest_bytes.decode("utf-8"), object_pairs_hook=_no_repeated_keys)
     if manifest.get("schema") != PACK_SCHEMA:
         raise ValueError("not an annotation pack manifest")
     listed = set(manifest["files"])
@@ -397,10 +414,19 @@ def verify_pack(out: Path, corpus_dir: Path | None = None) -> dict:
             raise ValueError(f"pack file {relative} differs from its manifest hash")
     if corpus_dir is not None:
         with tempfile.TemporaryDirectory() as scratch:
-            fresh = build_pack(corpus_dir, Path(scratch) / "pack")
-        if fresh != manifest:
+            build_pack(corpus_dir, Path(scratch) / "pack")
+            fresh_bytes = (Path(scratch) / "pack" / "MANIFEST.json").read_bytes()
+        # Bytes, not parsed values: a manifest can carry text a parser drops and a reader sees.
+        if fresh_bytes != manifest_bytes:
             raise ValueError("the pack is not what the corpus builds today; rebuild it with make candidate-pack")
     return manifest
+
+
+def _no_repeated_keys(pairs: list[tuple[str, object]]) -> dict:
+    keys = [key for key, _ in pairs]
+    if len(set(keys)) != len(keys):
+        raise ValueError("pack manifest repeats a key")
+    return dict(pairs)
 
 
 def bundle_pack(pack: Path, out: Path, corpus_dir: Path) -> str:
@@ -463,8 +489,9 @@ def main(argv: list[str] | None = None) -> None:
         return
     text = json.dumps(reference, indent=2, ensure_ascii=False) + "\n"
     if args.out:
-        if args.out.exists() and ANNOTATION_SCHEMA.encode("utf-8") in args.out.read_bytes():
-            raise FileExistsError(f"refusing to overwrite {args.out}: it is an annotation")
+        if args.out.exists() and any(schema.encode("utf-8") in args.out.read_bytes()
+                                     for schema in WRITTEN_INPUT_SCHEMAS):
+            raise FileExistsError(f"refusing to overwrite {args.out}: it is an annotation or an adjudication record")
         args.out.write_text(text, encoding="utf-8")
         print(f"Wrote DRAFT reference to {args.out}. Independent review needs a second annotation and adjudication.")
     else:

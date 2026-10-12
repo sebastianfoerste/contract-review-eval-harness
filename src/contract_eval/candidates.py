@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from io import BytesIO
 import json
+import re
 from typing import Literal
 from xml.etree import ElementTree
 from zipfile import ZipFile
@@ -19,6 +20,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 class Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+
+XML_ENCODING = re.compile(r"""\s*<\?xml[^>]*?encoding\s*=\s*["']([^"']+)["']""")
 
 Hash = str
 Category = Literal["STATUTORY_REQUIREMENT", "NEGOTIATED_PREFERENCE", "COMMERCIAL_RISK"]
@@ -107,7 +110,10 @@ def parse_instant(value: str) -> datetime:
         raise ValueError(f"{value!r} is not an ISO 8601 date and time") from error
     if instant.tzinfo is None:
         raise ValueError(f"{value!r} carries no time zone")
-    return instant.astimezone(timezone.utc)
+    try:
+        return instant.astimezone(timezone.utc)
+    except OverflowError as error:
+        raise ValueError(f"{value!r} lies outside the representable range of instants") from error
 
 
 class Run(Strict):
@@ -223,7 +229,7 @@ class CandidateReference(Strict):
     @model_validator(mode="after")
     def validate_review(self) -> "CandidateReference":
         if self.status == "INDEPENDENTLY_REVIEWED":
-            if not self.reviewerEvidence:
+            if not (self.reviewerEvidence or "").strip():
                 raise ValueError("independent review needs an evidence reference")
             # One annotation is one reading. Only two blind annotations with written
             # adjudication carry the status; the shape alone proves nothing, which is why
@@ -277,7 +283,16 @@ def document_paragraphs(document: bytes) -> list[str]:
         ):
             raise ValueError("unsafe document package")
         raw = package.read("word/document.xml")
-        if b"<!doctype" in raw.lower() or b"<!entity" in raw.lower():
+        # The guard below reads text. In UTF-16 or UTF-32 the same markup is other bytes and
+        # would pass unseen, so only UTF-8 is read at all; Word writes nothing else.
+        try:
+            text = raw.decode("utf-8-sig")
+        except UnicodeDecodeError as error:
+            raise ValueError("document XML is not UTF-8") from error
+        declared = XML_ENCODING.match(text)
+        if "\x00" in text or (declared and declared.group(1).lower() not in ("utf-8", "utf8")):
+            raise ValueError("document XML is not UTF-8")
+        if "<!doctype" in text.lower() or "<!entity" in text.lower():
             raise ValueError("unsafe document XML")
         doc = ElementTree.fromstring(raw)
     w = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"

@@ -561,8 +561,6 @@ def test_word_package_with_one_thousand_entries_is_still_read():
     assert document_paragraphs(package) == ["Test paragraph."]
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: the DOCTYPE and ENTITY guard reads raw bytes, "
-                   "so a UTF-16 word/document.xml has its entities expanded into paragraph text")
 def test_entities_are_refused_whatever_the_xml_encoding():
     xml = word_xml("<w:p><w:r><w:t>&x;</w:t></w:r></w:p>",
                    '<?xml version="1.0" encoding="UTF-16"?>' + ENTITY_PROLOG)
@@ -616,9 +614,6 @@ def test_instants_order_by_time_where_their_text_orders_the_other_way():
     assert parse_instant(later) > parse_instant(earlier)
 
 
-@pytest.mark.xfail(strict=True, raises=OverflowError,
-                   reason="SOURCE DEFECT: an instant whose UTC value leaves the year range escapes "
-                   "as OverflowError instead of a refusal")
 @pytest.mark.parametrize("started", ["0001-01-01T00:00:00+14:00", "9999-12-31T23:59:59-14:00"])
 def test_start_time_outside_the_representable_range_is_refused_like_any_other(started):
     with pytest.raises(ValueError):
@@ -1291,8 +1286,6 @@ def test_independent_review_claim_without_its_support_is_refused(changes, messag
         reference([expected("COM-FEES", 2)], **claim)
 
 
-@pytest.mark.xfail(strict=True, reason="SOURCE DEFECT: whitespace-only reviewerEvidence is accepted as the "
-                   "evidence reference of an INDEPENDENTLY_REVIEWED reference")
 def test_blank_reviewer_evidence_cannot_support_independent_review():
     with pytest.raises(ValidationError):
         reference([expected("COM-FEES", 2)], status="INDEPENDENTLY_REVIEWED", reviewerEvidence=" \n\t ",
