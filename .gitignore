@@ -29,3 +29,7 @@ wheels/
 
 # Exported annotation bundle, regenerate with make annotation-bundle
 /annotations/bundle/
+
+# Environment files. Real values stay local; only example files are tracked.
+.env.*
+!.env.example
