@@ -10,6 +10,7 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `src/contract_eval/scorer.py` — pure scoring functions: clause P/R/F1, risk-flag accuracy, citation grounding, hallucination count. Unit-tested.
 - `src/contract_eval/cli.py` — `evaluate()` pipeline + argparse `main`. `scorecard.py` renders markdown.
 - `data/<case>_sample.md` — synthetic contracts. `expected/<case>.json` — gold answers. `fixtures/<case>_stub.json` — stub model output.
+- `src/contract_eval/candidates.py`, `candidate_annotation.py`, `candidate_experiment.py`, `candidate_budget.py` — the separate native My Counsel track: scoring one recording, blind annotation pack and reference compiler, preregistered experiments with refusals and denominators, cumulative EUR spend ledger. Corpus, pack, worked example and ledger live under `candidates/mycounsel/`; see its README. Never in `ALL_CASES` or a certificate.
 - `tests/` — pytest.
 
 ## Rules

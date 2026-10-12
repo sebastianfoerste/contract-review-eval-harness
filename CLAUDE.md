@@ -1,18 +1,19 @@
+<!-- Replacement for /Users/sebastian/Developer/active/contract-review-eval-harness/CLAUDE.md (same change for the worktree copy under _wt/harness-candidate-cases). Draft of 2026-09-24. A gstack upgrade may re-add its default routing block; check the diff after upgrades. -->
+@AGENTS.md
+
 ## Skill routing
 
-When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
+When a request matches one of these purposes, invoke that gstack skill with the Skill tool. Otherwise work directly.
 
-Key routing rules:
-- Product ideas/brainstorming → invoke /office-hours
-- Strategy/scope → invoke /plan-ceo-review
-- Architecture → invoke /plan-eng-review
-- Design system/plan review → invoke /design-consultation or /plan-design-review
-- Full review pipeline → invoke /autoplan
-- Bugs/errors → invoke /investigate
-- QA/testing site behavior → invoke /qa or /qa-only
-- Code review/diff check → invoke /review
-- Visual polish → invoke /design-review
-- Ship/deploy/PR → invoke /ship or /land-and-deploy
-- Save progress → invoke /context-save
-- Resume context → invoke /context-restore
-- Author a backlog-ready spec/issue → invoke /spec
+- Product ideas and brainstorming: /office-hours
+- Strategy and scope: /plan-ceo-review
+- Architecture: /plan-eng-review
+- Design system or plan review: /design-consultation or /plan-design-review
+- Full review pipeline: /autoplan
+- Bugs and errors: /investigate
+- QA and testing site behaviour: /qa or /qa-only
+- Code review and diff checks: /review
+- Visual polish: /design-review
+- Ship, deploy or PR: /ship or /land-and-deploy, with Sebastian's go for each external step
+- Save progress: /context-save; resume context: /context-restore
+- Backlog-ready spec or issue: /spec

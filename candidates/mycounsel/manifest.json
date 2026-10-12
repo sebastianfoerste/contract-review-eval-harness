@@ -11,7 +11,7 @@
     {
       "variant": "changed",
       "filename": "ict-changed.docx",
-      "sha256": "e70c9a16cb0c55755be117ce951db21515f0ba6521380727f16795e580f916ed"
+      "sha256": "497b6d3fcfc453e978333bf5d6ce618b3372c8298ccc3cf86cba4630b3556c60"
     },
     {
       "variant": "injection",
@@ -21,7 +21,7 @@
   ],
   "playbooks": {
     "commercial": "ad974d96506f0b8a6507425dd52cef11dc86bc8a0b59f8f1764b3156dbf7303c",
-    "dora": "b707cafae4c1fcc2c12048a8028f81e86755cb93de5eb5139f0dcf86328060f8"
+    "dora": "69ec8f3380afc47fc356c96d8bdefc7ebcaae3213accb0e3f4e456fb09d4ab8d"
   },
   "instructions": "Review for the Customer, a hypothetical German credit institution, assuming an ICT service supporting a critical or important function. Apply only the selected playbook. This is a synthetic exercise."
 }

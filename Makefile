@@ -27,7 +27,13 @@ robustness-check:
 	uv run python scripts/check_robustness_report.py
 parity-vectors: ; uv run python scripts/check_parity_vectors.py --write
 parity-check: ; uv run python scripts/check_parity_vectors.py
+candidate-check: ; uv run pytest tests/test_candidates.py tests/test_candidate_annotation.py tests/test_candidate_adjudication.py tests/test_candidate_experiment.py tests/test_candidate_budget.py -q
+candidate-pack: ; uv run python -m contract_eval.candidate_annotation build
+candidate-pack-check: ; uv run python -m contract_eval.candidate_annotation verify
+candidate-bundle: ; uv run python -m contract_eval.candidate_annotation bundle
+candidate-experiment-check: ; uv run python scripts/check_candidate_experiments.py
+candidate-budget-status: ; uv run python -m contract_eval.candidate_budget status
 web-check: ; uv run python scripts/check_web_sync.py
 web-export: ; uv run python ../contract-eval-web/scripts/export-benchmark.py --repo .
-check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check parity-check web-check
+check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check parity-check web-check candidate-pack-check candidate-experiment-check
 

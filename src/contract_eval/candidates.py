@@ -5,6 +5,7 @@ legal explanation or proposed amendment is correct; that needs lawyer review.
 """
 
 from collections import Counter
+from datetime import datetime, timezone
 from hashlib import sha256
 from io import BytesIO
 import json
@@ -69,6 +70,46 @@ class Finding(Strict):
     playbookReference: str = Field(min_length=1, max_length=200)
 
 
+class Usage(Strict):
+    """Provider-reported token counts for one attempt, as the application gateway passes them on.
+
+    Cost is derived later from a verified price table (candidate_budget); a recorder
+    never invents it. Absent counts stay None rather than zero.
+
+    `inputTokens` is every input token of the request, cached ones included;
+    `cacheReadTokens` is the cached share. `outputTokens` is every billed output token,
+    thinking included, whichever way the provider reports it: Anthropic counts thinking
+    inside its output figure, Gemini reports thoughts beside its candidate figure and
+    the gateway adds the two. `thinkingTokens` is the thinking share where the provider
+    states it. The two shares are information and are never added to their totals again.
+    """
+
+    inputTokens: int = Field(ge=0)
+    outputTokens: int = Field(ge=0)
+    cacheReadTokens: int | None = Field(default=None, ge=0)
+    thinkingTokens: int | None = Field(default=None, ge=0)
+    providerRequestId: str | None = Field(default=None, max_length=200)
+
+    @model_validator(mode="after")
+    def shares_stay_within_their_totals(self) -> "Usage":
+        if self.thinkingTokens is not None and self.thinkingTokens > self.outputTokens:
+            raise ValueError("thinking tokens are a share of billed output tokens")
+        if self.cacheReadTokens is not None and self.cacheReadTokens > self.inputTokens:
+            raise ValueError("cached tokens are a share of input tokens")
+        return self
+
+
+def parse_instant(value: str) -> datetime:
+    """A timezone-aware ISO 8601 instant, or a refusal. Order checks compare these, never text."""
+    try:
+        instant = datetime.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError(f"{value!r} is not an ISO 8601 date and time") from error
+    if instant.tzinfo is None:
+        raise ValueError(f"{value!r} carries no time zone")
+    return instant.astimezone(timezone.utc)
+
+
 class Run(Strict):
     mode: Literal["REPLAY", "LIVE"]
     model: str
@@ -78,8 +119,20 @@ class Run(Strict):
     startedAt: str
     elapsedMs: int = Field(ge=0)
     outcome: Literal["COMPLETED", "REFUSED", "FAILED"]
-    usage: None
-    usageUnavailableReason: str
+    # Exactly one of the two: real usage, or the reason it is missing. The 2026-10-10
+    # replay recordings carry null usage with a reason and stay valid unchanged.
+    usage: Usage | None
+    usageUnavailableReason: str | None
+
+    @model_validator(mode="after")
+    def usage_or_reason(self) -> "Run":
+        parse_instant(self.startedAt)
+        has_reason = bool(self.usageUnavailableReason and self.usageUnavailableReason.strip())
+        if self.usageUnavailableReason is not None and not has_reason:
+            raise ValueError("a blank text is not a reason for missing usage")
+        if (self.usage is None) != has_reason:
+            raise ValueError("an attempt records usage or the reason it is unavailable, never both or neither")
+        return self
 
 
 class Validation(Strict):
@@ -109,7 +162,7 @@ class CandidateRun(Strict):
         if [a.paragraph for a in clauses] != list(range(len(clauses))):
             raise ValueError("clause paragraphs must be consecutive in document order")
         for anchor in clauses:
-            if anchor.id != digest(f"{self.source.sha256}:{anchor.paragraph}:{anchor.text}"):
+            if anchor.id != anchor_id(self.source.sha256, anchor.paragraph, anchor.text):
                 raise ValueError("clause anchor mismatch")
         completed = self.run.outcome == "COMPLETED"
         if completed != (self.findings is not None):
@@ -136,6 +189,27 @@ class ReferenceIssue(Strict):
     rationale: str = Field(min_length=1)
 
 
+class ReferenceProvenance(Strict):
+    """What a reference was compiled from. Written by the compilers, never by hand.
+
+    It binds the reference to the material the annotators worked from, beyond the one
+    document and playbook: the business instructions and every variant through the
+    corpus manifest, the guideline that defined the unit of annotation, and the source
+    register. A reference made under another guideline or register is another edition.
+    """
+
+    route: Literal["SINGLE_ANNOTATION", "ADJUDICATED"]
+    corpusManifestSha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    guidelineSha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    sourceRegisterSha256: str | None = Field(pattern=r"^[a-f0-9]{64}$")
+    # Expected issues an annotator marked LOW, and whether free-text doubts were recorded.
+    # Both stay visible in every report that scores against this reference.
+    lowConfidenceIssues: int = Field(ge=0)
+    uncertaintiesRecorded: bool
+    # False only when every contributing annotator attested not having seen model output.
+    annotatorSawModelOutput: bool
+
+
 class CandidateReference(Strict):
     schema_: Literal["mycounsel.candidate-reference.v1"] = Field(alias="schema")
     sourceSha256: str = Field(pattern=r"^[a-f0-9]{64}$")
@@ -143,11 +217,21 @@ class CandidateReference(Strict):
     status: Literal["DRAFT", "INDEPENDENTLY_REVIEWED"]
     reviewerEvidence: str | None
     issues: list[ReferenceIssue]
+    # Absent only on references written before provenance existed; those stay DRAFT.
+    provenance: ReferenceProvenance | None = None
 
     @model_validator(mode="after")
     def validate_review(self) -> "CandidateReference":
-        if self.status == "INDEPENDENTLY_REVIEWED" and not self.reviewerEvidence:
-            raise ValueError("independent review needs an evidence reference")
+        if self.status == "INDEPENDENTLY_REVIEWED":
+            if not self.reviewerEvidence:
+                raise ValueError("independent review needs an evidence reference")
+            # One annotation is one reading. Only two blind annotations with written
+            # adjudication carry the status; the shape alone proves nothing, which is why
+            # an experiment re-derives such a reference from its registered source files.
+            if self.provenance is None or self.provenance.route != "ADJUDICATED":
+                raise ValueError("independent review needs two annotations and written adjudication")
+            if self.provenance.annotatorSawModelOutput:
+                raise ValueError("an annotator who saw model output cannot support independent review")
         keys = [issue_key(i) for i in self.issues]
         if len(set(keys)) != len(keys):
             raise ValueError("duplicate expected issue")
@@ -158,6 +242,11 @@ def digest(value: str | bytes) -> str:
     return sha256(value.encode("utf-8") if isinstance(value, str) else value).hexdigest()
 
 
+def anchor_id(source_sha256: str, paragraph: int, text: str) -> str:
+    """The recorder's clause anchor: bound to the exact bytes, position and text."""
+    return digest(f"{source_sha256}:{paragraph}:{text}")
+
+
 def issue_key(issue: Finding | ReferenceIssue) -> tuple[str, str | None, bool]:
     return issue.playbookReference, issue.anchorId, issue.missingClause
 
@@ -166,6 +255,16 @@ def verify_document(artifact: CandidateRun, document: bytes) -> None:
     """Verify exact original bytes and text. No extraction to disk or XML entities."""
     if digest(document) != artifact.source.sha256:
         raise ValueError("document hash mismatch")
+    if document_paragraphs(document) != [a.text for a in artifact.source.clauses]:
+        raise ValueError("recorded clauses differ from original Word text")
+
+
+def document_paragraphs(document: bytes) -> list[str]:
+    """Paragraph texts of a bounded Word package in document order.
+
+    Shared by verification and by the annotation compiler, so a paragraph number an
+    annotator writes resolves to the same anchor the recorder produced.
+    """
     if len(document) > 20 * 1024 * 1024:
         raise ValueError("document exceeds package limit")
     with ZipFile(BytesIO(document)) as package:
@@ -184,13 +283,47 @@ def verify_document(artifact: CandidateRun, document: bytes) -> None:
     w = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
     if doc.tag != f"{w}document":
         raise ValueError("invalid Word document root")
-    texts = ["".join(n.text or "" for n in p.iter(f"{w}t")) for p in doc.iter(f"{w}p")]
-    if texts != [a.text for a in artifact.source.clauses]:
-        raise ValueError("recorded clauses differ from original Word text")
+    return ["".join(n.text or "" for n in p.iter(f"{w}t")) for p in doc.iter(f"{w}p")]
+
+
+# The application accepts any non-empty passage of the anchored paragraph as a quotation,
+# and `quotationValid` mirrors that. A single word or a full stop would then count as
+# evidence for an expected issue, so matching additionally asks for a passage of this
+# length, or the whole paragraph where the paragraph is shorter.
+MIN_QUOTE_CHARS = 20
+
+
+def _substantive_quote(quote: str, paragraph: str) -> bool:
+    collapsed = " ".join(quote.split())
+    return len(collapsed) >= MIN_QUOTE_CHARS or collapsed == " ".join(paragraph.split())
+
+
+def findings_digest(artifact: CandidateRun) -> str | None:
+    """Fingerprint of what the model returned, without the attempt's time and identity.
+
+    Two repetitions with the same value returned identical findings. That can be an
+    honest deterministic model or one output filed twice; a report shows the count and
+    lets the reader ask.
+    """
+    if artifact.findings is None:
+        return None
+    return digest(json.dumps([f.model_dump() for f in artifact.findings],
+                             ensure_ascii=False, sort_keys=True, separators=(",", ":")))
 
 
 def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | None = None) -> dict:
-    """Recompute evidence validity; never trust the recorder's ACCEPTED flag."""
+    """Recompute evidence validity; never trust the recorder's ACCEPTED flag.
+
+    Matching rule, applied in full here: a finding matches an expected issue when its
+    playbook entry, paragraph anchor and missing-clause flag are identical AND the
+    finding is matchable. Matchable means the entry exists in the playbook with the
+    finding's category, and either the finding is a well-formed missing clause (no
+    quotation, no clause anchor, an existing insertion anchor or none) or it quotes a
+    substantive passage of its anchored paragraph and carries no insertion anchor. A
+    repeated finding matches once; every finding that does not match, repetitions and
+    invalid ones included, is a false positive. An attempt without output finds nothing:
+    every expected issue is a false negative.
+    """
     book = Playbook.model_validate_json(artifact.playbook.instructions)
     entries = {entry.id: entry for entry in book.entries}
     anchors = {a.id: a.text for a in artifact.source.clauses}
@@ -205,11 +338,16 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
             finding.anchorId in anchors and bool(finding.quote) and
             finding.quote in anchors[finding.anchorId] and finding.insertionAnchorId is None
         ) if not finding.missingClause else None
+        substantive = (
+            quote_valid is True and _substantive_quote(finding.quote, anchors[finding.anchorId])
+        ) if not finding.missingClause else None
         entry = entries.get(finding.playbookReference)
         reference_valid = entry is not None and entry.category == finding.category
         rows.append({"index": i, "quotationValid": quote_valid, "missingClauseValid": missing_valid,
                      "playbookReferenceValid": reference_valid,
-                     "evidenceValid": reference_valid and (missing_valid is True or quote_valid is True)})
+                     "evidenceValid": reference_valid and (missing_valid is True or quote_valid is True),
+                     "quotationSubstantive": substantive,
+                     "matchable": reference_valid and (missing_valid is True or substantive is True)})
     count = Counter(issue_key(f) for f in findings)
     duplicate_count = sum(n - 1 for n in count.values())
     issue_match = None
@@ -224,19 +362,35 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
             if expected.anchorId is not None and expected.anchorId not in anchors:
                 raise ValueError("reference uses an unknown source anchor")
         expected_keys = {issue_key(i) for i in reference.issues}
-        valid_keys = {issue_key(f) for f, row in zip(findings, rows) if row["evidenceValid"]}
-        true_positive = len(valid_keys & expected_keys)
+        matchable_keys = {issue_key(f) for f, row in zip(findings, rows) if row["matchable"]}
+        true_positive = len(matchable_keys & expected_keys)
+        expected_entries = {i.playbookReference for i in reference.issues}
+        raised_entries = {f.playbookReference for f, row in zip(findings, rows) if row["matchable"]}
         issue_match = {
             "label": "Rule/anchor issue matching proxy; legal reasoning and amendments require lawyer review",
             "referenceStatus": reference.status,
+            "referenceRoute": None if reference.provenance is None else reference.provenance.route,
             "independentReviewClaimVerified": False,
             "referenceEvidence": reference.reviewerEvidence,
             "truePositives": true_positive, "falsePositives": len(findings) - true_positive,
             "falseNegatives": len(expected_keys) - true_positive,
             "precision": true_positive / len(findings) if findings else None,
             "recall": true_positive / len(expected_keys) if expected_keys else None,
+            # Lenient companion: was the playbook entry raised anywhere, whatever the
+            # place? It separates an issue located differently from an issue missed.
+            # Counted over distinct entries; repetitions and invalid findings are ignored.
+            "entryLevel": {
+                "truePositives": len(raised_entries & expected_entries),
+                "falsePositives": len(raised_entries - expected_entries),
+                "falseNegatives": len(expected_entries - raised_entries),
+            },
         }
-    return {
+    unavailable = {"severityAccuracy": "Native output has no severity field",
+                   "wholeDocumentClauseCoverage": "Native output has no complete clause inventory",
+                   "amendmentQuality": "Requires separate lawyer review"}
+    if artifact.run.usage is None:
+        unavailable["tokenUsageAndCost"] = artifact.run.usageUnavailableReason
+    report = {
         "schema": "mycounsel.candidate-score.v1",
         "recordingSha256": recording_digest(artifact),
         "recordingHashFormat": "utf8-json-sorted-keys-v1",
@@ -247,15 +401,21 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
         "findingCount": len(findings), "duplicateCount": duplicate_count,
         "quotationValid": sum(r["quotationValid"] is True for r in rows),
         "quotationDenominator": sum(r["quotationValid"] is not None for r in rows),
+        "trivialQuotationCount": sum(r["quotationValid"] is True and not r["quotationSubstantive"] for r in rows),
         "missingClauseValid": sum(r["missingClauseValid"] is True for r in rows),
         "missingClauseDenominator": sum(r["missingClauseValid"] is not None for r in rows),
         "playbookReferenceValid": sum(r["playbookReferenceValid"] for r in rows),
+        # What the application's own validators decide, recomputed here: it passes an
+        # output on only when every finding in it is valid, and discards the rest whole.
+        "allFindingsValid": artifact.findings is not None and all(r["evidenceValid"] for r in rows),
         "issueMatch": issue_match, "findings": rows,
-        "unavailable": {"severityAccuracy": "Native output has no severity field",
-                        "wholeDocumentClauseCoverage": "Native output has no complete clause inventory",
-                        "amendmentQuality": "Requires separate lawyer review",
-                        "tokenUsageAndCost": artifact.run.usageUnavailableReason},
+        "unavailable": unavailable,
     }
+    if artifact.run.usage is not None:
+        # Token counts only. Money needs the verified price table in candidate_budget,
+        # and the committed replay score (usage null) keeps its exact bytes.
+        report["usage"] = artifact.run.usage.model_dump()
+    return report
 
 
 def comparison_key(artifact: CandidateRun) -> tuple[str, str, str, str]:

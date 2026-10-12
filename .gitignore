@@ -29,3 +29,6 @@ wheels/
 
 # Exported annotation bundle, regenerate with make annotation-bundle
 /annotations/bundle/
+
+# Zipped candidate annotation pack, regenerate with make candidate-bundle
+/candidates/mycounsel/annotation-bundle/

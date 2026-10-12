@@ -8,7 +8,7 @@ SYNTHETIC EXERCISE. No real parties, service or legal advice. ICT Services Agree
 
 4. Availability. The Provider aims for reasonable availability. It measures uptime at its discretion and provides no agreed numerical target or remediation timetable.
 
-5. Data locations. Services and data storage are provided in Germany. The Provider will notify the Customer at least sixty days before any intended processing or storage location change.
+5. Data locations. The contracted services and any subcontracted services are provided, and Customer data is processed and stored, only in Germany. The Provider will notify the Customer at least sixty days in advance if it envisages changing any of these locations.
 
 6. Incident assistance. The Provider will assist with service-related ICT incidents. The price and scope of assistance will be negotiated after the incident occurs.
 

@@ -23,9 +23,11 @@
   "duplicateCount": 1,
   "quotationValid": 3,
   "quotationDenominator": 3,
+  "trivialQuotationCount": 0,
   "missingClauseValid": 1,
   "missingClauseDenominator": 1,
   "playbookReferenceValid": 3,
+  "allFindingsValid": false,
   "issueMatch": null,
   "findings": [
     {
@@ -33,28 +35,36 @@
       "quotationValid": true,
       "missingClauseValid": null,
       "playbookReferenceValid": true,
-      "evidenceValid": true
+      "evidenceValid": true,
+      "quotationSubstantive": true,
+      "matchable": true
     },
     {
       "index": 1,
       "quotationValid": true,
       "missingClauseValid": null,
       "playbookReferenceValid": true,
-      "evidenceValid": true
+      "evidenceValid": true,
+      "quotationSubstantive": true,
+      "matchable": true
     },
     {
       "index": 2,
       "quotationValid": true,
       "missingClauseValid": null,
       "playbookReferenceValid": false,
-      "evidenceValid": false
+      "evidenceValid": false,
+      "quotationSubstantive": true,
+      "matchable": false
     },
     {
       "index": 3,
       "quotationValid": null,
       "missingClauseValid": true,
       "playbookReferenceValid": true,
-      "evidenceValid": true
+      "evidenceValid": true,
+      "quotationSubstantive": null,
+      "matchable": true
     }
   ],
   "unavailable": {
