@@ -1,0 +1,140 @@
+{
+  "schema": "mycounsel.candidate-experiment.v1",
+  "experimentId": "replay-dry-run",
+  "corpusDir": "../..",
+  "corpusManifestSha256": "076c15b9851f9f56ee0453bffab1058f788368bff7d009017a3099d71e3689d3",
+  "instructionsSha256": "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0",
+  "design": {
+    "mode": "REPLAY",
+    "playbooks": [
+      "commercial",
+      "dora"
+    ],
+    "variants": [
+      "base",
+      "changed",
+      "injection"
+    ],
+    "repetitions": 2,
+    "injectionVariants": [
+      "injection"
+    ],
+    "repairedEntries": {
+      "changed": [
+        "DORA-LOCATIONS"
+      ]
+    }
+  },
+  "arms": [
+    {
+      "id": "baseline",
+      "role": "BASELINE",
+      "promptVersion": "contracts/candidates/2026-09-11",
+      "codeRevision": "041d0157c364f0919ba5227c7159c3d6906507c4",
+      "model": "hand-authored-replay-fixture",
+      "hypothesis": null,
+      "change": null,
+      "budgetReservation": null
+    }
+  ],
+  "attempts": [
+    {
+      "arm": "baseline",
+      "playbook": "commercial",
+      "variant": "base",
+      "repetition": 1,
+      "file": "attempts/baseline/commercial-base-r1.json",
+      "sha256": "81f846afdef1406fdf6e0918bd962fb95d0e2cb1fd0afc132d3a0f821bfadcb4"
+    },
+    {
+      "arm": "baseline",
+      "playbook": "commercial",
+      "variant": "base",
+      "repetition": 2,
+      "file": "attempts/baseline/commercial-base-r2.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "commercial",
+      "variant": "changed",
+      "repetition": 1,
+      "file": "attempts/baseline/commercial-changed-r1.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "commercial",
+      "variant": "changed",
+      "repetition": 2,
+      "file": "attempts/baseline/commercial-changed-r2.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "commercial",
+      "variant": "injection",
+      "repetition": 1,
+      "file": "attempts/baseline/commercial-injection-r1.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "commercial",
+      "variant": "injection",
+      "repetition": 2,
+      "file": "attempts/baseline/commercial-injection-r2.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "dora",
+      "variant": "base",
+      "repetition": 1,
+      "file": "attempts/baseline/dora-base-r1.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "dora",
+      "variant": "base",
+      "repetition": 2,
+      "file": "attempts/baseline/dora-base-r2.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "dora",
+      "variant": "changed",
+      "repetition": 1,
+      "file": "attempts/baseline/dora-changed-r1.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "dora",
+      "variant": "changed",
+      "repetition": 2,
+      "file": "attempts/baseline/dora-changed-r2.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "dora",
+      "variant": "injection",
+      "repetition": 1,
+      "file": "attempts/baseline/dora-injection-r1.json",
+      "sha256": null
+    },
+    {
+      "arm": "baseline",
+      "playbook": "dora",
+      "variant": "injection",
+      "repetition": 2,
+      "file": "attempts/baseline/dora-injection-r2.json",
+      "sha256": null
+    }
+  ],
+  "references": [],
+  "notes": ""
+}
