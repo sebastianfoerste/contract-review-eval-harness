@@ -85,7 +85,7 @@ entry it cites must exist in a playbook with a pinpoint, and every statutory
 playbook entry must be covered. A register that lags the playbook stops the pack
 from building.
 
-`sources/eu-2022-2554-art30-oj-en.txt` is the Official Journal text of Article 30
+The snapshot file under `sources/` holds the Official Journal text of Article 30
 of Regulation (EU) 2022/2554. On 11 October 2026 it was compared with a second
 download from the Publications Office repository: identical, no amending act, no
 English corrigendum and no English consolidated version. The EUR-Lex website's own
