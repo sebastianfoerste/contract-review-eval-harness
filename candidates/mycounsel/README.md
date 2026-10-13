@@ -91,10 +91,12 @@ of Regulation (EU) 2022/2554. On 11 October 2026 it was compared with a second
 download from the Publications Office repository: identical, no amending act, no
 English corrigendum and no English consolidated version. The EUR-Lex website's own
 display was not read, because it answered automated requests with a browser
-check. The six playbook sentences were then aligned with the wording of
-Article 30(2)(b), (d), (f) and 30(3)(a), (e), (f). The audit entry repeats points
-(i) to (iv) of Article 30(3)(e) with "customer" and "provider" in place of the
-defined terms.
+check. The six playbook sentences were then brought into line with
+Article 30(2)(b), (d), (f) and 30(3)(a), (e), (f). They are not quotations. The
+audit entry repeats points (i) to (iv) of Article 30(3)(e) with "customer" and
+"provider" in place of the defined terms, a reordered opening and one added
+article in point (iii). The other five condense their points and leave words
+out; which omissions matter is part of the lawyer review.
 
 The register's status is `SOURCE_CHECKED_NOT_LAWYER_REVIEWED`. Open for the
 lawyer review, among others: whether a rate card satisfies "a cost that is
@@ -110,7 +112,10 @@ The lawyer review comes before the pack is sent. `manifest.json`, `sources.json`
 and `annotation/GUIDELINE.md` are hashed into every template, annotation and
 reference. A later edit to any of them, a status change in the register included,
 is a new edition: annotations made from the earlier pack are refused, and an
-experiment built on references from them stops aggregating. Playbooks and
+experiment whose references were adjudicated from them stops aggregating, because
+it re-derives them. An experiment on `DRAFT` references keeps aggregating after an
+edit to the guideline or the register; it stops only when the manifest changes.
+Playbooks and
 documents are written by `build_fixtures.py`; change them there, then run
 `python candidates/mycounsel/build_fixtures.py`, `make candidate-pack` and
 `make candidate-bundle`, and plan the experiments again.
@@ -174,11 +179,19 @@ and never overwrites a file. `resolve` refuses until every entry is decided
 `INCLUDE` or `EXCLUDE` with written reasons and the record names the adjudicator,
 the date, which annotator is independent of the maintainer and the note that
 identifies that person. It also refuses a record that includes one entry both as
-a missing clause and at a paragraph, and an evidence note that repeats a name an
-annotator wrote. Agreed issues that either annotator marked low confidence are
-listed in the ledger without a decision. The returned annotation files are never
-edited: any change breaks the hashes the record binds. The reference carries
-hashes and the letters A and B, not names.
+a missing clause and at a paragraph. Agreed issues that either annotator marked
+low confidence are listed in the ledger without a decision. The returned
+annotation files are never edited: any change breaks the hashes the record binds.
+The reference holds the hashes of both annotations and of the record, the letter
+of the independent annotator, and the evidence reference of the record word for
+word. That text reaches every report: write the identifier of the dated note
+there, never a name. No code can check that.
+
+The tie-break between "located" and "missing" is a convention the guideline sets.
+Where an agreement has a clause on a neighbouring topic only, both annotators
+record a missing clause by rule. Agreement on such a place is agreement on the
+rule, not two independent readings, and the candidate is not told the rule. The
+entry-level figures do not depend on it.
 
 Annotators write an agreed label in the `annotator` field, not a name (owner's
 decision of 13 October 2026), because an experiment needs the annotation files
@@ -209,7 +222,10 @@ uv run python -m contract_eval.candidate_experiment aggregate <dir> --out <dir>/
 
 The attempts are dispatched between `reserve` and `register`, by the recorder in
 ZuRecht. `settle` comes before the last `aggregate`: a settlement changes the
-arm's ledger state, and a report written before it no longer reproduces.
+arm's ledger state, and a report written before it no longer reproduces. The
+check fails a committed experiment folder whose `report.json` and `report.md` are
+missing or out of date, so run `aggregate` with `--out` and `--markdown` before
+every commit of that folder, from the plan onwards.
 
 What each step freezes or refuses:
 
@@ -228,16 +244,24 @@ What each step freezes or refuses:
   cell and no attempt file for the arm, writes the worst-case hold into the
   ledger together with a hash of the arm's whole definition, and binds the
   reservation to the arm. `void` releases it while nothing was dispatched. The
-  ledger is saved before the experiment file; if the second save fails, the same
-  `reserve` command binds the reservation that exists, and `void` releases it.
+  ledger is saved before the experiment file. If the second save fails, the same
+  `reserve` command with the same provider, region, token maxima and retry
+  multiplier binds the reservation that exists, and `void` releases it; a `void`
+  interrupted the same way is completed by repeating it. The arm pins a hash of
+  the reservation entry, so its price terms cannot change in the ledger alone.
 - `register` checks each newly recorded attempt in full and binds it by hash. For
-  a LIVE experiment it reads the ledger first, so it never binds an attempt that
-  aggregation would then refuse.
-- An empty slot file is a dispatch that left no recording. The recorder creates
-  the slot empty before its paid call and fills it afterwards, so an empty file
-  means the call may have been billed. `register` binds it, the report counts it
-  as a failed attempt that found nothing, and `settle` charges its full hold. A
-  slot file damaged in any other way is refused; empty it to account for the
+  a LIVE experiment it reads the ledger first, so an attempt the ledger checks
+  refuse is not bound.
+- The recorder creates the slot file empty before its paid call and fills it
+  afterwards. An empty slot file therefore means a call that may have been
+  billed, and the file cannot say whether the call is still out or has ended
+  without a recording. `register` leaves an empty slot unbound and says so, and
+  `aggregate` and `settle` wait for it. Once the call has ended without a
+  recording, bind the slot with `register --lost attempts/<arm>/<slot>.json`:
+  the report then counts it as a failed attempt that found nothing, and `settle`
+  charges its full hold. Never name a slot whose call may still be out, because a
+  slot bound while empty cannot take its recording. A slot file damaged in any
+  other way is refused; empty it and bind it with `--lost` to account for the
   dispatch. An attempt file is never deleted.
 - `aggregate` refuses an attempt whose prompt version, code revision, model,
   mode, document, playbook or business instructions differ from the
@@ -250,10 +274,10 @@ What each step freezes or refuses:
   the reservation or on a price older than the ledger allows, a voided
   reservation with attempts, and attempts registered after settlement. A
   settlement is recomputed from the registered attempts at the reserved price:
-  another amount in the ledger, or other attempt files than the ones settled, is
-  refused. So is a reservation the ledger holds for this experiment that no arm
-  binds any more, and a reference that still expects an entry the design declares
-  repaired.
+  another amount in the ledger, other price terms in the reservation, or other
+  attempt files than the ones settled, are refused. So is a reservation the
+  ledger holds for this experiment that no arm binds any more, and a reference
+  that still expects an entry the design declares repaired.
 
 The report gives every planned cell: planned, observed, completed, refused and
 failed attempts; findings, duplicates, trivial quotations, quotation and playbook
@@ -274,19 +298,25 @@ hand-authored replay registered in a twelve-slot REPLAY design. Its report shows
 one observed attempt and eleven not run, no reference and no comparison.
 `make candidate-experiment-check` re-aggregates every committed experiment and
 fails if a report differs by a byte. It also fails on a report or experiment file
-outside an experiment folder, on two folders with one experiment id, and on a
-ledger whose cap is not the portfolio's EUR 100.
+outside an experiment folder, on two folders with one experiment id, on an
+experiment that names another corpus folder, on a ledger entry whose experiment
+has no folder here, on a ledger whose cap is not the portfolio's EUR 100, and on
+committed spend above that cap.
 
 Limits. Time order and freezing are evidence from files the operator maintains,
 not a signature; committing the experiment file and the ledger before dispatch is
 what makes the order provable to someone else. A REPLAY experiment reserves
 nothing and has no such freeze. No tooling here verifies who an annotator is.
-Until an arm is settled, nothing but the commit history shows that a registered
-hash was reset by hand: commit after every step and settle an arm as soon as its
-attempts are registered. The rule texts and the 20-character floor are code. They
-are printed in every report, and the check fails when they change, but the arm
-hash does not cover them: a rule change after a reservation shows in the commit
-history, not in a refusal.
+The experiment file, the ledger and the attempt files are plain files. The checks
+catch a change to one of them that the others contradict; someone who rewrites
+all of them consistently, or removes a settlement entry, is stopped only by the
+commit history. Commit after every step, attempt files as they arrive, and settle
+an arm as soon as its attempts are registered. The harness cannot tell a
+recording that was emptied before `register` from a call that left none: both are
+an empty slot, and naming one with `--lost` is the operator's statement. The rule
+texts and the quotation floor are code. They are printed in every report, and
+the check fails when they change, but the arm hash does not cover them: a rule
+change after a reservation shows in the commit history, not in a refusal.
 
 ## Spend ledger
 
@@ -324,7 +354,9 @@ uv run python -m contract_eval.candidate_budget price --model gemini-3.8-flash -
   above its reservation, and the status then reports the overrun.
 - One recording shows one provider response. A request the provider's client
   repeated internally may have been billed more than once; the retry multiplier
-  is the allowance for that.
+  is the allowance for that. The Gemini route sends one request per attempt. The
+  Anthropic client retries twice by default, so an arm on a Claude model is
+  reserved with `--retry-multiplier 3`.
 
 The current row prices `gemini-3.8-flash` on the Vertex AI `eu` endpoint, the
 model production runs for contract analysis, at the gross list price read on

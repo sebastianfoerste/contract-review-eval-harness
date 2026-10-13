@@ -1,10 +1,10 @@
 {
   "schema": "mycounsel.annotation-pack.v1",
   "corpusManifestSha256": "528c537edf925703248347463e4d7b5d4d41072491a121bfbdfaa2ba452e196e",
-  "guidelineSha256": "6e327a1a8272bf7020a2527eef127fc4d4ea9a2c67eabea7092fa64eabaec4cd",
+  "guidelineSha256": "7b9f4f7e3dea4558472a2fa1f9d3f2777c1db7b5b88bfcdaaf3326e0076ba555",
   "sourceRegisterSha256": "ca9760f48430747135d78460e5ff3468c0f3a5c9068c2743f42562456e96c8bd",
   "files": {
-    "GUIDELINE.md": "6e327a1a8272bf7020a2527eef127fc4d4ea9a2c67eabea7092fa64eabaec4cd",
+    "GUIDELINE.md": "7b9f4f7e3dea4558472a2fa1f9d3f2777c1db7b5b88bfcdaaf3326e0076ba555",
     "documents/base.paragraphs.md": "ec574f8efd228fcd5e2ee7607a53c2a5a7a0c8883ce4083d1c8cdf93462d0526",
     "documents/changed.paragraphs.md": "fd799eba0a8cfe33736dabf4342cce93e63c1dfebf0c7fab217bc268e3fc63a7",
     "documents/ict-base.docx": "08c870e7f7410b37a4c9e6f3aef2039cc10242250bfbe789923b165c429d925e",
@@ -18,12 +18,12 @@
     "playbooks/dora.md": "9944ace21581b2db69e2f875e678e5a686125968ec0aeeb55eb6c25225da4905",
     "sources/eu-2022-2554-art30-oj-en.txt": "ab244092c503ac68ab78f890ff15f2b4821ba536aa17d4c3894efc43b632d019",
     "sources/sources.json": "ca9760f48430747135d78460e5ff3468c0f3a5c9068c2743f42562456e96c8bd",
-    "templates/base-commercial.annotation.json": "74cc6c929f761d2748ce66f6f808d2c5689c84751e61f6643e93be162916e8fa",
-    "templates/base-dora.annotation.json": "52ac3fda4caa8d377e9496eceede2b7ea517713e561eeb8056858efe43f2bd20",
-    "templates/changed-commercial.annotation.json": "b1b867647fc928b0061f61e6ff909c0df0179f0741b7b406a9273cbe6891f959",
-    "templates/changed-dora.annotation.json": "a85342815b2ad146786d68aa52460d5f959fbe330286eabe079bac81b19c8cc7",
-    "templates/injection-commercial.annotation.json": "3a6e42109c3de674836866fe2813600f0624ce5bfa502864ec7d14e8ed61903f",
-    "templates/injection-dora.annotation.json": "466a40d809ef85b5bd0e3e4bc3a7303d9ac799c47be81b0a6b3cfdd8b05e0435"
+    "templates/base-commercial.annotation.json": "def5c9dd72ca2a55c630d820ad8c547cff204fa0a07643366511c809beaf8f49",
+    "templates/base-dora.annotation.json": "993ad55f26e5a57320cf180d9d2bc3bda44ca8b3aedbbc5ca2c813804f732408",
+    "templates/changed-commercial.annotation.json": "fa6621841c58beb35c16473078987ef9054d7629b250682d0c70f7036a35c715",
+    "templates/changed-dora.annotation.json": "95aa4191bf56e5ed2b6c7a72225f376ad6459842827ea9b4ed1596a6b07f11da",
+    "templates/injection-commercial.annotation.json": "53d77e056dd8d8149e2ff6eaa8e201714fa56b8a74f93881ec3da46a6699b318",
+    "templates/injection-dora.annotation.json": "044b25e8297bac32f14235f2228ec91faaaf0cc45f0d84fc9441d61f701840fa"
   },
   "withheld": [
     "replay-run.json (hand-authored demonstration findings)",

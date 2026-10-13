@@ -35,7 +35,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from contract_eval.candidates import parse_instant
+from contract_eval.candidates import digest, parse_instant
 
 LEDGER_SCHEMA = "mycounsel.spend-ledger.v1"
 ENTRY_ID = r"^[a-z0-9][a-z0-9-]{2,63}$"
@@ -217,6 +217,18 @@ class Ledger(Strict):
 
 def load_ledger(path: Path) -> Ledger:
     return Ledger.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def entry_sha256(entry: Entry) -> str:
+    """Hash of one ledger entry exactly as the ledger file stores it.
+
+    An arm pins this value for its reservation. The price terms and token maxima a
+    settlement is recomputed from then cannot change in the ledger alone. The form is
+    the stored JSON object with sorted keys and no spaces, so that the recorder's gate
+    in the other repository computes the same value from the file.
+    """
+    return digest(json.dumps(entry.model_dump(by_alias=True, exclude_none=True), ensure_ascii=False,
+                             sort_keys=True, separators=(",", ":")))
 
 
 def save_ledger(ledger: Ledger, path: Path) -> None:

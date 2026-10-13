@@ -700,19 +700,11 @@ def test_a_low_mark_on_an_issue_only_one_annotator_raised_is_not_an_agreed_low_i
     assert compare(first(), low(second(), "COM-SLA")).lowConfidenceAgreed == []
 
 
-@pytest.mark.parametrize("note", [
-    "Note of 2026-10-11 on Test Annotator A",
-    "note of 2026-10-11 on test annotator b",
-    "TEST  ANNOTATOR  A, note of 2026-10-11",
-])
-def test_resolve_refuses_an_evidence_note_that_repeats_what_an_annotator_wrote_as_a_name(note):
-    # The note is copied into the reference and into every report, which carry letters, not names.
-    a, b = first(), second()
-    with pytest.raises(ValueError, match="repeats what annotator [AB] wrote as their name"):
-        resolved(a, b, record(a, b, reviewerEvidence=note))
-
-
-def test_a_short_label_in_the_annotator_field_does_not_refuse_an_evidence_note():
-    a, b = first(annotator="A1"), second(annotator="B2")
-    reference = resolved(a, b, record(a, b, reviewerEvidence="test-note A1 and B2 of 2026-10-11"))
+def test_an_evidence_note_may_cite_the_labels_the_annotators_wrote():
+    # The annotator field holds a label, so the label in the note gives nothing away. No code
+    # can tell a label from a name; the record's author keeps names out of the note.
+    a, b = first(annotator="external-reviewer"), second(annotator="maintainer")
+    note = "note-2026-10-21, kept outside the repository; external-reviewer is annotator A"
+    reference = resolved(a, b, record(a, b, reviewerEvidence=note))
     assert reference["status"] == "INDEPENDENTLY_REVIEWED"
+    assert reference["reviewerEvidence"].startswith(note + "; independent-annotator:A; ")

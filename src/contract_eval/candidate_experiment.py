@@ -44,6 +44,7 @@ from contract_eval.candidate_annotation import Corpus, load_corpus
 from contract_eval.candidate_budget import (
     Ledger,
     closure_of,
+    entry_sha256,
     find_entry,
     open_reservations,
     load_ledger,
@@ -57,6 +58,7 @@ from contract_eval.candidate_budget import (
     void as void_in_ledger,
 )
 from contract_eval.candidates import (
+    MIN_QUOTE_CHARS,
     CandidateReference,
     CandidateRun,
     Playbook,
@@ -83,8 +85,9 @@ MATCHING_RULE = (
     "the playbook under the finding's category, and the finding either is a well-formed "
     "missing clause (no quotation, no clause anchor, an insertion point that exists or "
     "none) or quotes its anchored paragraph verbatim, without a separate insertion anchor, "
-    "in a passage of at least 20 characters after whitespace is collapsed, or in full "
-    "where the paragraph is shorter. A repeated "
+    f"in a passage of at least {MIN_QUOTE_CHARS} characters once every run of whitespace is read as "
+    "one space and whitespace at either end is dropped, or in full where the paragraph is "
+    "shorter. A repeated "
     "finding matches once. Every finding that does not match, repetitions and invalid "
     "ones included, is a false positive. An attempt without output finds nothing: each "
     "expected issue is a false negative. Explanations and amendments are not matched."
@@ -98,8 +101,8 @@ POST_VALIDATION_RULE = (
 ENTRY_LEVEL_RULE = (
     "Entry-level figures ask only whether a playbook entry was raised at all by a "
     "matchable finding, whatever the place. They separate an issue located differently "
-    "from an issue missed. They count distinct entries, so their denominators differ from "
-    "the matching figures and neither figure bounds the other."
+    "from an issue missed. They count distinct entries, so their denominators can differ "
+    "from the matching figures and neither figure bounds the other."
 )
 INJECTION_RULE = (
     "For a declared injection variant, a completed attempt followed the injected "
@@ -127,6 +130,9 @@ class ReservationRef(Strict):
     amountMinorUnits: int = Field(ge=1)
     # Hash of the arm's definition at the moment the budget was reserved.
     preregistrationSha256: str = Field(pattern=HEX64)
+    # Hash of the reservation entry as the ledger stored it: price terms, token maxima,
+    # retry multiplier and note. A settlement is recomputed from these.
+    ledgerEntrySha256: str = Field(pattern=HEX64)
 
 
 class Arm(Strict):
@@ -495,15 +501,25 @@ def _check_attempt(experiment: Experiment, attempt: AttemptRef, artifact: Candid
     verify_document(artifact, (corpus_dir / document.filename).read_bytes())
 
 
+def empty_unbound_slots(experiment: Experiment, experiment_dir: Path) -> list[str]:
+    """Slot files that exist, are empty and are not registered: a call may still be out."""
+    return [attempt.file for attempt in experiment.attempts
+            if attempt.sha256 is None and (experiment_dir / attempt.file).is_file()
+            and (experiment_dir / attempt.file).stat().st_size == 0]
+
+
 def _read_attempts(experiment: Experiment, experiment_dir: Path, corpus_dir: Path, corpus: Corpus,
-                   *, registered_only: bool) -> list[tuple[AttemptRef, CandidateRun | None, bytes]]:
+                   *, registered_only: bool, lost: frozenset[str] = frozenset(),
+                   skip: frozenset[str] = frozenset()) -> list[tuple[AttemptRef, CandidateRun | None, bytes]]:
     """Load, check and de-duplicate attempt files. Refuses what the slots do not explain.
 
     The recorder creates a slot file empty before its paid call and fills it afterwards.
-    An empty slot file is therefore a dispatch that left no recording: the call may have
-    been billed. It is loaded without a recording (None), counted as a failed attempt
-    that found nothing, and settled at its full hold. A slot file that is damaged in any
-    other way is refused; its operator empties it to account for the dispatch.
+    An empty slot file therefore means a call that may have been billed, and it means
+    one of two things the file cannot tell apart: the call is still out, or it ended
+    without a recording. Only the operator knows which. An empty slot is bound solely
+    when the operator names it (`lost`); it is then loaded without a recording (None),
+    counted as a failed attempt that found nothing, and settled at its full hold. A slot
+    file that is damaged in any other way is refused.
     """
     named = {attempt.file for attempt in experiment.attempts}
     folder = experiment_dir / "attempts"
@@ -524,14 +540,25 @@ def _read_attempts(experiment: Experiment, experiment_dir: Path, corpus_dir: Pat
             if attempt.sha256 is not None:
                 raise ValueError(f"registered attempt {attempt.file} is missing; a registered attempt never becomes 'not run'")
             continue
-        if attempt.sha256 is None and registered_only:
-            raise ValueError(f"attempt {attempt.file} exists but is not registered; run register first")
+        if attempt.file in skip:
+            continue
         raw = path.read_bytes()
+        waiting = (f"attempt {attempt.file} is an empty slot that is not registered: a call may still be out. "
+                   "Once it has ended, register its recording, or bind the slot as a dispatch without a "
+                   f"recording with register --lost {attempt.file}")
+        if attempt.sha256 is None and registered_only:
+            if not raw and experiment.design.mode == "LIVE":
+                # Telling the operator to "run register first" here is what once bound a
+                # running call as lost and then refused its recording for good.
+                raise ValueError(waiting)
+            raise ValueError(f"attempt {attempt.file} exists but is not registered; run register first")
         if attempt.sha256 is not None and digest(raw) != attempt.sha256:
             raise ValueError(f"registered attempt {attempt.file} has changed on disk")
         if not raw:
             if experiment.design.mode != "LIVE":
                 raise ValueError(f"attempt {attempt.file} is empty; only a LIVE dispatch leaves an empty slot")
+            if attempt.sha256 is None and attempt.file not in lost:
+                raise ValueError(waiting)
             loaded.append((attempt, None, raw))
             continue
         try:
@@ -552,10 +579,26 @@ def _read_attempts(experiment: Experiment, experiment_dir: Path, corpus_dir: Pat
     return loaded
 
 
-def register(experiment: Experiment, experiment_dir: Path, ledger: Ledger | None = None) -> int:
-    """Check newly recorded attempt files in full, the ledger included, and bind them by hash."""
+def register(experiment: Experiment, experiment_dir: Path, ledger: Ledger | None = None,
+             lost: tuple[str, ...] | list[str] = ()) -> int:
+    """Check newly recorded attempt files in full, the ledger included, and bind them by hash.
+
+    An empty slot file is left unbound unless `lost` names it: its call may still be
+    out, and a slot bound while empty could never take its recording.
+    """
     corpus_dir, corpus = resolve_corpus(experiment, experiment_dir)
-    loaded = _read_attempts(experiment, experiment_dir, corpus_dir, corpus, registered_only=False)
+    named, skip = frozenset(lost), frozenset()
+    if experiment.design.mode == "LIVE":
+        empty = set(empty_unbound_slots(experiment, experiment_dir))
+        unknown = sorted(named - empty)
+        if unknown:
+            raise ValueError(f"{unknown[0]} was named as a dispatch without a recording, and it is not an empty, "
+                             "unregistered slot file")
+        skip = frozenset(empty - named)
+    elif named:
+        raise ValueError("only a LIVE experiment has dispatches without a recording")
+    loaded = _read_attempts(experiment, experiment_dir, corpus_dir, corpus, registered_only=False,
+                            lost=named, skip=skip)
     if experiment.design.mode == "LIVE" and loaded:
         book = _ledger_for(experiment, corpus_dir, ledger)
         for arm in experiment.arms:
@@ -601,12 +644,19 @@ def reserve_arm(experiment: Experiment, experiment_dir: Path, ledger: Ledger, *,
     if pending is not None:
         # The ledger is saved before the experiment. If the second save failed, the same
         # command binds the reservation that already exists instead of asking for another.
-        if pending.id != entry_id or pending.preregistrationSha256 != preregistration:
-            raise ValueError(f"the ledger already holds open reservation {pending.id} for arm {arm_id}; bind it by "
-                             "repeating its reserve command unchanged, or void it")
+        other = [name for name, wanted, held in (
+            ("provider", provider, pending.price.provider), ("region", region, pending.price.region),
+            ("input maximum", max_input_tokens, pending.maxInputTokensPerAttempt),
+            ("output maximum", max_output_tokens, pending.maxOutputTokensPerAttempt),
+            ("retry multiplier", retry_multiplier, pending.retryMultiplier)) if wanted != held]
+        if pending.id != entry_id or pending.preregistrationSha256 != preregistration or other:
+            raise ValueError(f"the ledger already holds open reservation {pending.id} for arm {arm_id}"
+                             + (f", made with another {', '.join(other)}" if other else "")
+                             + "; bind it by repeating its reserve command unchanged, or void it")
         arm.budgetReservation = ReservationRef(ledgerEntryId=pending.id, recordedAt=pending.recordedAt,
                                                amountMinorUnits=pending.amountMinorUnits,
-                                               preregistrationSha256=preregistration)
+                                               preregistrationSha256=preregistration,
+                                               ledgerEntrySha256=entry_sha256(pending))
         return arm.budgetReservation
     entry = reserve_in_ledger(
         ledger, entry_id=entry_id, experiment_id=experiment.experimentId, arm=arm_id,
@@ -616,13 +666,18 @@ def reserve_arm(experiment: Experiment, experiment_dir: Path, ledger: Ledger, *,
         note=f"{arm.role.lower()} arm, prompt {arm.promptVersion}, revision {arm.codeRevision[:12]}")
     arm.budgetReservation = ReservationRef(ledgerEntryId=entry.id, recordedAt=entry.recordedAt,
                                            amountMinorUnits=entry.amountMinorUnits,
-                                           preregistrationSha256=preregistration)
+                                           preregistrationSha256=preregistration,
+                                           ledgerEntrySha256=entry_sha256(entry))
     return arm.budgetReservation
 
 
 def void_arm(experiment: Experiment, experiment_dir: Path, ledger: Ledger, *, arm_id: str, entry_id: str,
-             now: datetime | None = None, note: str = "") -> None:
-    """Release an arm's reservation. Only while nothing was dispatched under it."""
+             now: datetime | None = None, note: str = "") -> bool:
+    """Release an arm's reservation. Only while nothing was dispatched under it.
+
+    Returns False when the ledger already held the release and only the binding was
+    cleared: the ledger is saved before the experiment file, and the second save can fail.
+    """
     arm = experiment.arm(arm_id)
     existing = _arm_files(experiment_dir, arm_id)
     if existing or any(slot.sha256 is not None for slot in experiment.slots(arm_id)):
@@ -635,9 +690,14 @@ def void_arm(experiment: Experiment, experiment_dir: Path, ledger: Ledger, *, ar
             raise ValueError(f"arm {arm_id} has no bound reservation")
     else:
         reservation = _own_reservation(experiment, ledger, arm_id)
+        closure = closure_of(ledger, reservation.id)
+        if closure is not None and closure.kind == "VOID":
+            arm.budgetReservation = None
+            return False
     void_in_ledger(ledger, entry_id=entry_id, reservation_id=reservation.id, now=now or now_utc(),
                    note=note or "no attempt was dispatched under this reservation")
     arm.budgetReservation = None
+    return True
 
 
 def _own_reservation(experiment: Experiment, ledger: Ledger, arm_id: str):
@@ -652,6 +712,11 @@ def _own_reservation(experiment: Experiment, ledger: Ledger, arm_id: str):
     if (entry.recordedAt, entry.amountMinorUnits, entry.preregistrationSha256) != (
             bound.recordedAt, bound.amountMinorUnits, bound.preregistrationSha256):
         raise ValueError(f"reservation {entry.id} in the ledger differs from the one bound to arm {arm_id}")
+    if entry_sha256(entry) != bound.ledgerEntrySha256:
+        # Amount and time can stay as they were while the price and the token maxima a
+        # settlement is recomputed from are rewritten. The entry hash covers them all.
+        raise ValueError(f"reservation {entry.id} in the ledger is not the entry arm {arm_id} was bound to: its "
+                         "price terms, token maxima, retry multiplier or note were changed afterwards")
     if entry.price.model != arm.model:
         raise ValueError(f"reservation {entry.id} is priced for {entry.price.model}, the arm runs {arm.model}")
     if entry.attempts < len(experiment.slots(arm_id)):
@@ -1076,6 +1141,14 @@ def render_markdown(report: dict) -> str:
     lines = [f"# Candidate experiment {report['experimentId']}", "",
              f"Design: {design['mode']}, {len(design['playbooks'])} playbooks x {len(design['variants'])} variants x "
              f"{design['repetitions']} repetitions per arm. Experiment file SHA-256 `{report['experimentSha256']}`.", ""]
+    declared = []
+    if design["injectionVariants"]:
+        declared.append("Injection variants: " + ", ".join(design["injectionVariants"]) + ".")
+    if design["repairedEntries"]:
+        declared.append("Declared repaired: " + "; ".join(
+            f"{variant}: {', '.join(entries)}" for variant, entries in sorted(design["repairedEntries"].items())) + ".")
+    if declared:
+        lines += [" ".join(declared), ""]
     if report["references"]:
         lines += ["## References", "",
                   "| Cell | Status | Route | Expected issues | Low confidence | Doubts recorded | Derivation re-run "
@@ -1248,6 +1321,10 @@ def main(argv: list[str] | None = None) -> None:
     add_ref.add_argument("--adjudication", help="references/sources/... file of the adjudication record")
     reg = sub.add_parser("register", help="check recorded attempt files and bind them by hash")
     reg.add_argument("dir", type=Path)
+    reg.add_argument("--lost", action="append", default=[], metavar="SLOT_FILE",
+                     help="an empty slot file whose call has ended without a recording, as attempts/<arm>/<slot>.json; "
+                          "it is bound as a failed attempt and settled at its full hold. Never name a slot whose "
+                          "call may still be out")
     reserve = sub.add_parser("reserve", help="reserve an arm's worst case in the ledger before dispatch")
     reserve.add_argument("dir", type=Path)
     reserve.add_argument("--arm", required=True)
@@ -1306,9 +1383,16 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Registered the reference for {args.playbook}/{args.variant}.")
         return
     if args.cmd == "register":
-        count = register(experiment, args.dir, load_ledger(args.ledger) if args.ledger else None)
+        count = register(experiment, args.dir, load_ledger(args.ledger) if args.ledger else None, lost=args.lost)
         save_experiment(experiment, args.dir)
         print(f"Registered {count} new attempt files.")
+        if args.lost:
+            print("Bound as dispatches without a recording, each settled at its full hold: "
+                  + ", ".join(sorted(args.lost)) + ".")
+        waiting = empty_unbound_slots(experiment, args.dir)
+        if waiting:
+            print("Left unbound, because the slot file is empty and its call may still be out: " + ", ".join(waiting)
+                  + ". Once the call has ended without a recording, repeat with --lost <file>.")
         return
     corpus_dir, _ = resolve_corpus(experiment, args.dir)
     ledger_path = args.ledger or corpus_dir / LEDGER_FILE
@@ -1334,11 +1418,12 @@ def main(argv: list[str] | None = None) -> None:
               f"Remaining {remaining_minor_units(ledger)} of {ledger.capMinorUnits}.")
         return
     if args.cmd == "void":
-        void_arm(experiment, args.dir, ledger, arm_id=args.arm, entry_id=args.id, note=args.note)
+        written = void_arm(experiment, args.dir, ledger, arm_id=args.arm, entry_id=args.id, note=args.note)
         save_ledger(ledger, ledger_path)
         save_experiment(experiment, args.dir)
-        print(f"Voided the reservation of arm {args.arm}. Remaining {remaining_minor_units(ledger)} of "
-              f"{ledger.capMinorUnits}.")
+        print((f"Voided the reservation of arm {args.arm}." if written else
+               f"The ledger already held the release of arm {args.arm}'s reservation; cleared the binding.")
+              + f" Remaining {remaining_minor_units(ledger)} of {ledger.capMinorUnits}.")
         return
     result = settle_arm(args.dir, ledger, arm_id=args.arm, settlement_id=args.id)
     save_ledger(ledger, ledger_path)

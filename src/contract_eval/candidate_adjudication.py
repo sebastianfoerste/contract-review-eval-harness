@@ -215,9 +215,6 @@ def _day(value: str) -> date | None:
         return None
 
 
-MIN_NAME_CHARS = 4
-
-
 def _person(name: str) -> str:
     """Comparison form of a name. Spacing, case, compatibility forms and invisible
     characters do not make a second person; a different spelling still does."""
@@ -462,15 +459,6 @@ def resolve(a: Annotation, b: Annotation, adjudication: Adjudication, corpus_dir
         raise ValueError("adjudication has no reference to the note that identifies the independent annotator")
     if adjudication.adjudicatedOn < max(a.annotatedOn, b.annotatedOn):
         raise ValueError("adjudication is dated before an annotation it resolves")
-    # The evidence reference is copied into the reference and into every report. The
-    # guideline promises the annotators letters there, not names. Short labels are let
-    # through: a one-letter label would otherwise refuse every sentence.
-    evidence = _person(adjudication.reviewerEvidence)
-    named = [side for side, name in (("A", a.annotator), ("B", b.annotator))
-             if len(_person(name)) >= MIN_NAME_CHARS and _person(name) in evidence]
-    if named:
-        raise ValueError("the evidence reference repeats what annotator " + " and ".join(named) + " wrote as "
-                         "their name; point to the note that identifies the person instead")
 
     issues = {"A": {_key(issue): issue for issue in a.issues}, "B": {_key(issue): issue for issue in b.issues}}
     # Every issue of both annotations is resolved, not only the ones that enter the

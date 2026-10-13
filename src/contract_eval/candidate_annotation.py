@@ -204,7 +204,7 @@ class Annotation(Strict):
     corpusManifestSha256: str = Field(pattern=HEX64)
     guidelineSha256: str = Field(pattern=HEX64)
     sourceRegisterSha256: str | None = Field(pattern=HEX64)
-    # Filled by the annotator. A name or the label agreed with the maintainer.
+    # Filled by the annotator: the label agreed with the maintainer, not a name.
     annotator: str = ""
     annotatedOn: str = ""
     # The annotator attests this; None means not yet answered.

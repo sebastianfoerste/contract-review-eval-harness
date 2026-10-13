@@ -26,8 +26,8 @@ One expected issue is one playbook entry applied to one place.
 
 - A paragraph deals with the subject of the entry but falls short of it: write the
   entry ID and the number of that paragraph. The listing shows paragraphs as `P0`,
-  `P1`, `P2`; in the template enter the number only, `2` for `P2`. Numbering starts
-  at 0 with the title line.
+  `P1` and so on; in the template enter the number only, as you would enter `41`
+  for a paragraph `P41`. Numbering starts at 0 with the title line.
 - No paragraph deals with the subject of the entry at all: write the entry ID with
   `missingClause: true` and no paragraph.
 - The entry is satisfied: write nothing.
@@ -42,11 +42,12 @@ closest, and write a second issue only where another paragraph separately falls
 short. One entry is never both missing and located in the same file; the template
 check refuses that.
 
-An invented illustration, on a subject that is in neither playbook. An entry asks
-for the provider to hold insurance of a stated minimum amount. A paragraph that makes
-the provider liable for damage deals with liability, not with insurance: record a
-missing clause. A paragraph that requires insurance and states no amount deals with
-the subject and falls short: record the issue at that paragraph.
+An invented illustration, on subjects that are in neither playbook and in no
+paragraph of this agreement. An entry asks for the provider to hold insurance of a
+stated minimum amount. A paragraph in which the provider's parent company guarantees
+performance deals with a guarantee, not with insurance: record a missing clause. A
+paragraph that requires insurance and states no amount deals with the subject and
+falls short: record the issue at that paragraph.
 
 Apply only the playbook named in the template. A commercial preference is not a
 statutory requirement and the other way round; do not borrow entries across
@@ -68,8 +69,9 @@ of the following hold:
    category.
 3. A finding on an existing paragraph quotes a passage that appears verbatim in
    that paragraph and proposes no separate insertion point. The passage has at
-   least 20 characters once runs of spaces and line breaks are read as one space,
-   or it is the whole paragraph where the paragraph is shorter.
+   least 20 characters once every run of spaces, tabs and line breaks is read as
+   one space and such characters at either end are dropped, or it is the whole
+   paragraph where the paragraph is shorter.
 4. A missing-clause finding carries no quotation and names no paragraph as its
    place. If it proposes where a new clause should go, that place is a paragraph of
    the document.
@@ -83,15 +85,17 @@ matching proxy, not a judgment of legal correctness.
 The candidate is not told the tie-break above. A finding that raises the right
 entry at another place, or as missing where you located it, does not match. A
 second figure is therefore reported beside the first: whether each entry you
-expected was raised at all, whatever the place.
+expected was raised at all by a finding that is well formed under points 2 to 4,
+whatever the place.
 
 ## Rationale, confidence and doubts
 
 Give each issue one or two sentences saying why the entry is not met. For a
 statutory entry, name the provision you rely on; the snapshot under `sources/` is a
 convenience copy, and the official text is authoritative. Mark your confidence
-`HIGH`, `MEDIUM` or `LOW`. A low-confidence issue stays in your file, is shown to
-the person who resolves differences, and is counted in every later report.
+`HIGH`, `MEDIUM` or `LOW`. A low-confidence issue stays in your file and is shown
+to the person who resolves differences. If it enters the reference, every later
+report counts it as a low-confidence issue.
 
 Use `uncertainties` for anything the template cannot hold: an entry you consider
 wrongly framed, a paragraph you read two ways, an assumption you had to make. That
@@ -139,8 +143,8 @@ still fill in your label, the date and `sawModelOutput`.
 A second reviewer annotates the same material separately. Your file is never
 edited. Where the two files differ, each difference is decided in writing with
 reasons, and the record of those decisions is kept. Only then is a reference called
-independently reviewed. The reference carries hashes and the letters A and B, not
-names.
+independently reviewed. The reference carries hashes, the letters A and B and a
+pointer to a dated note that the maintainer keeps outside the repository.
 
 Your returned file is kept with the experiment it supports and may be published
 with it, including what you wrote in `annotator`. Write the label agreed with the

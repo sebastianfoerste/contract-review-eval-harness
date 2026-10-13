@@ -30,11 +30,12 @@ from contract_eval.candidate_budget import (
     Ledger, closure_of, find_entry, load_ledger, remaining_minor_units, save_ledger,
 )
 from contract_eval.candidate_budget import reserve as reserve_in_ledger
+from contract_eval.candidate_budget import settle as settle_in_ledger
 from contract_eval.candidate_budget import void as void_in_ledger
 from contract_eval.candidate_experiment import (
     Arm, Design, Experiment, add_iteration, add_reference, aggregate, arm_definition_sha256,
-    create_experiment, load_experiment, main, plan_experiment, register, render_markdown, reserve_arm,
-    save_experiment, settle_arm, void_arm,
+    create_experiment, empty_unbound_slots, load_experiment, main, plan_experiment, register, render_markdown,
+    reserve_arm, save_experiment, settle_arm, void_arm,
 )
 from contract_eval.candidates import CandidateReference, CandidateRun, anchor_id, document_paragraphs
 
@@ -200,16 +201,17 @@ def record(directory: Path, files: dict[str, dict | str], ledger: Ledger | None 
     for relative, data in files.items():
         put(directory, relative, data)
     experiment = load_experiment(directory)
+    lost = [relative for relative, data in files.items() if data == ""]
     if ledger is None and experiment.design.mode == "LIVE":
         corpus_dir, corpus = candidate_experiment.resolve_corpus(experiment, directory)
         count = 0
         for attempt, _, raw in candidate_experiment._read_attempts(experiment, directory, corpus_dir, corpus,
-                                                                   registered_only=False):
+                                                                   registered_only=False, lost=frozenset(lost)):
             if attempt.sha256 is None:
                 attempt.sha256 = sha(raw)
                 count += 1
     else:
-        count = register(experiment, directory, ledger)
+        count = register(experiment, directory, ledger, lost=lost)
     save_experiment(experiment, directory)
     return count
 
@@ -2177,9 +2179,13 @@ def test_a_live_report_states_the_reservation_each_arm_ran_under(tmp_path):
     record(directory, {slot("commercial-base", 1): live_recording([finding("COM-FEES", 2)])})
     report = aggregate(directory, ledger)
     assert report["ledger"] == {"baseline": OPEN_STATE, "iteration": None}
+    # The entry as the ledger file stores it: no null fields, keys sorted, no spaces.
+    stored = json.dumps(ledger.entries[0].model_dump(by_alias=True, exclude_none=True), ensure_ascii=False,
+                        sort_keys=True, separators=(",", ":"))
+    assert '"note":"baseline arm, prompt' in stored and "null" not in stored
     assert report["arms"][0]["budgetReservation"] == {
         "ledgerEntryId": "res-baseline", "recordedAt": RESERVED_AT, "amountMinorUnits": 80,
-        "preregistrationSha256": bound.preregistrationSha256}
+        "preregistrationSha256": bound.preregistrationSha256, "ledgerEntrySha256": sha(stored)}
     assert report["arms"][1]["budgetReservation"] is None
     assert summary(report)["completed"] == 1
 
@@ -2235,8 +2241,15 @@ def retyped_ledger(bound, ledger: Ledger | None = None, **changes) -> Ledger:
         "entry_id": "res-baseline", "experiment_id": "test-experiment", "arm": "baseline", "attempts": 2,
         "model": LIVE_MODEL, "provider": "test-provider", "region": "eu", "max_input_tokens": 6000,
         "max_output_tokens": 12096, "retry_multiplier": 2, "preregistration_sha256": bound.preregistrationSha256,
-        "now": RESERVED} | changes))
+        "now": RESERVED, "note": f"baseline arm, prompt {PROMPT}, revision {REVISION[:12]}"} | changes))
     return ledger
+
+
+def rebind(directory: Path, ledger: Ledger) -> None:
+    """Rewrite the arm's pinned entry hash by hand, so that a check behind it can be reached."""
+    stored = json.dumps(find_entry(ledger, "res-baseline").model_dump(by_alias=True, exclude_none=True),
+                        ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    edit(directory, lambda data: data["arms"][0]["budgetReservation"].update(ledgerEntrySha256=sha(stored)))
 
 
 def test_a_ledger_entry_equal_to_the_bound_snapshot_is_accepted(tmp_path):
@@ -2291,17 +2304,23 @@ def test_a_reservation_that_covers_fewer_attempts_than_the_arm_plans_is_refused(
     directory = live(tmp_path)
     bound = hold(directory, book())
     # Bound at the amount of one attempt with retry multiplier 4, which also comes to 80.
+    retyped = retyped_ledger(bound, attempts=1, retry_multiplier=4)
+    with pytest.raises(ValueError, match="is not the entry arm baseline was bound to"):
+        aggregate(directory, retyped)
+    rebind(directory, retyped)
     with pytest.raises(ValueError, match="reservation res-baseline covers fewer attempts than the arm plans"):
-        aggregate(directory, retyped_ledger(bound, attempts=1, retry_multiplier=4))
+        aggregate(directory, retyped)
 
 
 def test_a_reservation_priced_for_another_model_is_refused(tmp_path):
     directory = live(tmp_path)
     bound = hold(directory, book())
     ledger = book(prices=[price_row(), price_row(model="another-test-model")])
+    retyped = retyped_ledger(bound, ledger, model="another-test-model")
+    rebind(directory, retyped)
     with pytest.raises(ValueError, match="reservation res-baseline is priced for another-test-model, the arm runs "
                                          "test-live-model"):
-        aggregate(directory, retyped_ledger(bound, ledger, model="another-test-model"))
+        aggregate(directory, retyped)
 
 
 def replace_the_reference(directory: Path, data: dict) -> None:
@@ -2743,8 +2762,10 @@ def test_the_report_lists_every_planned_cell_arm_by_arm_in_design_order(tmp_path
 
 def test_the_report_declares_its_five_rules(worked):
     assert set(worked["rules"]) == {"matching", "postValidation", "entryLevel", "injection", "repair"}
-    assert ("in a passage of at least 20 characters after whitespace is collapsed, or in full where the "
-            "paragraph is shorter") in worked["rules"]["matching"]
+    assert ("in a passage of at least 20 characters once every run of whitespace is read as one space and "
+            "whitespace at either end is dropped, or in full where the paragraph is shorter"
+            ) in worked["rules"]["matching"]
+    assert "their denominators can differ from the matching figures" in worked["rules"]["entryLevel"]
     assert "no quotation, no clause anchor, an insertion point that exists or none" in worked["rules"]["matching"]
     assert "neither figure bounds the other" in worked["rules"]["entryLevel"]
     assert "more lenient" not in worked["rules"]["entryLevel"]
@@ -3312,14 +3333,16 @@ def plan_arguments(out: Path, corpus: Path = CORPUS, *more: str) -> list[str]:
 
 
 def test_the_command_line_runs_a_replay_experiment_from_plan_to_report(tmp_path, capsys):
-    out = tmp_path / "experiments" / "cli-experiment"
-    plan = plan_arguments(out, CORPUS, "--mode", "REPLAY", "--variants", "base,injection", "--model", REPLAY_MODEL)
+    corpus = corpus_copy(tmp_path)
+    shutil.rmtree(corpus / "experiments")
+    out = corpus / "experiments" / "cli-experiment"
+    plan = plan_arguments(out, corpus, "--mode", "REPLAY", "--variants", "base,injection", "--model", REPLAY_MODEL)
     main(plan)
     assert capsys.readouterr().out == f"Planned 2 attempt slots in {out}.\n"
     experiment = load_experiment(out)
     assert (experiment.experimentId, experiment.design.mode) == ("cli-experiment", "REPLAY")
     assert experiment.design.injectionVariants == ["injection"]
-    assert (out / experiment.corpusDir).resolve() == CORPUS.resolve()
+    assert experiment.corpusDir == "../.."
 
     planned_bytes = (out / "experiment.json").read_bytes()
     with pytest.raises(FileExistsError, match="a preregistration is not overwritten"):
@@ -3352,7 +3375,7 @@ def test_the_command_line_runs_a_replay_experiment_from_plan_to_report(tmp_path,
     main(["aggregate", str(out)])
     assert capsys.readouterr().out == (out / "report.md").read_text(encoding="utf-8")
     # What the command line wrote is what the check script expects, byte for byte.
-    result = check(tmp_path / "experiments", cwd=tmp_path)
+    result = check(corpus / "experiments", cwd=tmp_path)
     assert (result.returncode, result.stdout) == (0, PASSED), result.stderr
 
 
@@ -3625,7 +3648,7 @@ def test_a_lost_dispatch_in_an_arm_without_a_reservation_is_refused(tmp_path):
     put(directory, slot("commercial-base", 1), "")
     experiment = load_experiment(directory)
     with pytest.raises(ValueError, match="ran in an arm without a bound budget reservation"):
-        register(experiment, directory, book())
+        register(experiment, directory, book(), lost=[slot("commercial-base", 1)])
     assert experiment.attempts[0].sha256 is None
 
 
@@ -3754,9 +3777,10 @@ def test_register_does_not_bind_an_attempt_that_aggregation_would_refuse(tmp_pat
     with pytest.raises(ValueError, match=message):
         register(experiment, directory, ledger)
     assert [attempt.sha256 for attempt in experiment.attempts] == [None, None]
-    # The way on: the slot is emptied, and the dispatch is charged its full hold.
+    # The way on: the slot is emptied and named, and the dispatch is charged its full hold.
     put(directory, slot("commercial-base", 1), "")
-    assert register(experiment, directory, ledger) == 1
+    assert register(experiment, directory, ledger) == 0
+    assert register(experiment, directory, ledger, lost=[slot("commercial-base", 1)]) == 1
 
 
 def test_register_refuses_a_live_attempt_in_an_arm_without_a_reservation(tmp_path):
@@ -3769,12 +3793,22 @@ def test_register_refuses_a_live_attempt_in_an_arm_without_a_reservation(tmp_pat
 
 
 def test_register_without_a_ledger_reads_the_one_beside_the_corpus(tmp_path):
-    # The test corpus is the committed one. Its ledger holds no reservation of a test experiment.
-    directory = live(tmp_path)
-    hold(directory, book())
+    # A corpus copy with its own ledger file, so that the committed ledger does not decide the test.
+    corpus = corpus_copy(tmp_path)
+    directory = tmp_path / "experiment"
+    create_experiment(plan_experiment(corpus, experiment_id="test-experiment",
+                                      design=design(mode="LIVE"), arms=[baseline(model=LIVE_MODEL)],
+                                      corpus_ref=str(corpus)), directory)
+    refer(directory, THREE)
+    save_ledger(book(), corpus / "spend-ledger.json")
+    reserved = book()
+    hold(directory, reserved)
     put(directory, slot("commercial-base", 1), live_recording(minute=1))
+    # The file beside the corpus does not hold the reservation yet.
     with pytest.raises(ValueError, match="the ledger has no reservation res-baseline for arm baseline"):
         register(load_experiment(directory), directory)
+    save_ledger(reserved, corpus / "spend-ledger.json")
+    assert register(load_experiment(directory), directory) == 1
 
 
 def test_register_refuses_an_attempt_added_to_a_settled_arm(tmp_path):
@@ -3980,3 +4014,302 @@ def test_a_ledger_that_cannot_be_read_fails_the_check(copied, tmp_path):
     result = check(copied, cwd=tmp_path)
     assert result.returncode == 1
     assert "spend-ledger.json: cannot be read" in result.stderr
+
+
+# --- round three: an empty slot is bound only when the operator names it -------------------
+
+
+def test_register_leaves_an_empty_slot_unbound_and_its_recording_can_still_arrive(tmp_path):
+    # The recorder has claimed r1 and its call is still out. r2 is recorded. A register run now
+    # must not bind r1: a slot bound while empty could never take the recording.
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    put(directory, slot("commercial-base", 1), "")
+    put(directory, slot("commercial-base", 2), live_recording(minute=2, usage=tokens(2000, 3000, "test-request-2")))
+    experiment = load_experiment(directory)
+    assert register(experiment, directory, ledger) == 1
+    assert [attempt.sha256 is None for attempt in experiment.attempts] == [True, False]
+    assert empty_unbound_slots(experiment, directory) == [slot("commercial-base", 1)]
+    save_experiment(experiment, directory)
+    with pytest.raises(ValueError, match="commercial-base-r1.json is an empty slot that is not registered: a call "
+                                         "may still be out"):
+        aggregate(directory, ledger)
+    with pytest.raises(ValueError, match="a call may still be out"):
+        settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline",
+                   now=RESERVED + timedelta(hours=2))
+    assert [entry.id for entry in ledger.entries] == ["res-baseline"]
+    # The call returns and the recorder fills the slot.
+    put(directory, slot("commercial-base", 1), live_recording([finding("COM-FEES", 2)], minute=1,
+                                                              usage=tokens(1000, 1000, "test-request-1")))
+    experiment = load_experiment(directory)
+    assert register(experiment, directory, ledger) == 1
+    assert empty_unbound_slots(experiment, directory) == []
+    save_experiment(experiment, directory)
+    result = summary(aggregate(directory, ledger))
+    assert (result["observed"], result["completed"], result["failed"]) == (2, 2, 0)
+
+
+def test_an_empty_slot_never_reads_as_run_register_first(tmp_path):
+    # That advice once led an operator to bind a running call as lost.
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    put(directory, slot("commercial-base", 1), "")
+    with pytest.raises(ValueError) as refusal:
+        aggregate(directory, ledger)
+    assert "run register first" not in str(refusal.value)
+    assert f"register --lost {slot('commercial-base', 1)}" in str(refusal.value)
+    put(directory, slot("commercial-base", 1), live_recording(minute=1))
+    with pytest.raises(ValueError, match="exists but is not registered; run register first"):
+        aggregate(directory, ledger)
+
+
+def test_naming_an_empty_slot_binds_it_as_a_dispatch_without_a_recording(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    put(directory, slot("commercial-base", 1), "")
+    experiment = load_experiment(directory)
+    assert register(experiment, directory, ledger, lost=[slot("commercial-base", 1)]) == 1
+    assert experiment.attempts[0].sha256 == sha(b"")
+    assert empty_unbound_slots(experiment, directory) == []
+    save_experiment(experiment, directory)
+    assert summary(aggregate(directory, ledger))["failed"] == 1
+
+
+def a_recording(directory: Path, ledger: Ledger) -> str:
+    put(directory, slot("commercial-base", 1), live_recording(minute=1))
+    return slot("commercial-base", 1)
+
+
+def no_file(directory: Path, ledger: Ledger) -> str:
+    return slot("commercial-base", 1)
+
+
+def no_slot(directory: Path, ledger: Ledger) -> str:
+    return "attempts/baseline/commercial-base-r9.json"
+
+
+def a_slot_bound_before(directory: Path, ledger: Ledger) -> str:
+    record(directory, {slot("commercial-base", 1): ""}, ledger)
+    return slot("commercial-base", 1)
+
+
+@pytest.mark.parametrize("prepare_slot", [a_recording, no_file, no_slot, a_slot_bound_before])
+def test_only_an_empty_unregistered_slot_file_can_be_named_as_lost(tmp_path, prepare_slot):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    named = prepare_slot(directory, ledger)
+    experiment = load_experiment(directory)
+    before = [attempt.sha256 for attempt in experiment.attempts]
+    with pytest.raises(ValueError, match="was named as a dispatch without a recording, and it is not an empty, "
+                                         "unregistered slot file"):
+        register(experiment, directory, ledger, lost=[named])
+    assert [attempt.sha256 for attempt in experiment.attempts] == before
+
+
+def test_a_replay_experiment_has_no_dispatch_to_lose(tmp_path):
+    directory = planned(tmp_path)
+    with pytest.raises(ValueError, match="only a LIVE experiment has dispatches without a recording"):
+        register(load_experiment(directory), directory, lost=[slot("commercial-base", 1)])
+
+
+def test_register_on_the_command_line_says_what_it_bound_as_lost_and_what_it_left(tmp_path, capsys, clock):
+    _, out, ledger_path = live_plan(tmp_path, "--variants", "base", "--repetitions", "3")
+    put(out, "references/commercial-base.json", draft(THREE))
+    main(["add-reference", str(out), "--playbook", "commercial", "--variant", "base"])
+    main(["reserve", str(out), "--arm", "baseline", "--id", "res-baseline", *RESERVE, "--ledger", str(ledger_path)])
+    put(out, slot("commercial-base", 1), live_recording(minute=1))
+    put(out, slot("commercial-base", 2), "")
+    put(out, slot("commercial-base", 3), "")
+    capsys.readouterr()
+    main(["register", str(out), "--ledger", str(ledger_path)])
+    assert capsys.readouterr().out == (
+        "Registered 1 new attempt files.\n"
+        f"Left unbound, because the slot file is empty and its call may still be out: {slot('commercial-base', 2)}, "
+        f"{slot('commercial-base', 3)}. Once the call has ended without a recording, repeat with --lost <file>.\n")
+    main(["register", str(out), "--ledger", str(ledger_path), "--lost", slot("commercial-base", 3)])
+    assert capsys.readouterr().out == (
+        "Registered 1 new attempt files.\n"
+        f"Bound as dispatches without a recording, each settled at its full hold: {slot('commercial-base', 3)}.\n"
+        f"Left unbound, because the slot file is empty and its call may still be out: {slot('commercial-base', 2)}. "
+        "Once the call has ended without a recording, repeat with --lost <file>.\n")
+    assert [attempt.sha256 is None for attempt in load_experiment(out).attempts] == [False, True, False]
+
+
+# --- round three: the arm pins the whole reservation entry ---------------------------------
+
+
+def test_price_terms_rewritten_in_the_ledger_alone_are_refused(tmp_path):
+    # 6000 x 300 + 12096 x 1500 = 19,944,000 price units: 20 per attempt, 80 for the arm.
+    # 6000 x 1 + 19,994,000 x 1 = 20,000,000 price units: 20 per attempt, 80 for the arm as well.
+    # Amount, time and arm hash are unchanged, and a settlement would be recomputed at a price of 1.
+    directory = live(tmp_path)
+    bound = hold(directory, book())
+    cheap = book(prices=[price_row(inputMinorUnitsPerMillionTokens=1, outputMinorUnitsPerMillionTokens=1)])
+    retyped = retyped_ledger(bound, cheap, max_output_tokens=19_994_000)
+    assert (retyped.entries[0].perAttemptMinorUnits, retyped.entries[0].amountMinorUnits) == (20, 80)
+    with pytest.raises(ValueError, match="reservation res-baseline in the ledger is not the entry arm baseline was "
+                                         "bound to"):
+        aggregate(directory, retyped)
+
+
+def test_a_settled_figure_cannot_be_lowered_by_rewriting_the_reserved_price(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    bound = hold(directory, ledger)
+    record(directory, {slot("commercial-base", 1): live_recording(minute=1, usage=tokens(2000, 3000))}, ledger)
+    settle_arm(directory, ledger, arm_id="baseline", settlement_id="set-baseline", now=RESERVED + timedelta(hours=2))
+    assert aggregate(directory, ledger)["ledger"]["baseline"]["settledMinorUnits"] == 6
+    # By hand: the reservation at a price of 1 and 1, and the settlement at the 1 that then follows.
+    cheap = book(prices=[price_row(inputMinorUnitsPerMillionTokens=1, outputMinorUnitsPerMillionTokens=1)])
+    retyped = retyped_ledger(bound, cheap, max_output_tokens=19_994_000)
+    settled = find_entry(ledger, "set-baseline")
+    settle_in_ledger(retyped, entry_id="set-baseline", reservation_id="res-baseline", amount_minor_units=1,
+                     observed_attempts=1, attempts_without_usage=0, evidence_sha256=settled.evidenceSha256,
+                     now=RESERVED + timedelta(hours=2), note="test settlement rewritten by hand")
+    with pytest.raises(ValueError, match="is not the entry arm baseline was bound to"):
+        aggregate(directory, retyped)
+
+
+def test_a_note_rewritten_in_the_reservation_is_refused(tmp_path):
+    directory = live(tmp_path)
+    bound = hold(directory, book())
+    with pytest.raises(ValueError, match="is not the entry arm baseline was bound to"):
+        aggregate(directory, retyped_ledger(bound, note="test note written afterwards"))
+
+
+def test_the_pinned_entry_hash_edited_in_the_experiment_file_is_refused(tmp_path):
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    edit(directory, lambda data: data["arms"][0]["budgetReservation"].update(ledgerEntrySha256="f" * 64))
+    with pytest.raises(ValueError, match="is not the entry arm baseline was bound to"):
+        aggregate(directory, ledger)
+
+
+def test_a_snapshot_without_the_entry_hash_does_not_load(tmp_path):
+    directory = live(tmp_path)
+    hold(directory, book())
+    edit(directory, lambda data: data["arms"][0]["budgetReservation"].pop("ledgerEntrySha256"))
+    with pytest.raises(ValidationError, match="ledgerEntrySha256"):
+        load_experiment(directory)
+
+
+# --- round three: reserve and void after an interrupted save, continued --------------------
+
+
+@pytest.mark.parametrize("changes, named", [
+    ({"max_output_tokens": 40000}, "output maximum"),
+    ({"max_input_tokens": 7000}, "input maximum"),
+    ({"retry_multiplier": 3}, "retry multiplier"),
+    ({"provider": "another-provider"}, "provider"),
+    ({"region": "us"}, "region"),
+])
+def test_reserve_adopts_an_open_reservation_only_for_the_command_that_made_it(tmp_path, changes, named):
+    directory = live(tmp_path)
+    ledger = book()
+    reserve_arm(load_experiment(directory), directory, ledger, **RESERVE_BASELINE)
+    experiment = load_experiment(directory)
+    with pytest.raises(ValueError, match=f"for arm baseline, made with another {named}; bind it by repeating its "
+                                         "reserve command unchanged, or void it"):
+        reserve_arm(experiment, directory, ledger, **(RESERVE_BASELINE | changes))
+    assert experiment.arm("baseline").budgetReservation is None
+    assert [entry.id for entry in ledger.entries] == ["res-baseline"]
+
+
+def test_a_void_whose_second_save_failed_is_completed_by_repeating_it(tmp_path):
+    # The ledger holds the reservation and its release. The experiment file still binds the reservation.
+    directory = live(tmp_path)
+    ledger = book()
+    hold(directory, ledger)
+    assert void_arm(load_experiment(directory), directory, ledger, arm_id="baseline", entry_id="void-baseline",
+                    now=RESERVED + timedelta(minutes=5)) is True
+    experiment = load_experiment(directory)
+    assert experiment.arm("baseline").budgetReservation is not None
+    assert void_arm(experiment, directory, ledger, arm_id="baseline", entry_id="void-again",
+                    now=RESERVED + timedelta(minutes=6)) is False
+    assert experiment.arm("baseline").budgetReservation is None
+    assert [(entry.id, entry.kind) for entry in ledger.entries] == [
+        ("res-baseline", "RESERVATION"), ("void-baseline", "VOID")]
+    save_experiment(experiment, directory)
+    # The arm can be reserved again.
+    assert hold(directory, ledger, entry="res-baseline-2", now=RESERVED + timedelta(minutes=10)).ledgerEntryId == (
+        "res-baseline-2")
+
+
+# --- round three: what the check script looks at, continued --------------------------------
+
+
+def a_ledger_entry_of(experiment_id: str, corpus: Path, settled_at: int | None = None) -> None:
+    """Write a reservation, and optionally its settlement, for an experiment into the copied ledger."""
+    path = corpus / "spend-ledger.json"
+    ledger = load_ledger(path)
+    reserve_in_ledger(ledger, entry_id="res-test", experiment_id=experiment_id, arm="baseline", attempts=1,
+                      model="gemini-3.8-flash", provider="gemini", region="eu", max_input_tokens=6000,
+                      max_output_tokens=12096, retry_multiplier=1, preregistration_sha256="a" * 64,
+                      now=datetime(2026, 10, 12, 9, 0, tzinfo=timezone.utc), note="test reservation")
+    if settled_at is not None:
+        settle_in_ledger(ledger, entry_id="set-test", reservation_id="res-test", amount_minor_units=settled_at,
+                         observed_attempts=1, attempts_without_usage=0, evidence_sha256="b" * 64,
+                         now=datetime(2026, 10, 12, 11, 0, tzinfo=timezone.utc), note="test settlement")
+    save_ledger(ledger, path)
+
+
+def test_a_ledger_entry_of_an_experiment_without_a_folder_fails_the_check(copied, tmp_path):
+    # An experiment folder that was moved away or deleted takes its settlement out of every recomputation.
+    a_ledger_entry_of("moved-experiment", copied.parent, settled_at=7)
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert ("spend-ledger.json: res-test, set-test belong to experiment moved-experiment, which has no folder "
+            "under experiments/") in result.stderr
+
+
+def test_a_ledger_entry_of_an_experiment_with_a_folder_passes_that_part_of_the_check(copied, tmp_path):
+    a_ledger_entry_of("replay-dry-run", copied.parent)
+    result = check(copied, cwd=tmp_path)
+    assert (result.returncode, result.stdout) == (0, PASSED), result.stderr
+
+
+def test_an_experiment_that_names_another_corpus_folder_fails_the_check(copied, tmp_path):
+    # It would read, and budget against, the ledger beside that other folder.
+    edit(copied / "replay-dry-run", lambda data: data.update(corpusDir=str(CORPUS)))
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert ("replay-dry-run: its corpus folder is not the one these experiments belong to, so it would budget "
+            "against another spend-ledger.json") in result.stderr
+    assert "differs from the current aggregation" not in result.stderr
+
+
+def test_committed_spend_above_the_cap_fails_the_check(copied, tmp_path):
+    a_ledger_entry_of("replay-dry-run", copied.parent, settled_at=10_800)
+    result = check(copied, cwd=tmp_path)
+    assert result.returncode == 1
+    assert "spend-ledger.json: committed spend is 800 minor units above the cap" in result.stderr
+
+
+def test_spend_exactly_at_the_cap_passes_the_check(copied, tmp_path):
+    a_ledger_entry_of("replay-dry-run", copied.parent, settled_at=10_000)
+    result = check(copied, cwd=tmp_path)
+    assert (result.returncode, result.stdout) == (0, PASSED), result.stderr
+
+
+# --- round three: what the report and its rules state --------------------------------------
+
+
+def test_the_markdown_names_declared_injection_variants_and_repairs_without_any_attempt(tmp_path):
+    directory = planned(tmp_path, variants=["base", "changed", "injection"], injectionVariants=["injection"],
+                        repairedEntries={"changed": ["COM-FEES", "COM-SLA"]})
+    lines = render_markdown(aggregate(directory)).splitlines()
+    assert "Injection variants: injection. Declared repaired: changed: COM-FEES, COM-SLA." in lines
+    plain = render_markdown(aggregate(planned(tmp_path / "plain")))
+    assert "Injection variants" not in plain and "Declared repaired" not in plain
+
+
+def test_the_printed_matching_rule_and_the_guideline_carry_the_quotation_floor_of_the_code():
+    from contract_eval.candidates import MIN_QUOTE_CHARS
+    assert f"at least {MIN_QUOTE_CHARS} characters" in candidate_experiment.MATCHING_RULE
+    guideline = " ".join((CORPUS / "annotation" / "GUIDELINE.md").read_text(encoding="utf-8").split())
+    assert f"at least {MIN_QUOTE_CHARS} characters" in guideline
