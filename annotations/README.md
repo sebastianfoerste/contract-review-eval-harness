@@ -28,6 +28,20 @@ Two things must happen before they replace `expected/*.json`:
 1. A second qualified legal reviewer annotates the same contracts blind, from the pack.
 2. Every disagreement is adjudicated in writing, with zero left unresolved.
 
+## NDA rationale text corrected after the pack was sent
+
+On 2026-10-13 four NDA severity rationales in `expected/nda.json` (term, definition,
+permitted disclosure, notices) were rewritten so that each argues from the Disclosing
+Party's side, which the answer set's `review_context` and the pack template both name,
+and so that none overstates German law. `drafts/nda.candidate.v2.json` takes its
+rationales from the v1 gold and carries the same text.
+
+Severities, obligation ids, offsets and quotes did not change, and the pack withholds
+rationales, so the blind annotation is unaffected. The candidate file's SHA-256 does
+change: when a return is imported, its receipt records the hash of the corrected file,
+not of the bytes as they stood when the pack was sent on 2026-09-06. The history of
+`annotations/drafts/nda.candidate.v2.json` keeps both versions.
+
 ## The DPA split is deliberately unresolved
 
 `dpa.breach_and_dpia_assistance` covered two distinct Art. 28(3)(f) GDPR duties:

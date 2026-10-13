@@ -301,7 +301,7 @@ def test_twenty_spurious_flags_still_prevent_eligibility_under_v3():
 def test_frozen_v2_certificate_verifies_at_full_v2_scope(tmp_path):
     """A historical v2 artifact stays reproducible by its own frozen builder.
 
-    The certificate predates the rewrite of two NDA severity rationales, so the
+    The certificate predates the rewrite of the NDA severity rationales, so the
     working tree no longer holds the gold bytes it records. Those bytes are rebuilt
     from the gold snapshot embedded in the 2026-09-01 capture, and the snapshot's
     hash must equal the one the certificate records before anything is compared.

@@ -6,7 +6,7 @@
 - Cases: 3
 - Rejected: 3
 - Unsupported citations: 3
-- Integrity SHA-256: `cae5b19524f9d0ec61e126cb39ccace4d982cc4f1dd9d0ee779363bb72c298eb`
+- Integrity SHA-256: `ce7c7f8efbde88b6c8d63952b59b759511a5db8c0b05d25c2d5aaed45d99a8bf`
 
 ## Case decisions
 
