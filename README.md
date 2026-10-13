@@ -8,9 +8,9 @@ Evaluation harness for legal AI contract review: clause scoring, citation ground
 Verification manifest: [`docs/verification-manifest.json`](docs/verification-manifest.json).
 See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
-![Actual output of make demo followed by the scorecard it writes](docs/demo.png)
+![Actual output of make demo: the NDA scorecard](docs/demo.png)
 
-*Actual output of `make demo`, followed by `cat scorecard.md` to show the scorecard it writes, rendered as an image. The last ten lines of the scorecard are cut off, and the image says so.*
+*Actual output of `make demo`, rendered as an image.*
 
 ## Run it
 
