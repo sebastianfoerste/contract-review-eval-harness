@@ -179,7 +179,7 @@
       ],
       "risk": {
         "severity": "low",
-        "rationale": "low — email notice that takes effect when sent, not on receipt as § 130(1) BGB provides by default for a declaration to an absent party, puts the risk of a lost or misdirected notice on whichever party it is addressed to, the discloser included. Slightly off-market and worth a note, not a blocker.",
+        "rationale": "low — email notice that takes effect when sent, not on receipt as § 130(1) BGB provides by default for a declaration to an absent party, puts the risk of a notice that is lost, filtered or undelivered on whichever party it is addressed to, the discloser included. Slightly off-market and worth a note, not a blocker.",
         "source_category": "legal_judgment",
         "source_reference": null
       },

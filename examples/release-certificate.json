@@ -225,14 +225,14 @@
         },
         "expected_answer": {
           "path": "expected/nda.json",
-          "sha256": "0f3dcae4ca7193550229d0ea258c6f583731d04473bf397a6c50771a55fe157f"
+          "sha256": "5f1210ab2f234b9ae6848e98cf7c415209595f8aa6fd727bb0c62da3d3934041"
         },
         "adapter_output": {
           "path": "fixtures/nda_stub.json",
           "sha256": "f8f9b17131c68054df54c45d0782ae472914ec580ea3a345ab22df67b6e82fa8"
         }
       },
-      "input_manifest_sha256": "af1861b76f4b6c38d0580922f315968cb018328670b411d219c1ff257e35cb16"
+      "input_manifest_sha256": "45852b68d0b3d931fc6f5eb8e782560197ad7e89e0320300f520b7790792c611"
     },
     {
       "case": "saas",
@@ -299,5 +299,5 @@
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "ce7c7f8efbde88b6c8d63952b59b759511a5db8c0b05d25c2d5aaed45d99a8bf"
+  "integrity_sha256": "a3680a95cd9a4d99a9e994f0eaceb9971bbe1b59bdbea56bcfe6ac28bec2cef3"
 }
