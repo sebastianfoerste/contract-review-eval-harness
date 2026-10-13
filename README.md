@@ -34,7 +34,7 @@ The companion web app, [`contract-eval-web`](https://github.com/sebastianfoerste
 
 ## What the demo produces
 
-The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
+The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the scorecard reports one fabricated citation and says it must be rejected; the release certificate below rejects the NDA output on that ground. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
 
 The [release certificate](examples/release-certificate.md) evaluates all bundled
 cases under a stricter legal-review policy. It hashes the source contract, gold

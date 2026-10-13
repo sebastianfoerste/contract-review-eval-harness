@@ -35,5 +35,9 @@ which the answer set does not treat as a risk, and missed the `notices` risk. An
 nine citations, a deemed-delivery rule for notices, is not in the contract at all, so
 grounding is 0.89 and the hallucination count is 1.
 
+Severity is scored; reasoning is not. The stub justifies its `term` flag by calling the
+perpetual term "unenforceable in substance", a claim the answer set's rationale does not
+make, and the flag still counts as correct because its severity matches.
+
 The take-away for a reviewer: this output is usable as a first pass, but the flagged risks
 and citations must be confirmed by a lawyer, and the hallucinated citation must be rejected.
