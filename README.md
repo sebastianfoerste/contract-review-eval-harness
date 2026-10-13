@@ -305,3 +305,5 @@ Python, Pydantic, pytest and uv. The optional live adapter is behind a flag and 
 ## Human-authored legal judgment
 
 AI tools assisted the implementation, but the parts that carry the value are human-authored: the gold answer sets, risk taxonomy, clause types and citation-grounding rules. The point of this repository is not code volume; it is showing how legal judgment can be made structured, testable and reviewable.
+
+One exception is pending: four NDA severity rationales were redrafted with AI assistance on 2026-10-13 and await the maintainer's adoption. [annotations/README.md](annotations/README.md) records which ones and what remains open.

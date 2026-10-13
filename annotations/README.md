@@ -36,11 +36,36 @@ Party's side, which the answer set's `review_context` and the pack template both
 and so that none overstates German law. `drafts/nda.candidate.v2.json` takes its
 rationales from the v1 gold and carries the same text.
 
+**The four new texts were drafted with AI assistance and await the maintainer's
+adoption.** Until the maintainer has read them and adopted or edited them, they are not
+annotator-a's reasoning. The candidate's `annotator_id` and its `legal_position_date`
+of 2026-09-04 describe the rest of the file, not these four rationales, and an
+adjudication ledger must not present them as annotator-a's position. The statutory
+references in them were checked against the bundestag/gesetze GitHub mirror, not
+against gesetze-im-internet.de. Adopting them means reviewing the text, updating
+`legal_position_date`, and removing this paragraph and the matching notes in
+`expected/nda.json`, the README and CASE_STUDY.md.
+
 Severities, obligation ids, offsets and quotes did not change, and the pack withholds
 rationales, so the blind annotation is unaffected. The candidate file's SHA-256 does
 change: when a return is imported, its receipt records the hash of the corrected file,
 not of the bytes as they stood when the pack was sent on 2026-09-06. The history of
 `annotations/drafts/nda.candidate.v2.json` keeps both versions.
+
+Three questions stay open for the maintainer, because the rationales now argue from the
+discloser's side while the severities and scenarios were set earlier:
+
+- Whether `term` and `permitted_disclosure` stay `high` under the
+  [guideline's](../docs/ANNOTATION_GUIDELINE.md) definition, which asks whether a court
+  or regulator would treat the clause as a defect, and whether `definition` stays
+  `medium`, since an all-information definition largely favours the discloser.
+- Whether `nda-term-shortened` in `robustness/campaign.v1.json` should still expect the
+  term flag to disappear. That expectation was written from the receiving side. For the
+  discloser, a twelve-month term with no protection for trade secrets is arguably still
+  a finding.
+- What `nda-one-way-definition` should expect. It requires a high confidentiality flag
+  when the agreement becomes one-way in Northwind's favour, which is not obviously a
+  concern for the discloser.
 
 ## The DPA split is deliberately unresolved
 
