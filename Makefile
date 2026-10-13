@@ -2,7 +2,9 @@
 
 install: ; uv sync
 test: ; uv run pytest -v
-demo: ; uv run python -m contract_eval evaluate --case nda
+demo:
+	uv run python -m contract_eval evaluate --case nda
+	@cat scorecard.md
 demo-live: ; uv run --extra live python -m contract_eval evaluate --case all --live
 certificate: ; uv run python -m contract_eval certify --case all --out examples
 certificate-check: ; uv run python scripts/check_release_certificate.py

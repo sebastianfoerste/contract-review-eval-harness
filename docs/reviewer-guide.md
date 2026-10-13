@@ -2,7 +2,8 @@
 
 A five-minute path for a reviewer.
 
-1. **Run it.** `make install && make demo`. This writes `scorecard.md` for the NDA case.
+1. **Run it.** `make install && make demo`. This writes `scorecard.md` for the NDA case and
+   prints it.
 2. **Read the scorecard.** Note that it is not perfect: clause precision 0.92, severity
    accuracy 0.60 (legacy risk-flag accuracy 0.50), one hallucinated citation. That is by
    design.
