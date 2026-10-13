@@ -28,11 +28,11 @@
     "notices": "low"
   },
   "severity_rationale": {
-    "term": "high — a perpetual confidentiality obligation with no survival period and no trade-secret carve-out is unenforceable in substance and unmanageable in practice; the receiving party cannot ever demonstrate compliance has ended.",
+    "term": "high — for the disclosing party the risk is that this protection may not hold, not that it is burdensome. German law does not make a perpetual confidentiality obligation unenforceable as such, but an obligation with no end, no survival period and no trade-secret distinction, attached to an all-information definition, is the form most exposed to challenge, in particular as a standard business term. If it falls, the technical information the discloser is about to share has no dependable contractual duration, and a disclosure cannot be undone. A defined survival period, with protection for trade secrets for as long as they remain secret, is the position the discloser can rely on.",
     "residual_knowledge": "high — an unaided-memory residuals clause that permits use for the benefit of third parties defeats the operative obligation in section 2. Whatever a person remembers may be used for a competitor, so the agreement protects only documents, not information.",
     "permitted_disclosure": "high — conditioning a legally compelled disclosure on the disclosing party's prior written consent is not capable of performance. The standard position is notice where lawful and cooperation in seeking protective relief, not consent.",
     "assignment": "high — free assignment to a competitor of the disclosing party defeats the purpose of the agreement, since the counterparty can change to the one party the discloser would never have contracted with.",
-    "definition": "medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. It is worse than market but negotiable.",
+    "definition": "medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. For the discloser it looks protective, but it invites a dispute over what was protected at all and adds to the exposure of the perpetual term it is paired with. Off-market and negotiable.",
     "notices": "low — email-only notice with no read receipt or deemed-delivery rule is slightly off-market and worth a note, not a blocker."
   },
   "clause_aliases": {

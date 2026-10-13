@@ -31,7 +31,7 @@ It evaluates against structured gold sets for three synthetic agreements totalli
 
 Label-based clause scoring still matches on taxonomy names, and an alias map written after observing one run does not transfer to the next. `span_coverage` measures the same output without labels: each gold clause carries a verbatim anchor, owns the region up to the next anchor, and counts as covered when a grounded citation lands inside it. Read the two together, since span coverage measures citation placement rather than comprehension.
 
-Each gold set now states whose review it encodes: party, governing law, objective and risk appetite. All three are currently conservative reviews from the receiving side under German law. A provider-side or commercially-minded reviewer would defend different severities on the same clauses, and the gold sets do not yet contain that second perspective.
+Each gold set now states whose review it encodes: party, governing law, objective and risk appetite. All three are conservative reviews for Northwind Materials GmbH under German law: as Disclosing Party to the NDA, as Customer under the SaaS agreement and as Controller under the DPA. A reviewer for the other side (the receiving party, the provider, the processor) or a commercially-minded one would defend different severities on the same clauses, and the gold sets do not yet contain that second perspective.
 
 ## Next steps
 Add a second annotator with blind adjudication and reported agreement statistics; add a provider-side gold set over the same SaaS agreement so the effect of perspective on severity is measurable; extend the adversarial campaign to the newly added clause types; anchor risk findings to spans as clauses now are, so a finding can be checked against the text it cites.

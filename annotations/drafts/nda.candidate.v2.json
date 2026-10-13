@@ -30,7 +30,7 @@
       ],
       "risk": {
         "severity": "medium",
-        "rationale": "medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. It is worse than market but negotiable.",
+        "rationale": "medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. For the discloser it looks protective, but it invites a dispute over what was protected at all and adds to the exposure of the perpetual term it is paired with. Off-market and negotiable.",
         "source_category": "legal_judgment",
         "source_reference": null
       },
@@ -59,7 +59,7 @@
       "aliases": [],
       "risk": {
         "severity": "high",
-        "rationale": "high — a perpetual confidentiality obligation with no survival period and no trade-secret carve-out is unenforceable in substance and unmanageable in practice; the receiving party cannot ever demonstrate compliance has ended.",
+        "rationale": "high — for the disclosing party the risk is that this protection may not hold, not that it is burdensome. German law does not make a perpetual confidentiality obligation unenforceable as such, but an obligation with no end, no survival period and no trade-secret distinction, attached to an all-information definition, is the form most exposed to challenge, in particular as a standard business term. If it falls, the technical information the discloser is about to share has no dependable contractual duration, and a disclosure cannot be undone. A defined survival period, with protection for trade secrets for as long as they remain secret, is the position the discloser can rely on.",
         "source_category": "legal_judgment",
         "source_reference": null
       },
