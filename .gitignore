@@ -13,7 +13,7 @@ wheels/
 /scorecard.md
 /scorecard.json
 
-# Generated run history; committed snapshots remain tracked
+# Generated run history (written by every evaluate run); not tracked
 /history/run_*.json
 
 # SQLite / local databases
