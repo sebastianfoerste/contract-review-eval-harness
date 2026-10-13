@@ -40,8 +40,8 @@ so.
   you agree and how you would like to be described. Without your agreement your
   contribution stays unnamed.
 - The templates you return are kept with the experiment record and may be
-  published with it, including the `annotator` field. Please write your name
-  there only if you agree to that. Otherwise use the label "[label]".
+  published with it. Please write the label "[label]" in the `annotator` field,
+  not your name.
 
 Thank you, and do call if anything in the guideline is unclear.
 
@@ -59,8 +59,10 @@ Notes for Sebastian before sending:
   register, rebuild in this order: `python candidates/mycounsel/build_fixtures.py`
   (playbooks and documents are written there), `make candidate-pack`,
   `make candidate-bundle`. The last command prints the archive's SHA-256.
-- Agree with the annotator whether the `annotator` field carries a name or a
-  label before the templates are filled, and replace "[label]" above.
+- Annotators write a label, not a name (your decision of 13 October 2026).
+  Agree the label with the annotator and replace "[label]" above. Use a label
+  of your own for your six templates. Check the `annotator` field of every
+  returned file before it is committed.
 - Record the annotator's name, the date sent, the archive hash and the remit in a
   dated note. That note is what `reviewerEvidence` later points to.
 - Fill your own six templates before you open the annotator's return, in a copy

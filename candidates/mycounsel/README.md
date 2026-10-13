@@ -130,8 +130,8 @@ has been filled in: returned and own annotations are kept outside
 
 A template carries eight binding fields the annotator leaves unchanged: schema,
 variant, playbook and the hashes of the document, the playbook, the corpus
-manifest, the guideline and the source register. The annotator fills in a name
-or agreed label, the date, whether model output was seen, and the issues by
+manifest, the guideline and the source register. The annotator fills in the
+agreed label, the date, whether model output was seen, and the issues by
 playbook ID and paragraph number.
 
 The tests assert that the pack contains no finding, score field or construction
@@ -180,9 +180,12 @@ listed in the ledger without a decision. The returned annotation files are never
 edited: any change breaks the hashes the record binds. The reference carries
 hashes and the letters A and B, not names.
 
-Annotation files and adjudication records contain the names or labels their
-authors wrote. Whether they are committed to this public repository is the
-owner's decision; an experiment needs them beside the reference, see below.
+Annotators write an agreed label in the `annotator` field, not a name (owner's
+decision of 13 October 2026), because an experiment needs the annotation files
+beside the reference and this repository is public. The dated note that
+identifies the person behind a label is kept outside the repository. An
+adjudication record names its adjudicator. No code can tell a label from a name:
+check the field before a returned file is committed.
 
 ## Preregistered experiments
 

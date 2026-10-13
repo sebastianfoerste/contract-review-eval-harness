@@ -1563,13 +1563,20 @@ def test_cli_refuses_a_reference_for_another_document(tmp_path, monkeypatch):
 # --- round two -----------------------------------------------------------------------------
 
 
+# Totals without shares, so that a value read leniently could not fail on a share above its total.
+TOTALS_ONLY = USAGE | {"cacheReadTokens": None, "thinkingTokens": None}
+
+
 @pytest.mark.parametrize("field, value", [
-    ("inputTokens", True), ("outputTokens", "5"), ("inputTokens", 5.0), ("cacheReadTokens", "7"),
-    ("thinkingTokens", False), ("outputTokens", None),
+    ("inputTokens", True), ("inputTokens", "5200"), ("inputTokens", 5200.0),
+    ("outputTokens", True), ("outputTokens", "1800"), ("outputTokens", 1800.0),
+    ("cacheReadTokens", True), ("cacheReadTokens", "7"), ("cacheReadTokens", 7.0),
+    ("thinkingTokens", False), ("thinkingTokens", "7"), ("thinkingTokens", 7.0),
 ])
 def test_a_token_count_is_a_json_integer_and_nothing_that_merely_reads_as_one(field, value):
-    with pytest.raises(ValidationError):
-        with_run(usage=USAGE | {field: value}, usageUnavailableReason=None)
+    assert with_run(usage=TOTALS_ONLY, usageUnavailableReason=None).run.usage.inputTokens == 5200
+    with pytest.raises(ValidationError, match="Input should be a valid integer"):
+        with_run(usage=TOTALS_ONLY | {field: value}, usageUnavailableReason=None)
 
 
 def test_a_quotation_of_nothing_is_never_substantive():

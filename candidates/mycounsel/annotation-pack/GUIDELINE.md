@@ -108,7 +108,7 @@ rejected.
 
 ```json
 {
-  "annotator": "Your name, or the label agreed with the maintainer",
+  "annotator": "The label agreed with the maintainer",
   "annotatedOn": "2026-10-20",
   "sawModelOutput": false,
   "issues": [
@@ -132,7 +132,7 @@ rejected.
 ```
 
 If you find nothing to raise for a variant and playbook, leave `issues` empty and
-still fill in your name, the date and `sawModelOutput`.
+still fill in your label, the date and `sawModelOutput`.
 
 ## What happens to your file
 
@@ -143,8 +143,8 @@ independently reviewed. The reference carries hashes and the letters A and B, no
 names.
 
 Your returned file is kept with the experiment it supports and may be published
-with it, including what you wrote in `annotator`. Write your name there only if you
-agree to that; otherwise use the label agreed with the maintainer.
+with it, including what you wrote in `annotator`. Write the label agreed with the
+maintainer there, not your name.
 
 ## Return
 
