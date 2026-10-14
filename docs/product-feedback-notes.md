@@ -4,8 +4,9 @@ The scorecard is not just a customer artifact — each failing dimension is a pr
 requirement. Below, the seeded NDA failures rewritten as input for Product and Engineering.
 
 Figures are from the current `make demo` scorecard (NDA case, offline stub adapter, harness
-0.7.0rc1). Earlier copies of this note quoted clause precision 0.83: that was harness 0.1.0
-(2026-06-27), when the NDA answer set had five clause types and the stub reported six.
+0.7.0rc1). Earlier copies of this note quoted clause precision 0.83. That was the figure
+from harness 0.1.0 to 0.3.0, from this note's first version (2026-06-22) until commit 51f0abf
+(2026-08-31), while the NDA answer set had five clause types and the stub reported six.
 
 ## 1. Fabricated citations (Hallucination count = 1)
 **Signal:** one cited quote (`notices shall be deemed received three business days after
