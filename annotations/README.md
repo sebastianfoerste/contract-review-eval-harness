@@ -42,7 +42,10 @@ annotator-a's reasoning. The candidate's `annotator_id` and its `legal_position_
 of 2026-09-04 describe the rest of the file, not these four rationales, and an
 adjudication ledger must not present them as annotator-a's position. The statutory
 references in them were checked against the bundestag/gesetze GitHub mirror, not
-against gesetze-im-internet.de. Adopting them means reviewing the text, updating
+against gesetze-im-internet.de. That mirror's BGB is a 2021 consolidation: its last
+fully documented amendment is of 7 May 2021, and later amendments up to December 2021
+are in the text but marked as not yet fully documented. Re-check the references against
+the official text on adoption. Adopting them means reviewing the text, updating
 `legal_position_date`, and removing this paragraph and the matching notes in
 `expected/nda.json`, the README and CASE_STUDY.md.
 
