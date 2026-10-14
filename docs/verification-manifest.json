@@ -12,7 +12,7 @@
   "verification_artifacts": [
     {
       "path": "docs/demo.png",
-      "label": "Demo screenshot"
+      "label": "Actual output of make demo, rendered as an image"
     },
     {
       "path": "examples/scorecard.json",

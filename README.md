@@ -8,7 +8,9 @@ Evaluation harness for legal AI contract review: clause scoring, citation ground
 Verification manifest: [`docs/verification-manifest.json`](docs/verification-manifest.json).
 See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
-![demo](docs/demo.png)
+![Actual output of make demo: the NDA scorecard](docs/demo.png)
+
+*Actual output of `make demo`, rendered as an image.*
 
 ## Run it
 
@@ -23,7 +25,7 @@ Runs end to end, offline and deterministically.
 
 ## Interactive Web Explorer: Evidence Lab
 
-The companion web app, `contract-eval-web`, lets you explore these cases in a browser without installing Python or calling a live model. It is maintained in a separate repository that is not public yet.
+The companion web app, [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web), lets you explore these cases in a browser without installing Python or calling a live model. It is maintained in a separate public repository. There is no hosted demo: the app runs locally, as its README describes.
 
 - **Features**: inspect the synthetic contracts, switch between the *baseline*, *no-evidence*, *missed-risks* and *conflicting-flags* scenarios, compare scores side by side, inspect quote grounding, and download Markdown or JSON reports.
 - **Scoring parity**: the web app ports `score_review` to TypeScript. Its tests check the port against vectors this harness computes for every case and scenario. That covers the bounded public inputs, not arbitrary documents.
@@ -32,7 +34,7 @@ The companion web app, `contract-eval-web`, lets you explore these cases in a br
 
 ## What the demo produces
 
-The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
+The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the scorecard reports one fabricated citation and says it must be rejected; the release certificate below rejects the NDA output on that ground. You can read the committed sample output in [`examples/scorecard.md`](examples/scorecard.md) and [`examples/scorecard.json`](examples/scorecard.json).
 
 The [release certificate](examples/release-certificate.md) evaluates all bundled
 cases under a stricter legal-review policy. It hashes the source contract, gold
@@ -65,14 +67,24 @@ baseline release-certificate rejection.
 ```markdown
 # Contract Review Eval Scorecard: nda
 
+## Scores
+
 | Dimension | Score | Notes |
 |---|---:|---|
 | Clause precision | 0.92 | predicted clause types that were expected |
 | Clause recall | 1.00 | expected clause types that were found |
 | Clause F1 | 0.96 | harmonic mean of precision and recall |
-| Risk-flag accuracy | 0.50 | risky clauses flagged at the expected severity |
-| Citation grounding | 0.89 | 8/9 quotes grounded in the source |
+| Risk precision | 0.83 | flagged clauses that the gold set treats as risks |
+| Risk recall | 0.83 | gold risks the review flagged |
+| Risk F1 | 0.83 | harmonic mean of risk precision and recall |
+| Severity accuracy | 0.60 | correct severity among jointly identified risks |
+| Risk false positives | 1 | clauses flagged that the gold set does not treat as risks |
+| Risk missed | 1 | gold risks the review did not flag |
+| Duplicate / conflicting flags | 0 / 0 | predictions collapsing onto one clause |
+| Span coverage | 0.73 | gold clauses with a grounded citation inside them |
+| Citation grounding | 0.89 | 8/9 quotes matched as an exact span of the normalised source |
 | Hallucination count | 1 | cited quotes not grounded in the source |
+| Risk-flag accuracy (legacy) | 0.50 | blind to false positives; excluded from release decisions |
 ```
 
 ## What it checks
@@ -218,10 +230,11 @@ are deliberately unremarkable: a reviewer who flags them is producing false posi
 
 Every case is built so that clause coverage and legal judgment come apart. The offline
 adapter reaches 0.95 to 0.96 clause F1 on all three — it finds every expected clause —
-against 0.50 to 0.60 risk-flag accuracy. On the DPA it rates the exclusion of on-site inspections and a transfer clause
+against 0.57 to 0.60 severity accuracy. On the DPA it rates the exclusion of on-site inspections and a transfer clause
 carrying no Chapter V mechanism as low risk; on the SaaS agreement it rates a perpetual
 licence to train models on Customer Personal Data and a reversed IP indemnity as low
-risk; on the NDA it under-rates a consent condition on legally compelled disclosure.
+risk; on the NDA it under-rates a consent condition on legally compelled disclosure and a
+free assignment to a competitor.
 A reviewer reading only the coverage number would approve all three.
 
 Adding a fourth contract type means adding four files and one entry in
@@ -293,3 +306,5 @@ Python, Pydantic, pytest and uv. The optional live adapter is behind a flag and 
 ## Human-authored legal judgment
 
 AI tools assisted the implementation, but the parts that carry the value are human-authored: the gold answer sets, risk taxonomy, clause types and citation-grounding rules. The point of this repository is not code volume; it is showing how legal judgment can be made structured, testable and reviewable.
+
+One exception is pending: four NDA severity rationales were redrafted with AI assistance on 2026-10-13 and await the maintainer's adoption. [annotations/README.md](annotations/README.md) records which ones and what remains open.

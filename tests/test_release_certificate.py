@@ -298,8 +298,55 @@ def test_twenty_spurious_flags_still_prevent_eligibility_under_v3():
     assert "risk_false_positive" in result["review_items"]
 
 
-def test_frozen_v2_certificate_verifies_at_full_v2_scope():
-    """A historical v2 artifact stays reproducible by its own frozen builder."""
+def test_frozen_v2_certificate_verifies_at_full_v2_scope(tmp_path):
+    """A historical v2 artifact stays reproducible by its own frozen builder.
+
+    The certificate predates the rewrite of the NDA severity rationales, so the
+    working tree no longer holds the gold bytes it records. Those bytes are rebuilt
+    from the gold snapshot embedded in the 2026-09-01 capture, and the snapshot's
+    hash must equal the one the certificate records before anything is compared.
+    """
+    import hashlib
+    import json
+    import shutil
+    from pathlib import Path
+
+    from contract_eval.adapters import get_adapter
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import load_case_inputs, score_review
+    from contract_eval.release_certificate import verify_release_certificate
+
+    certificate = json.loads(
+        Path("tests/fixtures/frozen-release-certificate-v2.json").read_text()
+    )
+    for directory in ("data", "expected", "fixtures"):
+        shutil.copytree(directory, tmp_path / directory)
+    snapshot = json.loads(
+        Path("examples/captures/legacy-nda-2026-09-01.json").read_text(encoding="utf-8")
+    )["gold"]
+    recorded = next(
+        result["input_manifest"]["expected_answer"]
+        for result in certificate["cases"]
+        if result["case"] == "nda"
+    )
+    assert snapshot["path"] == recorded["path"]
+    frozen_gold = snapshot["text"].encode("utf-8")
+    assert hashlib.sha256(frozen_gold).hexdigest() == recorded["sha256"]
+    (tmp_path / recorded["path"]).write_bytes(frozen_gold)
+
+    scores = {}
+    for case in ALL_CASES:
+        source, expected = load_case_inputs(case, root=tmp_path)
+        output = get_adapter(False).review(source_text=source, case=case)
+        scores[case] = score_review(source, expected, output, alias_mode="on")
+
+    verification = verify_release_certificate(certificate, scores, root=tmp_path)
+    assert verification["status"] == "VALID"
+    assert verification["verification_scope"] == "full_v2"
+
+
+def test_frozen_v2_certificate_degrades_on_the_working_tree():
+    """Against today's inputs the historical decision is not recomputed, and says why."""
     import json
     from pathlib import Path
 
@@ -314,7 +361,8 @@ def test_frozen_v2_certificate_verifies_at_full_v2_scope():
 
     verification = verify_release_certificate(certificate, scores)
     assert verification["status"] == "VALID"
-    assert verification["verification_scope"] == "full_v2"
+    assert verification["verification_scope"] == "integrity_only"
+    assert verification["input_drift"] == ["nda:expected_answer:changed"]
 
 
 def test_v2_certificate_with_drifted_inputs_degrades_to_integrity_only(tmp_path):

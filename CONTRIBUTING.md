@@ -14,8 +14,12 @@ This is a personal, public-safe prototype. Issues and corrections are welcome.
 ```bash
 make install
 make test     # must pass before any PR
-make demo     # regenerate examples/ if output changed, and commit it
+make demo     # prints the NDA scorecard; writes scorecard.md and run-provenance.json to the repo root and history/run_<timestamp>.json (all ignored)
 ```
+
+If the output changed, refresh the committed copies in `examples/` and commit them:
+`uv run python -m contract_eval evaluate --case nda --out examples` (add `--format json` for
+`scorecard.json`), then `make certificate` and `make robustness`.
 
 ## Reporting an issue
 
