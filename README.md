@@ -1,6 +1,10 @@
 # contract-review-eval-harness
 
 [![CI](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/sebastianfoerste/contract-review-eval-harness/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python >=3.13](https://img.shields.io/badge/python-%3E%3D3.13-blue.svg)](pyproject.toml)
+
+**Before anyone relies on an AI contract review, measure whether it finds the right clauses, flags the right risks at the right severity, and quotes only what the contract actually says.**
 
 Evaluation harness for legal AI contract review: clause scoring, citation grounding and hallucination counts against a gold answer set. Not legal advice; data is synthetic.
 
@@ -8,18 +12,74 @@ Evaluation harness for legal AI contract review: clause scoring, citation ground
 Verification manifest: [`docs/verification-manifest.json`](docs/verification-manifest.json).
 See [CASE_STUDY.md](CASE_STUDY.md) for the problem, controls, and limitations.
 
-![demo](docs/demo.png)
+<!--
+  Screenshot/GIF placeholder — to be added.
+  Capture a real `make demo` run and the scorecard.md it writes (identical to
+  examples/scorecard.md), so every number in the image can be checked against the repo.
+  docs/demo.png used to be embedded here. It was taken out because it does not show this
+  harness: it shows a PDF being evaluated and metrics the scorer never computes, such as
+  "General Quality" and "Legalese Clarity".
+-->
+> **Screenshot/GIF placeholder — to be added**
 
-## Run it
+## Who it's for
+
+- **General counsel, partners and innovation leads** deciding whether an AI contract-review
+  tool is ready for a supervised pilot. When someone asks "how do I know it is not making
+  things up?", you get an answer you can show rather than argue.
+- **Compliance, privacy and security reviewers** who sign off on that pilot and may have to
+  defend it later. Each release decision is bound to SHA-256 digests of the contract, the
+  gold answer set and the review output it scored, and `make certificate-verify`
+  recomputes it offline.
+- **Legal engineers** who need repeatable scoring, regression gates and drift checks in CI.
+
+**Not a contract-review tool.** It scores AI review output for three bundled synthetic
+agreements (an NDA, a SaaS agreement and an Art. 28 GDPR data processing agreement), does
+not read arbitrary contracts end to end, and is not legal advice.
+
+## Try it now
+
+There is no hosted playground, and the browser-based
+[Evidence Lab](#interactive-web-explorer-evidence-lab) is not public yet. The output of the
+default offline run is committed, so you can read it without installing anything:
+
+- [`examples/scorecard.md`](examples/scorecard.md): the NDA scorecard, in which the harness
+  catches a fabricated citation (8 of 9 quotes grounded, hallucination count 1).
+- [`examples/release-certificate.md`](examples/release-certificate.md): the release decision
+  for all three contracts. The review of each contains an unsupported citation, so all three
+  are rejected.
+- [`examples/adversarial-robustness-report.md`](examples/adversarial-robustness-report.md):
+  eighteen minimal-pair scenarios, such as a liability cap cut from twelve months of fees
+  to one, or contract text telling the reviewer to raise no risk flags. Campaign decision:
+  REJECT. The [HTML view](examples/adversarial-robustness-report.html) is a single
+  self-contained file to open in a browser after cloning.
+- [`data/`](data/) and [`expected/`](expected/): the synthetic contracts and the
+  hand-authored gold answer sets, with a written rationale for every risk severity.
+- [`examples/live-run-claude-opus-5-2026-09-01.md`](examples/live-run-claude-opus-5-2026-09-01.md):
+  one dated live-model run, scored offline from its captured output. It measures the
+  harness, not the model, and is not a stable benchmark.
+
+The scorecard, certificate and robustness report score the deliberately imperfect bundled
+fixture, not a model or vendor. To reproduce them, start with the [Quick start](#quick-start).
+
+## Quick start
+
+You need [uv](https://docs.astral.sh/uv/), `make` and Python 3.13 or later.
 
 ```bash
 git clone https://github.com/sebastianfoerste/contract-review-eval-harness
 cd contract-review-eval-harness
-make install && make test
-make demo
+make install             # install dependencies with uv
+make test                # run the test suite
+make demo                # score the NDA case and write scorecard.md
+make certificate-verify  # recompute and verify the committed release certificate
 ```
 
-Runs end to end, offline and deterministically.
+After installation, the default path runs end to end, offline and deterministically, with
+no API key. The `scorecard.md` from `make demo` should be identical to
+[`examples/scorecard.md`](examples/scorecard.md), and `make certificate-verify` should print
+`"status": "VALID"`. Without `make`, run the `uv` command behind each target in the
+[Makefile](Makefile). The full sequence is under [Demo path](#demo-path).
 
 ## Interactive Web Explorer: Evidence Lab
 
