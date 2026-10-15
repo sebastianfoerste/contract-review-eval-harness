@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check robustness robustness-check parity-vectors parity-check web-check web-export check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check site robustness robustness-check parity-vectors parity-check web-check web-export check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -13,6 +13,7 @@ live-run-report: ; uv run python scripts/generate_live_run_report.py
 live-run-check: ; uv run python scripts/check_live_run_report.py
 leaderboard: ; uv run python scripts/build_leaderboard.py
 leaderboard-check: ; uv run python scripts/build_leaderboard.py --check
+site: ; uv run python scripts/build_site.py
 gold-v2-check: ; uv run python scripts/check_gold_v2.py
 evidence-check: ; uv run pytest tests/test_evidence_binding.py tests/test_policy_v3.py tests/test_v2_pipeline.py -q
 obligations-demo: ; uv run python -m contract_eval evaluate-obligations --case all
