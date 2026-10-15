@@ -269,6 +269,71 @@ def verify_robustness(
     return verify_robustness_report(report, expected)
 
 
+class ScoreInputError(ValueError):
+    """A review, contract or answer set given to `score` cannot be read or parsed."""
+
+
+def _review_hint(review: Path) -> str:
+    """Point a captured-review envelope at the command that verifies and replays it."""
+    try:
+        data = json.loads(review.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    from contract_eval.capture import CAPTURE_SCHEMA
+
+    if isinstance(data, dict) and data.get("schema") == CAPTURE_SCHEMA:
+        return (
+            " It looks like a captured review; re-score it with "
+            f"`contract-eval score-output --input {review}`."
+        )
+    return ""
+
+
+def score(
+    review: Path,
+    *,
+    case: str | None = None,
+    contract: Path | None = None,
+    gold: Path | None = None,
+    alias_mode: str = "on",
+) -> dict:
+    """Score any tool's plain review JSON; no adapter, no capture envelope.
+
+    A bundled case is scored against the reviewed answer set the release certificate
+    uses. Your own contract and answer set go through the same `score_review`, and the
+    result is comparison-only, the rule replay applies to drifted inputs: the harness
+    cannot vouch for an answer set it has not reviewed.
+    """
+    from pydantic import ValidationError
+
+    from contract_eval.api import evaluate_review, load_case
+
+    try:
+        target = load_case(case) if case is not None else load_case(contract=contract, gold=gold)
+    except ValidationError as exc:
+        raise ScoreInputError(
+            f"{gold} is not a valid answer set (see schemas/expected-answer.schema.json):\n{exc}"
+        ) from exc
+    except (OSError, ValueError) as exc:
+        raise ScoreInputError(str(exc)) from exc
+    try:
+        result = evaluate_review(review, target, alias_mode=alias_mode)
+    except ValidationError as exc:
+        raise ScoreInputError(
+            f"{review} is not a plain review JSON (see schemas/review-output.schema.json)."
+            f"{_review_hint(review)}\n{exc}"
+        ) from exc
+    except OSError as exc:
+        raise ScoreInputError(str(exc)) from exc
+    return result.to_dict()
+
+
+def score_exit_code(decision: str, fail_on: str = "reject") -> int:
+    """1 when the decision fails the gate: REJECT always, human review on request."""
+    failing = {"REJECT"} if fail_on == "reject" else {"REJECT", "HUMAN_REVIEW_REQUIRED"}
+    return 1 if decision in failing else 0
+
+
 def _add_dev_commands(sub: argparse._SubParsersAction, *, listed: bool) -> None:
     """Maintainer commands: listed under `contract-eval dev`, and also accepted at the
     top level, unlisted, so existing scripts, Make targets and CI steps keep working."""
@@ -397,6 +462,33 @@ def build_parser() -> argparse.ArgumentParser:
              "the result is then comparison-only and ineligible for certification",
     )
 
+    sc = sub.add_parser(
+        "score",
+        help="score your own tool's review JSON against a bundled or your own answer set",
+        description=(
+            "Score a plain review JSON (schemas/review-output.schema.json) and print the "
+            "scorecard. Exit status: 0 passed, 1 REJECT (or human review with "
+            "--fail-on human-review), 2 unreadable input."
+        ),
+    )
+    sc.add_argument("review", type=Path, help="review JSON produced by the tool under test")
+    sc.add_argument("--case", default=None, help=f"bundled case: {', '.join(ALL_CASES)}")
+    sc.add_argument("--contract", default=None, type=Path, help="your contract, instead of --case")
+    sc.add_argument(
+        "--gold", default=None, type=Path,
+        help="your answer set for --contract (schemas/expected-answer.schema.json)",
+    )
+    sc.add_argument(
+        "--aliases", default="on", choices=["on", "off"],
+        help="apply the answer set's declared clause synonyms (default: on)",
+    )
+    sc.add_argument("--format", default="markdown", choices=["markdown", "json"], help="what to print")
+    sc.add_argument("--out", default=None, type=Path, help="also write score-<case>.md and .json here")
+    sc.add_argument(
+        "--fail-on", default="reject", choices=["reject", "human-review"],
+        help="lowest decision that exits 1 (default: reject)",
+    )
+
     dev = sub.add_parser(
         "dev",
         help="maintainer commands: verification, reference evidence, obligations",
@@ -521,6 +613,37 @@ def main(argv: list[str] | None = None) -> None:
         print(json.dumps(verification, indent=2))
         if verification["status"] != "VALID":
             sys.exit(1)
+    elif args.cmd == "score":
+        from contract_eval.scorecard import render_score
+
+        own = args.contract is not None or args.gold is not None
+        if args.case is not None and own:
+            parser.error("score: pass --case for a bundled case, or --contract and --gold, not both")
+        if args.case is None and (args.contract is None or args.gold is None):
+            parser.error("score: pass --case <name>, or both --contract and --gold")
+        try:
+            result = score(
+                args.review,
+                case=args.case,
+                contract=args.contract,
+                gold=args.gold,
+                alias_mode=args.aliases,
+            )
+        except ScoreInputError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(2)
+        markdown = render_score(result)
+        encoded_result = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+        if args.out:
+            args.out.mkdir(parents=True, exist_ok=True)
+            for suffix, text in (("md", markdown), ("json", encoded_result)):
+                path = args.out / f"score-{result['case']}.{suffix}"
+                path.write_text(text, encoding="utf-8")
+                print(f"wrote {path}", file=sys.stderr)
+        print(markdown if args.format == "markdown" else encoded_result, end="")
+        code = score_exit_code(result["decision"], args.fail_on)
+        if code:
+            sys.exit(code)
 
 
 if __name__ == "__main__":

@@ -34,6 +34,9 @@ jobs:
       - name: Run comparison regression test
         run: uv run python -m contract_eval compare
 
+      - name: Reject drift between the published JSON Schemas and the models
+        run: uv run python scripts/export_schemas.py --check
+
       - name: Verify every v2 obligation offset resolves in its source
         run: uv run python scripts/check_gold_v2.py
 
