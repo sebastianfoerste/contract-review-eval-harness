@@ -53,8 +53,13 @@ for their answer sets.
 
 ## Path 2: add an adapter
 
-An adapter connects the harness to a review tool or model. It implements the `Adapter`
-protocol in `src/contract_eval/adapters/base.py`:
+An adapter connects the harness to a review tool or model. Check first whether you need
+one: `contract-eval score` grades a review JSON your tool already wrote, `--adapter
+command` runs any program that reads the contract on stdin and prints review JSON, and
+`--adapter openai-compatible` covers any Chat Completions endpoint (see
+[live runs and capture](docs/live-runs-and-capture.md)).
+
+A new adapter implements the `Adapter` protocol in `src/contract_eval/adapters/base.py`:
 
 - `review(source_text, case) -> ReviewOutput`
 - `capture(source_text, case) -> (ProviderRequest, ProviderResponse, raw_text)`, the
@@ -65,8 +70,12 @@ Rules:
 - Import the provider SDK lazily, inside the adapter, as `get_adapter` does for
   `LiveAdapter`. The default install must not need it; put it in an optional extra.
 - No network call and no API key on the default path. A live run is strictly opt-in.
+- Register its name in `ADAPTER_NAMES`, `get_adapter` and `adapter_identifier` in
+  `src/contract_eval/adapters/__init__.py`, so `--adapter <name>` selects it and
+  provenance names it.
 - Add a test that runs with no API key and no network, like
-  `tests/test_live_adapter_contract.py`.
+  `tests/test_live_adapter_contract.py`, or against a local fake server, like
+  `tests/test_openai_compat_adapter.py`.
 
 ## Path 3: volunteer as an annotator
 

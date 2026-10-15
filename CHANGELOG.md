@@ -17,6 +17,14 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - German NDA and SPA candidate cases, pending gold answers. (#33)
 - An offsets helper (`offsets.py`) inside the annotation pack. It reports a quote that matches more than once as ambiguous and a quote that matches nothing as absent. (#29)
 - A test that keeps the version at a release candidate until the second annotation returns. A final version also requires a disagreement ledger per case. (#31)
+- `contract-eval score`: score any tool's plain review JSON against a bundled case or your own `--contract` and `--gold`. It prints the scorecard with the release decision first and exits 1 on `REJECT`, 2 on unreadable input; `--fail-on human-review` tightens the gate. A result on your own answer set is comparison-only and ineligible for certification. `docs/score-your-own-tool.md` explains the workflow.
+- JSON Schemas for a review and an answer set in `schemas/`, generated from the models by `scripts/export_schemas.py`. CI rejects drift.
+- A composite GitHub Action (`action.yml`) that runs `contract-eval score` on a repository's review files, writes the scorecards to the job summary and fails on `REJECT`. CI runs it against the NDA stub. See `docs/ci.md` and `examples/ci/contract-eval.yml`.
+- `--adapter stub|anthropic|openai-compatible|command`. The OpenAI-compatible adapter reaches any Chat Completions endpoint through a configurable base URL; the command adapter runs any program that reads the contract on stdin and prints review JSON. `--live` stays an alias for `--adapter anthropic`.
+- Captures record the adapter call's latency and, when `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` are set, a cost estimate with the prices it assumed. Both fields are omitted while unset, so existing captures keep their bytes and digests.
+- `scripts/build_leaderboard.py` re-scores every committed review output and writes `examples/leaderboard.md` and `.json`; CI rejects drift.
+- `scripts/build_site.py` renders the scorecard, certificate, live run and leaderboard into a static site, and `.github/workflows/pages.yml` deploys it once the `PAGES_ENABLED` repository variable is `true`.
+- `examples/quickstart.ipynb`, a notebook that opens in Colab.
 - `docs/metrics.md`: one section per scorecard row with its formula, denominator, edge cases and whether the row can block a release.
 - A "How this compares" section in the README.
 - GitHub issue forms and a pull request template.

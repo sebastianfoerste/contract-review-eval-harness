@@ -102,11 +102,13 @@ make certificate && make certificate-verify           # release certificate
 make robustness && make robustness-check              # adversarial campaign
 ```
 
-Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; see [live runs](docs/live-runs-and-capture.md)).
+Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; see [live runs](docs/live-runs-and-capture.md)). Other providers run through `--adapter openai-compatible --base-url <url> --model <id>` (OpenAI, Azure, Mistral, vLLM, Ollama), and `--adapter command --command 'python my_wrapper.py'` wraps your own product. Set `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` to record a cost estimate next to the latency in each capture.
 
 ## Demo and links
 
 - Screenshot and scorecard: [`docs/demo.png`](docs/demo.png), [`docs/scorecard.svg`](docs/scorecard.svg)
+- [Leaderboard](examples/leaderboard.md): every committed review output re-scored by the production scorer and decided by the release policy (`make leaderboard`)
+- [Quickstart notebook](examples/quickstart.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sebastianfoerste/contract-review-eval-harness/blob/main/examples/quickstart.ipynb), no install needed
 - [Release certificate](examples/release-certificate.md)
 - [Adversarial robustness report](examples/adversarial-robustness-report.md) and its [HTML view](examples/adversarial-robustness-report.html)
 - [Live-run snapshot, 2026-09-01](examples/live-run-claude-opus-5-2026-09-01.md)
@@ -115,6 +117,8 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 
 ## More detail
 
+- [Metric reference: formulas, denominators and release impact](docs/metrics.md)
+- [Score your own tool](docs/score-your-own-tool.md) and [gate CI on it](docs/ci.md)
 - [Release certificate, gates and robustness lab](docs/certificate-and-robustness.md)
 - [Live runs, capture and replay](docs/live-runs-and-capture.md)
 - [Gold sets, v1/v2 upgrade, evidence-bound scoring, gold schema v2](docs/gold-sets-and-evidence.md)
