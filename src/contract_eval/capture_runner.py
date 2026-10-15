@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+import time
 import uuid
 from pathlib import Path
 
@@ -12,6 +13,8 @@ from contract_eval.capture import (
     CapturedReview,
     ProviderRequest,
     ProviderResponse,
+    TokenPrices,
+    estimate_cost,
     snapshot_of,
     text_sha256,
     utc_now,
@@ -60,13 +63,19 @@ def capture_attempt(
     variant: str = "original",
     run_index: int = 0,
     source_text: str | None = None,
+    prices: TokenPrices | None = None,
 ) -> CapturedReview:
     """Run one attempt, writing the capture before and after the provider call.
 
     The initial write happens before any external request. If it fails, the request
     is never made: a provider call whose result cannot be recorded produces an
     unauditable score, which is the situation captures exist to prevent.
+
+    `prices` defaults to the CONTRACT_EVAL_USD_PER_MTOK_* environment variables; with
+    neither, the capture records latency but no cost.
     """
+    if prices is None:
+        prices = TokenPrices.from_env()
     root = paths.resolve_root(root)
     capture_id = f"{case}-{run_index}-{uuid.uuid4().hex[:8]}"
     path = out_dir / f"{capture_id}.json"
@@ -104,6 +113,7 @@ def capture_attempt(
     write_capture(capture, path)
 
     request_text = capture.source.text
+    started = time.perf_counter()
     try:
         result = adapter.capture(source_text=request_text, case=case)
     except KeyboardInterrupt:
@@ -118,15 +128,20 @@ def capture_attempt(
             "state": kind if kind in ("configuration_error", "provider_error") else "provider_error",
             "completed_at": utc_now(),
             "error": CaptureError(kind=type(exc).__name__, message=str(exc)[:2000]),
+            # A timeout is a latency too, and the one most worth seeing.
+            "latency_seconds": _elapsed(started),
         })
         write_capture(capture, path)
         raise CaptureFailure(str(exc), capture, path) from exc
 
+    latency_seconds = _elapsed(started)
     request, response, raw_text = result
     capture = capture.model_copy(update={
         "state": "received",
         "request": request,
         "response": response,
+        "latency_seconds": latency_seconds,
+        "cost": estimate_cost(response, prices),
     })
     write_capture(capture, path)
 
@@ -161,6 +176,10 @@ def capture_attempt(
     })
     write_capture(capture, path)
     return capture.sealed()
+
+
+def _elapsed(started: float) -> float:
+    return round(time.perf_counter() - started, 3)
 
 
 def _parse(raw_text: str) -> ReviewOutput:
