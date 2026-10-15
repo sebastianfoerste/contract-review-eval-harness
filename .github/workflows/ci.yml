@@ -137,3 +137,27 @@ jobs:
           test -s scorecard.md
           "$RUNNER_TEMP/wheel-env/bin/contract-eval" certify --out cert
           cmp cert/release-certificate.json "$GITHUB_WORKSPACE/examples/release-certificate.json"
+
+  action:
+    # Runs the repository's own action the way another repository would. The NDA stub
+    # carries a fabricated citation, so the action has to fail it with REJECT.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Score the NDA stub through the action
+        id: stub
+        continue-on-error: true
+        uses: ./
+        with:
+          reviews: fixtures/nda_stub.json
+          case: nda
+          out: action-results
+
+      - name: Require the action to have rejected the stub
+        env:
+          OUTCOME: ${{ steps.stub.outcome }}
+        run: |
+          test "$OUTCOME" = failure
+          python3 -c 'import json, sys; sys.exit(json.load(open("action-results/fixtures__nda_stub.json"))["decision"] != "REJECT")'

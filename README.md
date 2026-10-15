@@ -45,6 +45,8 @@ uv run contract-eval score my-review.json --contract my-nda.md --gold my-nda.jso
 
 The scorer is the same either way. A result on your own answer set is marked *comparison only, not certifiable*, because the harness has not reviewed that answer set. See [docs/score-your-own-tool.md](docs/score-your-own-tool.md).
 
+To gate a pull request, use the repository's GitHub Action, which fails the job on `REJECT` and writes every scorecard to the job summary. See [docs/ci.md](docs/ci.md).
+
 ## Example output
 
 A real run of the command above (the offline stub adapter, NDA case). The stub is deliberately imperfect, and the harness catches it:
