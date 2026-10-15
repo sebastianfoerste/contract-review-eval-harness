@@ -67,6 +67,11 @@ class CommandAdapter:
             )
         except FileNotFoundError as exc:
             raise CommandAdapterError(f"command not found: {self.argv[0]}") from exc
+        except OSError as exc:
+            # A script without the execute bit, or a directory: PermissionError.
+            raise CommandAdapterError(
+                f"command could not be run: {self.argv[0]}: {exc.strerror or exc}"
+            ) from exc
         except subprocess.TimeoutExpired as exc:
             raise CommandAdapterError(
                 f"command timed out after {self.timeout_seconds:g}s: {self.argv[0]}"

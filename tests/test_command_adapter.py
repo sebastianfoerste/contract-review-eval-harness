@@ -77,6 +77,22 @@ def test_timeout_and_missing_program_fail_clearly(tmp_path):
         missing.review(source_text="x", case="nda")
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX execute permission")
+def test_a_program_that_cannot_be_executed_fails_clearly(tmp_path, capsys):
+    script = tmp_path / "reviewer.sh"
+    script.write_text("#!/bin/sh\necho '{}'\n", encoding="utf-8")
+    script.chmod(0o644)  # no execute bit: the OS refuses to run it
+
+    with pytest.raises(CommandAdapterError, match="command could not be run"):
+        CommandAdapter(str(script)).review(source_text="x", case="nda")
+
+    # The CLI reports it as an error line, not a traceback.
+    with pytest.raises(SystemExit) as exited:
+        main(["evaluate", "--adapter", "command", "--command", str(script), "--out", str(tmp_path)])
+    assert exited.value.code == 1
+    assert "Error: command could not be run" in capsys.readouterr().out
+
+
 def test_command_is_split_without_a_shell(tmp_path):
     # A shell would expand this; shlex hands it to the program as one literal argument.
     body = "import sys\nprint(sys.argv[1], file=sys.stderr)\nsys.exit(1)\n"
