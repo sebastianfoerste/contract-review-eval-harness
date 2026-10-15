@@ -1,0 +1,68 @@
+name: Volunteer as an annotator
+description: Offer to annotate the synthetic contracts so the answer sets can be built or checked.
+title: "[annotator] "
+labels: [annotator]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Synthetic contracts only
+
+        **Do not paste real client data, privileged material or personal data into this issue or into the annotation pack.
+        Annotate only the synthetic contracts in this repository.**
+
+        Annotation is not legal advice. Your annotations are used only to build and check the answer sets that reviews are scored against.
+        If you annotate from the pack, work blind: do not open `expected/`, `annotations/drafts/` or any scores first.
+
+  - type: dropdown
+    id: background
+    attributes:
+      label: Background
+      options:
+        - Lawyer
+        - Paralegal
+        - Contract manager
+        - Law student
+        - Other legal background
+    validations:
+      required: true
+
+  - type: input
+    id: jurisdictions-languages
+    attributes:
+      label: Jurisdictions and languages
+      placeholder: e.g. Germany and England and Wales; German and English
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: What you want to annotate
+      multiple: true
+      options:
+        - NDA case
+        - SaaS case
+        - DPA case
+        - The full annotation pack
+        - A new case
+    validations:
+      required: true
+
+  - type: input
+    id: availability
+    attributes:
+      label: Availability
+      placeholder: e.g. about four hours over the next two weeks
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I will not paste real client data, privileged material or personal data into this issue or the annotation pack, and I will annotate only the synthetic contracts in this repository.
+          required: true
+        - label: I understand that my annotation is not legal advice and is used only to build and check answer sets.
+          required: true

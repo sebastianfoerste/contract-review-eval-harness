@@ -1,0 +1,63 @@
+name: New adapter
+description: Propose an adapter that runs another review tool, model or provider through the harness.
+title: "[adapter] "
+labels: [adapter]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An adapter implements the `Adapter` protocol in `src/contract_eval/adapters/base.py`:
+        `review(source_text, case)` returns a `ReviewOutput`, and `capture(source_text, case)` returns the request, the response and the raw text.
+        `src/contract_eval/adapters/live.py` is the reference for an adapter that calls a provider.
+
+        The default path stays offline: the stub adapter and the bundled fixtures, with no network call and no API key.
+
+  - type: input
+    id: target
+    attributes:
+      label: Tool, model or provider to wrap
+      placeholder: e.g. a hosted model API, a local model, an in-house review service
+    validations:
+      required: true
+
+  - type: input
+    id: interface
+    attributes:
+      label: How it is called
+      description: SDK, HTTP API or CLI. Name the package, endpoint or command.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: api-key
+    attributes:
+      label: Does it need an API key?
+      description: If yes, the key is read from an environment variable and is never logged or committed.
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: output-format
+    attributes:
+      label: Output format
+      description: >-
+        What the tool returns (JSON, Markdown, free text) and how it maps to clauses,
+        risk flags with severities, and cited quotes.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ground-rules
+    attributes:
+      label: The adapter
+      options:
+        - label: Imports any provider SDK lazily, inside the adapter, as an optional dependency.
+          required: true
+        - label: Keeps the default path offline. No network call and no API key unless the user selects this adapter.
+          required: true
+        - label: Includes a test that runs with no API key.
+          required: true
