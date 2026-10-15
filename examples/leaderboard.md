@@ -6,6 +6,8 @@ Regenerate with `make leaderboard`. Leaderboard digest: `be501ee986f3b891daa415f
 
 - Release policy: `contract-review-eval.strict-legal-release-policy.v2`
 - Declared clause aliases: on
+- Date is when the output was produced. Harness is the scorer version that
+  computed the row, the same for every row; it is not the version that produced the output.
 - Scores are means across a row's cases; hallucinations are summed.
 - Verdict is the worst case decision; per-case decisions are in `leaderboard.json`.
 - Cost is the run's total across its cases and latency the mean per case; both

@@ -266,6 +266,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- Release policy: `{payload['policy']}`",
         f"- Declared clause aliases: {payload['alias_mode']}",
+        "- Date is when the output was produced. Harness is the scorer version that",
+        "  computed the row, the same for every row; it is not the version that produced the output.",
         "- Scores are means across a row's cases; hallucinations are summed.",
         "- Verdict is the worst case decision; per-case decisions are in `leaderboard.json`.",
         "- Cost is the run's total across its cases and latency the mean per case; both",

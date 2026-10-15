@@ -82,6 +82,14 @@ def test_unrecorded_cost_and_latency_are_null_not_zero(payload):
     assert "| n/a | n/a |" in markdown
 
 
+def test_harness_names_the_scoring_version_for_every_row(payload):
+    # The 2026-09-01 output predates 0.7.0rc1; the column must not read as its origin.
+    assert {row["harness_version"] for row in payload["rows"]} == {leaderboard.harness_version(ROOT)}
+    markdown = leaderboard.render_markdown(payload)
+    assert "Harness is the scorer version that" in markdown
+    assert "it is not the version that produced the output" in markdown
+
+
 def test_ordering_and_bytes_are_deterministic(payload):
     again = leaderboard.build(ROOT)
     assert leaderboard.render_json(again) == leaderboard.render_json(payload)
