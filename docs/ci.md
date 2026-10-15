@@ -27,7 +27,7 @@ A complete workflow to copy is in
 | `contract`, `gold` | | your own contract and answer set, instead of `case` |
 | `aliases` | `on` | apply the answer set's declared clause synonyms |
 | `fail-on` | `reject` | `human-review` also fails on `HUMAN_REVIEW_REQUIRED` |
-| `out` | `contract-eval-results` | per review: `<path>.md` scorecard and `<path>.json` sealed result |
+| `out` | `contract-eval-results` | per review: a scorecard (`.md`) and sealed result (`.json`) named after the review's path, so `reviews/nda.json` writes `reviews__nda.md` and `reviews__nda.json` |
 | `python-version` | `3.12` | Python that runs the harness, 3.11 or later |
 
 | Output | Meaning |
