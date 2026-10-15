@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from contract_eval import paths
-from contract_eval.adapters import get_adapter
+from contract_eval.adapters import AdapterChoice, get_adapter
 from contract_eval.evidence import bind_review
 from contract_eval.gold_v2 import ExpectedAnswerV2
 from contract_eval.obligation_scorer import score_obligations
@@ -57,12 +57,13 @@ def evaluate_obligations(
     live: bool = False,
     model: str | None = None,
     root: Path | None = None,
+    adapter: AdapterChoice | None = None,
 ) -> dict[str, Any]:
     """Score one case through the evidence-bound path."""
     root = paths.resolve_root(root)
     source = (root / paths.source_file(case)).read_text(encoding="utf-8")
     gold = load_gold_v2(case, root=root)
-    review = get_adapter(live, model=model).review_v2(source_text=source, case=case)
+    review = get_adapter(live, model=model, choice=adapter).review_v2(source_text=source, case=case)
 
     binding = bind_review(source, gold, review)
     coverage = score_obligations(source, gold, review.citations)
