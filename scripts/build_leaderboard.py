@@ -250,6 +250,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- Scores are means across a row's cases; hallucinations are summed.",
         "- Verdict is the worst case decision; per-case decisions are in `leaderboard.json`.",
         "- Cost and latency read n/a when the capture does not record them.",
+        "- Synthetic contracts only. A verdict here ranks committed outputs for comparison;",
+        "  it is not a release certificate and establishes no fitness for contract review.",
         "",
         "| Rank | Tool / model | Kind | Date | Harness | Clause F1 | Span coverage | Risk F1 "
         "| Severity accuracy | Citation grounding | Hallucinations | Cost (USD) | Latency (ms) | Verdict |",
