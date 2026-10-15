@@ -22,8 +22,12 @@ By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 ```bash
 make install   # uv sync
 make test      # pytest
-make check     # every check CI runs; must pass before a pull request
+make check     # the tests plus the drift and verification checks CI runs
 ```
+
+Everything in `make check` must pass before a pull request except its last step,
+`web-check`. That step compares the scorer with the maintainer's `contract-eval-web`
+checkout and fails when that sibling directory is absent. CI does not run it.
 
 If an output changes, regenerate the committed artifacts in `examples/` and commit them
 with your change: `make certificate` for the release certificate, `make robustness` for
