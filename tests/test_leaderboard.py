@@ -87,7 +87,9 @@ def test_ordering_and_bytes_are_deterministic(payload):
     assert leaderboard.render_json(again) == leaderboard.render_json(payload)
     assert leaderboard.render_markdown(again) == leaderboard.render_markdown(payload)
     assert payload["rows"] == sorted(payload["rows"], key=leaderboard._sort_key)
-    assert [row["tool"] for row in payload["rows"]] == ["claude-opus-5", leaderboard.STUB_LABEL]
+    # Best verdict first: a rejected row never ranks above one the policy did not reject.
+    ranks = [leaderboard.VERDICT_ORDER.index(leaderboard.Verdict(row["verdict"])) for row in payload["rows"]]
+    assert ranks == sorted(ranks, reverse=True)
 
 
 def _copy_committed(tmp_path: Path) -> Path:

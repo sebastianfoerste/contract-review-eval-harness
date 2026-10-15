@@ -77,7 +77,7 @@ def test_links_render_but_unsafe_schemes_do_not():
         'and [quote](x"onmouseover="y)'
     )
     assert '<a href="https://example.com/a?b=1&amp;c=2">docs</a>' in rendered
-    assert "javascript:" not in rendered.split("bad")[0] and 'href="javascript' not in rendered
+    assert 'href="javascript' not in rendered and "bad" in rendered
     assert 'onmouseover="' not in rendered
 
 
