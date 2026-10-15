@@ -39,6 +39,21 @@ class ConfigurationError(RuntimeError):
     capture_kind = "configuration_error"
 
 
+class _RefuseRedirect(urllib.request.HTTPRedirectHandler):
+    """Make a redirect an HTTPError instead of following it.
+
+    urllib copies a request's headers onto the redirected request, so following one
+    would send the API key to whichever host the response names. A Chat Completions
+    POST has nothing to follow anyway: urllib would replay it as a GET without a body.
+    """
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_OPENER = urllib.request.build_opener(_RefuseRedirect)
+
+
 def resolve_base_url(base_url: str | None) -> str:
     return (base_url or os.environ.get("OPENAI_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
 
@@ -87,20 +102,26 @@ class OpenAICompatibleAdapter:
                 "json_schema": {"name": schema.__name__, "schema": schema.model_json_schema()},
             },
         }
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        api_key = os.environ.get(self.api_key_env)
-        if api_key:  # local servers such as Ollama need none
-            headers["Authorization"] = f"Bearer {api_key}"
         http_request = urllib.request.Request(
             f"{self.base_url}/chat/completions",
             data=json.dumps(body).encode("utf-8"),
-            headers=headers,
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
             method="POST",
         )
+        api_key = os.environ.get(self.api_key_env)
+        if api_key:  # local servers such as Ollama need none
+            # Unredirected: never copied onto another request, whatever the opener.
+            http_request.add_unredirected_header("Authorization", f"Bearer {api_key}")
         try:
-            with urllib.request.urlopen(http_request, timeout=self.timeout_seconds) as reply:
+            with _OPENER.open(http_request, timeout=self.timeout_seconds) as reply:
                 data = json.loads(reply.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
+            if 300 <= exc.code < 400:
+                raise RuntimeError(
+                    f"{self.base_url}/chat/completions redirected (HTTP {exc.code}) to "
+                    f"{exc.headers.get('Location')}; redirects are not followed, so the "
+                    "API key stays with the configured host. Pass the final endpoint as --base-url."
+                ) from exc
             detail = exc.read().decode("utf-8", errors="replace")[:_ERROR_EXCERPT]
             raise RuntimeError(
                 f"{self.base_url}/chat/completions returned HTTP {exc.code}: {detail}"

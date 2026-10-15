@@ -118,6 +118,54 @@ def test_http_error_names_the_status(server):
         adapter.review(source_text="x", case="nda")
 
 
+def _quiet_server(handler: type[BaseHTTPRequestHandler]) -> HTTPServer:
+    handler.log_message = lambda self, *args: None
+    httpd = HTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=httpd.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True).start()
+    return httpd
+
+
+def test_a_redirect_is_refused_and_the_key_never_leaves_the_host(monkeypatch):
+    monkeypatch.setenv("NO_PROXY", "127.0.0.1,localhost")
+    monkeypatch.setenv("no_proxy", "127.0.0.1,localhost")
+    monkeypatch.setenv(_KEY_ENV, "sk-test-not-a-real-key")
+    reached_elsewhere: list[str | None] = []
+
+    class Elsewhere(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802 - http.server API
+            reached_elsewhere.append(self.headers.get("Authorization"))
+            self.send_response(200)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+
+        do_POST = do_GET
+
+    elsewhere = _quiet_server(Elsewhere)
+
+    class Redirecting(BaseHTTPRequestHandler):
+        def do_POST(self):  # noqa: N802 - http.server API
+            self.rfile.read(int(self.headers.get("Content-Length", "0")))
+            self.send_response(302)
+            self.send_header("Location", f"http://127.0.0.1:{elsewhere.server_port}/collect")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+
+    origin = _quiet_server(Redirecting)
+    try:
+        adapter = OpenAICompatibleAdapter(
+            model="fake-model", base_url=f"http://127.0.0.1:{origin.server_port}/v1", api_key_env=_KEY_ENV
+        )
+        with pytest.raises(RuntimeError, match=r"redirected \(HTTP 302\) to http://127\.0\.0\.1:\d+/collect"):
+            adapter.review(source_text="CONTRACT TEXT", case="nda")
+    finally:
+        for httpd in (origin, elsewhere):
+            httpd.shutdown()
+            httpd.server_close()
+
+    # urllib would have replayed the bearer header to the other host.
+    assert reached_elsewhere == []
+
+
 def test_capture_records_latency_and_cost_at_supplied_prices(server, tmp_path):
     choice = AdapterChoice(name="openai-compatible", base_url=server["base_url"])
     adapter = get_adapter(False, model="fake-model", choice=choice)

@@ -59,7 +59,9 @@ The OpenAI-compatible adapter uses the standard library, so it adds no dependenc
 base URL defaults to `OPENAI_BASE_URL`, then `https://api.openai.com/v1`; the key comes
 from the variable named by `--api-key-env` (default `OPENAI_API_KEY`) and is sent as a
 bearer token only when that variable is set. Only the variable's name is held; the key
-is never logged or written into a capture. It sends the same prompt as the Anthropic
+is never logged or written into a capture. Redirects are not followed, so the key is
+only ever sent to the configured host: a `30x` reply is an error that names the
+redirect target, which you can pass as `--base-url` instead. It sends the same prompt as the Anthropic
 adapter plus the `ReviewOutput` JSON schema, both in the prompt and as
 `response_format`, because not every compatible server enforces the latter. OpenAI's
 reasoning models want `max_completion_tokens` rather than `max_tokens`; set
