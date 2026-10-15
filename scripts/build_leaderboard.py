@@ -194,14 +194,33 @@ def _capture_rows(root: Path, version: str, known: dict[str, dict[str, Any]]) ->
             "path": path.relative_to(root).as_posix(),
             "capture_id": capture.capture_id,
             "capture_sha256": capture.integrity_sha256,
+            "latency_seconds": capture.latency_seconds,
+            "cost_usd": capture.cost.estimated_cost if capture.cost else None,
         }
         runs.setdefault((model, date or "", capture.run_id), []).append(
             _score_case(capture.case, capture.output, origin, root)
         )
-    return [
-        _row(tool=model, kind="captured", date=date or None, version=version, cases=cases)
-        for (model, date, _run), cases in sorted(runs.items())
-    ]
+    rows = []
+    for (model, date, _run), cases in sorted(runs.items()):
+        cost_usd, latency_ms = _measurements(cases)
+        rows.append(_row(
+            tool=model, kind="captured", date=date or None, version=version, cases=cases,
+            cost_usd=cost_usd, latency_ms=latency_ms,
+        ))
+    return rows
+
+
+def _measurements(cases: list[dict[str, Any]]) -> tuple[float | None, float | None]:
+    """A run's total cost and mean latency per case, or None unless every case has one.
+
+    A partial sum would understate what the run cost, and a mean over the cases that
+    happened to be timed would describe a different run.
+    """
+    costs = [case["origin"].get("cost_usd") for case in cases]
+    latencies = [case["origin"].get("latency_seconds") for case in cases]
+    cost = None if None in costs else round(sum(costs), 8)
+    latency = None if None in latencies else round(1000 * sum(latencies) / len(latencies), 1)
+    return cost, latency
 
 
 def _sort_key(row: dict[str, Any]) -> tuple:
@@ -249,7 +268,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- Declared clause aliases: {payload['alias_mode']}",
         "- Scores are means across a row's cases; hallucinations are summed.",
         "- Verdict is the worst case decision; per-case decisions are in `leaderboard.json`.",
-        "- Cost and latency read n/a when the capture does not record them.",
+        "- Cost is the run's total across its cases and latency the mean per case; both",
+        "  read n/a unless every capture in the row records them.",
         "- Synthetic contracts only. A verdict here ranks committed outputs for comparison;",
         "  it is not a release certificate and establishes no fitness for contract review.",
         "",

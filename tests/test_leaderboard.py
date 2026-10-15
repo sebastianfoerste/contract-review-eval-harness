@@ -133,3 +133,30 @@ def test_a_raw_output_that_no_longer_matches_its_manifest_is_refused(tmp_path):
 
     with pytest.raises(leaderboard.LeaderboardError, match="MANIFEST"):
         leaderboard.build(root)
+
+
+def test_a_capture_records_cost_and_latency_into_its_own_row(tmp_path):
+    from contract_eval.capture import CostEstimate, TokenPrices, text_sha256, write_capture
+
+    root = tmp_path / "repo"
+    for name in ("data", "expected", "fixtures", "examples/raw-output", "examples/captures"):
+        shutil.copytree(ROOT / name, root / name)
+    shutil.copyfile(ROOT / "pyproject.toml", root / "pyproject.toml")
+    capture = read_capture(root / "examples" / "captures" / "legacy-nda-2026-09-01.json")
+    # Different raw bytes, so the capture is its own run rather than a manifest entry.
+    raw = capture.response.raw_text + "\n"
+    prices = TokenPrices(usd_per_million_input_tokens=3.0, usd_per_million_output_tokens=15.0)
+    measured = capture.model_copy(update={
+        "capture_id": "measured-nda",
+        "run_id": "measured-run",
+        "response": capture.response.model_copy(update={"raw_text": raw, "raw_text_sha256": text_sha256(raw)}),
+        "latency_seconds": 2.5,
+        "cost": CostEstimate(prices=prices, input_tokens=1000, output_tokens=2000, estimated_cost=0.033),
+    }).sealed()
+    write_capture(measured, root / "examples" / "captures" / "measured-nda.json")
+
+    rows = [row for row in leaderboard.build(root)["rows"] if row["per_case"][0]["origin"].get("capture_id") == "measured-nda"]
+
+    assert len(rows) == 1
+    assert (rows[0]["cost_usd"], rows[0]["latency_ms"]) == (0.033, 2500.0)
+    assert "| 0.0330 | 2500 |" in leaderboard.render_markdown(leaderboard.build(root))

@@ -8,7 +8,8 @@ Regenerate with `make leaderboard`. Leaderboard digest: `be501ee986f3b891daa415f
 - Declared clause aliases: on
 - Scores are means across a row's cases; hallucinations are summed.
 - Verdict is the worst case decision; per-case decisions are in `leaderboard.json`.
-- Cost and latency read n/a when the capture does not record them.
+- Cost is the run's total across its cases and latency the mean per case; both
+  read n/a unless every capture in the row records them.
 - Synthetic contracts only. A verdict here ranks committed outputs for comparison;
   it is not a release certificate and establishes no fitness for contract review.
 
