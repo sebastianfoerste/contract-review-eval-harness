@@ -10,7 +10,7 @@ Offline, deterministic, no API key. Synthetic contracts only. Not legal advice.
 
 ## Try it
 
-Needs [uv](https://docs.astral.sh/uv/) and Python 3.13+.
+Needs [uv](https://docs.astral.sh/uv/) and Python 3.11+.
 
 ```bash
 git clone https://github.com/sebastianfoerste/contract-review-eval-harness
@@ -21,7 +21,13 @@ uv run python -m contract_eval evaluate --case nda   # writes scorecard.md
 
 `make install && make test && make demo` does the same plus the test suite.
 
-PyPI: **coming**. The `contract-eval` package is not published yet, and `uvx` does not work today because the CLI reads the bundled `data/` and `expected/` folders from a repo checkout. Use the clone form above.
+Or skip the clone. The package carries the bundled cases, so `uvx` can run it straight from GitHub:
+
+```bash
+uvx --from git+https://github.com/sebastianfoerste/contract-review-eval-harness contract-eval evaluate --case nda
+```
+
+PyPI: **coming**. The `contract-eval` package is not published yet.
 
 ## Example output
 

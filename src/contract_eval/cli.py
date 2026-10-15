@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+from contract_eval import paths
 from contract_eval.adapters import adapter_identifier, get_adapter
 from contract_eval.cases import ALL_CASES
 from contract_eval.models import ExpectedAnswer, ReviewOutput
@@ -138,10 +139,11 @@ def score_review(
     }
 
 
-def load_case_inputs(case: str, root: Path = Path(".")) -> tuple[str, ExpectedAnswer]:
-    source = (root / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
+def load_case_inputs(case: str, root: Path | None = None) -> tuple[str, ExpectedAnswer]:
+    root = paths.resolve_root(root)
+    source = (root / paths.source_file(case)).read_text(encoding="utf-8")
     expected = ExpectedAnswer.model_validate(
-        json.loads((root / "expected" / f"{case}.json").read_text(encoding="utf-8"))
+        json.loads((root / paths.gold_file(case)).read_text(encoding="utf-8"))
     )
     return source, expected
 
@@ -355,7 +357,7 @@ def robustness(
     }
     certificate = build_release_certificate(scores)
     report = build_robustness_report(
-        campaign_path,
+        paths.resolve_input(campaign_path),
         get_adapter(live, model=model),
         certificate,
         runs=runs,
@@ -374,7 +376,7 @@ def verify_robustness(
         for case in ALL_CASES
     }
     expected = build_robustness_report(
-        campaign_path,
+        paths.resolve_input(campaign_path),
         get_adapter(False),
         build_release_certificate(scores),
     )

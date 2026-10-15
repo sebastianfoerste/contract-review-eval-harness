@@ -26,6 +26,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from contract_eval import paths
 from contract_eval.adapters import get_adapter
 from contract_eval.evidence import bind_review
 from contract_eval.gold_v2 import ExpectedAnswerV2
@@ -33,18 +34,19 @@ from contract_eval.obligation_scorer import score_obligations
 from contract_eval.policy_v3 import GoldNotAdjudicated, evaluate_v3
 from contract_eval.reference_evidence import EVIDENCE, load_verified_gold, reference_status
 
-DRAFTS = Path("annotations") / "drafts"
+DRAFTS = Path(paths.DRAFTS_DIRECTORY)
 
 
-def load_gold_v2(case: str, root: Path = Path(".")) -> ExpectedAnswerV2:
+def load_gold_v2(case: str, root: Path | None = None) -> ExpectedAnswerV2:
     from contract_eval.cases import ALL_CASES
     if case not in ALL_CASES:
         raise ValueError(f"Unknown case: {case}")
+    root = paths.resolve_root(root)
     if (root / EVIDENCE / "frozen").exists():
         return load_verified_gold(root, case)
     path = root / DRAFTS / f"{case}.candidate.v2.json"
     gold = ExpectedAnswerV2.model_validate(json.loads(path.read_text(encoding="utf-8")))
-    source = (root / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
+    source = (root / paths.source_file(case)).read_text(encoding="utf-8")
     gold.validate_against_source(source)
     return gold
 
@@ -54,10 +56,11 @@ def evaluate_obligations(
     *,
     live: bool = False,
     model: str | None = None,
-    root: Path = Path("."),
+    root: Path | None = None,
 ) -> dict[str, Any]:
     """Score one case through the evidence-bound path."""
-    source = (root / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
+    root = paths.resolve_root(root)
+    source = (root / paths.source_file(case)).read_text(encoding="utf-8")
     gold = load_gold_v2(case, root=root)
     review = get_adapter(live, model=model).review_v2(source_text=source, case=case)
 

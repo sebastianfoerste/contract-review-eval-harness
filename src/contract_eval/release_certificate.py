@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any, NamedTuple
 
+from contract_eval import paths
+
 SCHEMA = "contract-review-eval.release-certificate.v3"
 V2_SCHEMA = "contract-review-eval.release-certificate.v2"
 V1_SCHEMA = "contract-review-eval.release-certificate.v1"
@@ -164,6 +166,19 @@ def _canonical_sha256(payload: Any) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
+def _input_files(case: str, root: Path) -> dict[str, dict[str, str]]:
+    """The three files a case decision is bound to, by relative path and digest."""
+    files = {
+        "source_contract": paths.source_file(case),
+        "expected_answer": paths.gold_file(case),
+        "adapter_output": paths.fixture_file(case),
+    }
+    return {
+        label: {"path": relative, "sha256": _sha256(root / relative)}
+        for label, relative in files.items()
+    }
+
+
 def _case_decision(case: str, scores: dict[str, Any], root: Path) -> dict[str, Any]:
     blockers, review_items = evaluate_requirements(scores)
 
@@ -174,20 +189,7 @@ def _case_decision(case: str, scores: dict[str, Any], root: Path) -> dict[str, A
     else:
         decision = "PILOT_ELIGIBLE"
 
-    inputs = {
-        "source_contract": {
-            "path": f"data/{case}_sample.md",
-            "sha256": _sha256(root / "data" / f"{case}_sample.md"),
-        },
-        "expected_answer": {
-            "path": f"expected/{case}.json",
-            "sha256": _sha256(root / "expected" / f"{case}.json"),
-        },
-        "adapter_output": {
-            "path": f"fixtures/{case}_stub.json",
-            "sha256": _sha256(root / "fixtures" / f"{case}_stub.json"),
-        },
-    }
+    inputs = _input_files(case, root)
     return {
         "case": case,
         "decision": decision,
@@ -207,10 +209,11 @@ def _case_decision(case: str, scores: dict[str, Any], root: Path) -> dict[str, A
 def build_release_certificate(
     case_scores: dict[str, dict[str, Any]],
     *,
-    root: Path = Path("."),
+    root: Path | None = None,
 ) -> dict[str, Any]:
     """Build a strict release certificate over one or more synthetic benchmark cases."""
 
+    root = paths.resolve_root(root)
     if not case_scores:
         raise ValueError("release certificate requires at least one evaluated case")
     case_results = [
@@ -256,10 +259,11 @@ def verify_release_certificate(
     certificate: dict[str, Any],
     case_scores: dict[str, dict[str, Any]],
     *,
-    root: Path = Path("."),
+    root: Path | None = None,
 ) -> dict[str, Any]:
     """Re-evaluate the deterministic suite and verify every certificate field."""
 
+    root = paths.resolve_root(root)
     errors: list[str] = []
     submitted_payload = {
         key: value
@@ -422,7 +426,7 @@ def _input_drift(certificate: dict[str, Any], *, root: Path) -> list[str]:
 def _build_v2_certificate(
     case_scores: dict[str, dict[str, Any]],
     *,
-    root: Path = Path("."),
+    root: Path,
 ) -> dict[str, Any]:
     """Frozen v2 builder, retained so v2 certificates stay reproducible.
 

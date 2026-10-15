@@ -8,6 +8,7 @@ import subprocess
 import tomllib
 from typing import Any
 
+from contract_eval import paths
 from contract_eval.cases import ALL_CASES
 from contract_eval.cli import score_review
 from contract_eval.models import ExpectedAnswer, ReviewOutput
@@ -34,7 +35,7 @@ def validate_source_commit(root: Path, commit: str) -> None:
 
 
 def case_paths(root: Path, case: str) -> dict[str, Path]:
-    return {"source": root / "data" / f"{case}_sample.md", "gold": root / "expected" / f"{case}.json", "review": root / "fixtures" / f"{case}_stub.json"}
+    return {"source": root / paths.source_file(case), "gold": root / paths.gold_file(case), "review": root / paths.fixture_file(case)}
 
 
 def apply_scenario(review: ReviewOutput, scenario: str) -> ReviewOutput:

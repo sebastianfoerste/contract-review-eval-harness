@@ -9,11 +9,11 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `src/contract_eval/adapters/` — `Adapter` protocol, `StubAdapter` (fixtures), lazy `LiveAdapter`, `get_adapter(live)`.
 - `src/contract_eval/scorer.py` — pure scoring functions: clause P/R/F1, risk-flag accuracy, citation grounding, hallucination count. Unit-tested.
 - `src/contract_eval/cli.py` — `evaluate()` pipeline + argparse `main`. `scorecard.py` renders markdown.
-- `data/<case>_sample.md` — synthetic contracts. `expected/<case>.json` — gold answers. `fixtures/<case>_stub.json` — stub model output.
+- `data/<case>_sample.md` — synthetic contracts. `expected/<case>.json` — gold answers. `fixtures/<case>_stub.json` — stub model output. The wheel ships byte-identical copies; `src/contract_eval/paths.py` resolves the working directory first, then an editable checkout, then that bundled copy.
 - `tests/` — pytest.
 
 ## Rules
-- Python 3.13+, type hints throughout, Pydantic for data models.
+- Python 3.11+ (CI runs 3.11, 3.12 and 3.13), type hints throughout, Pydantic for data models.
 - Default path is offline and deterministic: no network, no API key. `--live` is strictly opt-in and must never break default paths (import the SDK lazily).
 - Synthetic data only. Never add a real agreement or client data.
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.

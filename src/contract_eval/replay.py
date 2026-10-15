@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from contract_eval import paths
 from contract_eval.capture import (
     CAPTURE_SCHEMA,
     CapturedReview,
@@ -31,13 +32,14 @@ class ReplayError(RuntimeError):
     """The capture cannot be trusted or cannot be scored."""
 
 
-def verify_capture(capture: CapturedReview, *, root: Path = Path(".")) -> dict[str, Any]:
+def verify_capture(capture: CapturedReview, *, root: Path | None = None) -> dict[str, Any]:
     """Check a capture's authenticity and report current-input drift.
 
     Authenticity and drift are separate questions. A capture can be perfectly
     authentic while the working tree has moved on; conflating the two would either
     hide tampering or reject legitimate history.
     """
+    root = paths.resolve_root(root)
     errors: list[str] = []
     if capture.schema_version != CAPTURE_SCHEMA:
         errors.append(f"capture_schema_unsupported:{capture.schema_version!r}")
@@ -84,7 +86,7 @@ def replay(
     *,
     alias_modes: tuple[str, ...] = ("on",),
     allow_input_drift: bool = False,
-    root: Path = Path("."),
+    root: Path | None = None,
 ) -> dict[str, Any]:
     """Score a capture under one or more alias modes."""
     verification = verify_capture(capture, root=root)

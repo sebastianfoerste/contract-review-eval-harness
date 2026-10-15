@@ -6,6 +6,7 @@ import subprocess
 import uuid
 from pathlib import Path
 
+from contract_eval import paths
 from contract_eval.capture import (
     CaptureError,
     CapturedReview,
@@ -54,7 +55,7 @@ def capture_attempt(
     out_dir: Path,
     origin: str,
     adapter_id: str,
-    root: Path = Path("."),
+    root: Path | None = None,
     scenario_id: str | None = None,
     variant: str = "original",
     run_index: int = 0,
@@ -66,11 +67,12 @@ def capture_attempt(
     is never made: a provider call whose result cannot be recorded produces an
     unauditable score, which is the situation captures exist to prevent.
     """
+    root = paths.resolve_root(root)
     capture_id = f"{case}-{run_index}-{uuid.uuid4().hex[:8]}"
     path = out_dir / f"{capture_id}.json"
 
-    source_path = Path("data") / f"{case}_sample.md"
-    gold_path = Path("expected") / f"{case}.json"
+    source_path = Path(paths.source_file(case))
+    gold_path = Path(paths.gold_file(case))
 
     capture = CapturedReview(
         capture_id=capture_id,
