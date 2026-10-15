@@ -21,6 +21,10 @@ live = [
 [project.scripts]
 contract-eval = "contract_eval.cli:main"
 
+# Loads contract_eval.pytest_plugin in any pytest run where the package is installed.
+[project.entry-points.pytest11]
+contract_eval = "contract_eval.pytest_plugin"
+
 [build-system]
 requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
@@ -55,3 +59,7 @@ include = [
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.pytest.ini_options]
+# examples/ holds a test file for users to copy; tests/test_api.py runs it.
+testpaths = ["tests"]

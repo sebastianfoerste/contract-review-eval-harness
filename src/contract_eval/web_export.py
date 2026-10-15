@@ -10,7 +10,7 @@ from typing import Any
 
 from contract_eval import paths
 from contract_eval.cases import ALL_CASES
-from contract_eval.cli import score_review
+from contract_eval.api import score_review
 from contract_eval.models import ExpectedAnswer, ReviewOutput
 from contract_eval.reference_evidence import digest, encoded, reference_status
 

@@ -179,16 +179,22 @@ def _input_files(case: str, root: Path) -> dict[str, dict[str, str]]:
     }
 
 
-def _case_decision(case: str, scores: dict[str, Any], root: Path) -> dict[str, Any]:
+def case_decision(scores: dict[str, Any]) -> tuple[str, list[str], list[str]]:
+    """Decide one case: (decision, blockers, review_items).
+
+    Any blocker rejects. Any other unmet requirement needs a human. Only a case that
+    meets every requirement is eligible for a supervised pilot.
+    """
     blockers, review_items = evaluate_requirements(scores)
-
     if blockers:
-        decision = "REJECT"
-    elif review_items:
-        decision = "HUMAN_REVIEW_REQUIRED"
-    else:
-        decision = "PILOT_ELIGIBLE"
+        return "REJECT", blockers, review_items
+    if review_items:
+        return "HUMAN_REVIEW_REQUIRED", blockers, review_items
+    return "PILOT_ELIGIBLE", blockers, review_items
 
+
+def _case_decision(case: str, scores: dict[str, Any], root: Path) -> dict[str, Any]:
+    decision, blockers, review_items = case_decision(scores)
     inputs = _input_files(case, root)
     return {
         "case": case,

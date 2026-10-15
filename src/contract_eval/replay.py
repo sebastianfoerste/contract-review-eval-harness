@@ -21,7 +21,7 @@ from contract_eval.capture import (
     read_capture,
     text_sha256,
 )
-from contract_eval.cli import score_review
+from contract_eval.api import score_review
 from contract_eval.models import ExpectedAnswer
 
 REPLAY_RESULT_SCHEMA = "contract-review-eval.replay-result.v1"

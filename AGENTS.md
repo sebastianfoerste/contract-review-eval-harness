@@ -8,7 +8,9 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `src/contract_eval/models.py` — Pydantic models: `ReviewOutput` (clauses, risk flags, citations) and `ExpectedAnswer`. Single source of truth for shapes.
 - `src/contract_eval/adapters/` — `Adapter` protocol, `StubAdapter` (fixtures), lazy `LiveAdapter`, `get_adapter(live)`.
 - `src/contract_eval/scorer.py` — pure scoring functions: clause P/R/F1, risk-flag accuracy, citation grounding, hallucination count. Unit-tested.
-- `src/contract_eval/cli.py` — `evaluate()` pipeline + argparse `main`. `scorecard.py` renders markdown.
+- `src/contract_eval/api.py` — the Python API: `score_review`, `load_case`, `evaluate_review`, `Verdict`; exported from `contract_eval/__init__.py`. The CLI and the pytest plugin call it, so all three reach the same numbers.
+- `src/contract_eval/pytest_plugin.py` — `assert_review_passes` and the `contract_case` fixture, registered under the `pytest11` entry point.
+- `src/contract_eval/cli.py` — `evaluate()` pipeline + argparse `main`. Maintainer commands sit under `contract-eval dev` and stay accepted, unlisted, at the top level. `scorecard.py` renders markdown.
 - `data/<case>_sample.md` — synthetic contracts. `expected/<case>.json` — gold answers. `fixtures/<case>_stub.json` — stub model output. The wheel ships byte-identical copies; `src/contract_eval/paths.py` resolves the working directory first, then an editable checkout, then that bundled copy.
 - `tests/` — pytest.
 
