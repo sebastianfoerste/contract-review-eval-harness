@@ -141,6 +141,15 @@ jobs:
           "$RUNNER_TEMP/wheel-env/bin/contract-eval" certify --out cert
           cmp cert/release-certificate.json "$GITHUB_WORKSPACE/examples/release-certificate.json"
 
+      - name: Run the copyable pytest example against the installed wheel
+        # The example's contract_case fixture comes from the plugin the wheel registers
+        # under pytest11, so a wheel without that entry point fails here.
+        run: |
+          uv pip install --python "$RUNNER_TEMP/wheel-env/bin/python" pytest
+          mkdir "$RUNNER_TEMP/plugin" && cp examples/test_my_reviewer.py "$RUNNER_TEMP/plugin/"
+          cd "$RUNNER_TEMP/plugin"
+          "$RUNNER_TEMP/wheel-env/bin/python" -m pytest -q test_my_reviewer.py
+
   action:
     # Runs the repository's own action the way another repository would. The NDA stub
     # carries a fabricated citation, so the action has to fail it with REJECT.
