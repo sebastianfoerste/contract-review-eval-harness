@@ -124,14 +124,14 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 
 | Project | What it is | How answers are graded | Test data |
 |---|---|---|---|
-| [Vals Legal AI Report](https://www.vals.ai/industry-reports/vlair-2-27-25) (Vals AI) | A published report comparing legal AI tools with a lawyer baseline | An LLM graded the answers | Kept private |
+| [Vals Legal AI Report](https://www.vals.ai/industry-reports/vlair-2-27-25) (Vals AI) | A published report comparing legal AI tools with a lawyer baseline | An LLM graded the answers | Mostly private; a selection of question-answer pairs is published |
 | [DeepEval](https://deepeval.com/docs/metrics-hallucination) | A generic evaluation framework for LLM applications | Its `HallucinationMetric` uses an LLM as the judge | Your own |
 | [LegalBench](https://github.com/HazyResearch/legalbench) and [CUAD](https://github.com/The-Atticus-Project/cuad) | Datasets for testing model capability | Against the dataset's labels | Public |
 | This harness | A release gate for a contract-review product | Deterministic code, no LLM grader: citations must be exact spans of the contract (any miss is an automatic `REJECT`), and over-flagging lowers risk precision | Open synthetic answer sets, plus your own private ones |
 
 LegalBench and CUAD measure what a model can do. They are not a release gate for a review product. This harness also writes a [release certificate](docs/certificate-and-robustness.md) that records the decision and the inputs it was made on.
 
-Bock's [critique of the Vals report](https://bockster.substack.com/p/reviewing-the-review-a-critical-look) raises three points. The design answers two of them: grading here involves no LLM, and false positives are penalised. The third, coverage of civil-law and non-English contracts, is open work: a German-language NDA and an SPA under German law are waiting in [`candidates/`](candidates/README.md), with answer sets still to be written.
+Mathias Bock's [critique of the Vals report](https://bockster.substack.com/p/reviewing-the-review-a-critical-look) raises, among other points, the use of an LLM grader, the lack of a penalty for false positives, and the missing coverage of civil-law and non-English contracts. The design answers the first two: no LLM grades a review here, and a false positive lowers risk precision and sends the case to human review. The third is open work: a German-language NDA and an SPA under German law are waiting in [`candidates/`](candidates/README.md), with answer sets still to be written.
 
 ## Part of the EU regulation as code suite
 
