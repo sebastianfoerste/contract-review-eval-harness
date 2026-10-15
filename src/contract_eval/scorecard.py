@@ -103,6 +103,17 @@ _DECISION_NOTES = {
 }
 
 
+def _decision_note(result: dict[str, Any]) -> str:
+    # Grounding over zero citations is 0.0, so a review that quotes nothing is rejected
+    # without any quote being wrong. Saying a citation failed would misdescribe it.
+    if result["decision"] == "REJECT" and result["scores"]["citation_total"] == 0:
+        return (
+            "The review cites nothing, so none of its findings is grounded in the "
+            "contract, which is a hard blocker."
+        )
+    return _DECISION_NOTES[result["decision"]]
+
+
 def _codes(items: list[str]) -> str:
     return ", ".join(f"`{item}`" for item in items) if items else "none"
 
@@ -137,7 +148,7 @@ def render_score(result: dict[str, Any]) -> str:
 {scope}
 ## Release decision: {result['decision']}
 
-Policy `{result['policy']}`. {_DECISION_NOTES[result['decision']]}
+Policy `{result['policy']}`. {_decision_note(result)}
 
 - Blockers: {_codes(result['blockers'])}
 - Review items: {_codes(result['review_items'])}

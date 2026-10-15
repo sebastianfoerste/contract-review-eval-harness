@@ -89,6 +89,7 @@ def test_a_fabricated_citation_on_a_bundled_case_rejects_with_exit_1(capsys):
     assert code == 1
     assert "## Release decision: REJECT" in out
     assert "`unsupported_citation_detected`" in out
+    assert "At least one citation is not an exact span of the contract" in out
     assert "bundled answer set `expected/nda.json`" in out
     assert "Comparison only" not in out
 
@@ -169,6 +170,20 @@ def test_fail_on_human_review_tightens_the_gate(capsys, own_case, tmp_path):
     assert "## Release decision: HUMAN_REVIEW_REQUIRED" in out
     assert "`risk_severity_mismatch`" in out
     assert (lenient, strict) == (0, 1)
+
+
+def test_a_review_that_cites_nothing_is_rejected_for_citing_nothing(capsys, own_case, tmp_path):
+    contract, gold = own_case
+    # Grounding over zero citations is 0.0: rejected, though no quote is wrong.
+    review = _write(tmp_path / "review.json", _review(citations=[]))
+
+    code, out, _ = _run(capsys, review, "--contract", contract, "--gold", gold)
+
+    assert code == 1
+    assert "## Release decision: REJECT" in out
+    assert "- Blockers: `citation_grounding_below_100_percent`\n" in out
+    assert "The review cites nothing" in out
+    assert "At least one citation is not an exact span" not in out
 
 
 def test_out_writes_the_scorecard_and_a_sealed_result(capsys, tmp_path):
