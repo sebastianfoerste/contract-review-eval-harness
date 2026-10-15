@@ -42,8 +42,8 @@ uv run contract-eval score my-review.json --case nda
 ```
 
 The bundled cases are `nda`, `saas` and `dpa` (`data/<case>_sample.md`). The
-scorecard opens with the release decision, then lists every score; the
-[`examples/scorecard.md`](../examples/scorecard.md) table explains the rows.
+scorecard opens with the release decision, then lists every score;
+[metrics.md](metrics.md) gives each row's formula and whether it can block a release.
 
 ## 3. Or against your own contract and answer set
 
