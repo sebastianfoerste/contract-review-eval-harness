@@ -52,6 +52,9 @@ jobs:
       - name: Reject drift in the generated live-run report
         run: uv run python scripts/check_live_run_report.py
 
+      - name: Reject drift in the generated leaderboard
+        run: uv run python scripts/build_leaderboard.py --check
+
       - name: Verify every clause anchor locates exactly one clause
         run: uv run python scripts/check_clause_anchors.py
 
