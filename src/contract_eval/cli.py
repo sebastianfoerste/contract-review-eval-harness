@@ -217,8 +217,10 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
     )
     write_provenance(provenance, out_dir / "run-provenance.json")
 
-    # Save run to history
-    history_dir = Path("history")
+    # History sits beside the scorecard, so a run with --out, and every test, writes
+    # only into its own directory. --out defaults to the working directory, so a
+    # plain run still records into ./history, where `compare` looks by default.
+    history_dir = out_dir / "history"
     history_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     history_file = history_dir / f"run_{timestamp}.json"
@@ -254,7 +256,7 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
     return path
 
 
-def compare_runs(history_dir: Path = Path("history")) -> None:
+def latest_run(history_dir: Path = Path("history")) -> Path:
     if not history_dir.exists():
         print("No history directory found. Run evaluate first to create history.")
         sys.exit(1)
@@ -263,19 +265,47 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
     if not run_files:
         print("No previous run history files found. Run evaluate first.")
         sys.exit(1)
+    return run_files[-1]
 
-    latest_file = run_files[-1]
-    print(f"Comparing current scores against historical run: {latest_file.name}")
 
-    latest_data = json.loads(latest_file.read_text())
-    past_case = latest_data["case"]
-    past_scores = latest_data["scores"]
+def compare_runs(
+    history_dir: Path = Path("history"),
+    *,
+    baseline: Path | None = None,
+    candidate: Path | None = None,
+) -> bool:
+    """Compare a candidate run with a baseline run and return whether it regressed.
 
-    cases_to_eval = ALL_CASES if past_case == "all" else [past_case]
+    Without paths the baseline is the newest run in `history_dir` and the candidate is
+    a fresh offline scoring of the current inputs. Straight after `evaluate` that
+    newest run is the one just written, so the comparison measures a run against
+    itself and cannot fail. CI therefore names a committed snapshot as the baseline
+    and the fresh run as the candidate.
+    """
+    if baseline is None:
+        baseline = latest_run(history_dir)
+    if candidate is not None and baseline.resolve() == candidate.resolve():
+        print(f"Baseline and candidate are the same file: {baseline}. Comparing a run with itself proves nothing.")
+        sys.exit(1)
 
-    current_scores = {}
-    for c in cases_to_eval:
-        current_scores[c] = evaluate_case(c, live=False)
+    past_scores = json.loads(baseline.read_text(encoding="utf-8"))["scores"]
+    # The cases the baseline recorded, not today's ALL_CASES: an `all` snapshot taken
+    # before a case was added has no scores for it.
+    cases_to_eval = list(past_scores)
+
+    if candidate is None:
+        print(f"Comparing current scores against historical run: {baseline.name}")
+        current_scores = {c: evaluate_case(c, live=False) for c in cases_to_eval}
+    else:
+        print(f"Comparing run {candidate.name} against historical run: {baseline.name}")
+        current_scores = json.loads(candidate.read_text(encoding="utf-8"))["scores"]
+        missing = [c for c in cases_to_eval if c not in current_scores]
+        if missing:
+            print(f"The candidate run has no scores for {', '.join(missing)}, which the baseline records.")
+            sys.exit(1)
+        not_compared = sorted(set(current_scores) - set(cases_to_eval))
+        if not_compared:
+            print(f"Not in the baseline, so not compared: {', '.join(not_compared)}")
 
     print("\n================== REGRESSION COMPARISON ==================")
     print(f"{'Dimension':<25} | {'Past':<10} | {'Current':<10} | {'Delta':<10}")
@@ -311,9 +341,10 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
 
     print("===========================================================")
     if regressed:
-        print("\nWarning: Performance regression detected relative to the previous run.")
+        print(f"\nWarning: Performance regression detected relative to {baseline.name}.")
     else:
         print("\nSuccess: No regressions detected!")
+    return regressed
 
 
 def certify(case: str, out_dir: Path) -> tuple[Path, Path]:
@@ -403,11 +434,26 @@ def main() -> None:
         default=None,
         help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-5)",
     )
-    ev.add_argument("--out", default=".", type=Path, help="output directory for scorecard.md")
+    ev.add_argument("--out", default=".", type=Path, help="output directory for scorecard.md, run-provenance.json and history/")
     ev.add_argument("--no-gate", action="store_true", help="do not exit with code 1 on regression/failure")
     ev.add_argument("--format", default="markdown", choices=["markdown", "json"], help="output format (markdown, json)")
     
-    sub.add_parser("compare", help="compare the current scores against the latest saved run in history")
+    cmp = sub.add_parser(
+        "compare",
+        help="compare a run against a saved baseline run; exit with code 1 on a regression",
+    )
+    cmp.add_argument(
+        "--baseline",
+        default=None,
+        type=Path,
+        help="run JSON to compare against (default: the newest history/run_*.json)",
+    )
+    cmp.add_argument(
+        "--candidate",
+        default=None,
+        type=Path,
+        help="run JSON to compare (default: score the current inputs offline)",
+    )
     cert = sub.add_parser(
         "certify",
         help="issue an input-bound release decision over the synthetic benchmark suite",
@@ -521,7 +567,13 @@ def main() -> None:
             print(f"Error: {e}")
             sys.exit(1)
     elif args.cmd == "compare":
-        compare_runs()
+        try:
+            regressed = compare_runs(baseline=args.baseline, candidate=args.candidate)
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"Error: {exc}")
+            sys.exit(1)
+        if regressed:
+            sys.exit(1)
     elif args.cmd == "certify":
         markdown_path, json_path = certify(case=args.case, out_dir=args.out)
         print(f"wrote {markdown_path} and {json_path}")

@@ -1,4 +1,10 @@
-from contract_eval.cli import evaluate, evaluate_case
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+from contract_eval.cli import compare_runs, evaluate, evaluate_case, main
 
 
 def test_evaluate_writes_scorecard(tmp_path):
@@ -7,6 +13,18 @@ def test_evaluate_writes_scorecard(tmp_path):
     assert path.name == "scorecard.md"
     assert "Clause F1" in text
     assert "Hallucination" in text
+
+
+def test_evaluate_records_history_under_its_output_directory(tmp_path):
+    # History written to the working directory polluted the checkout and failed in
+    # a read-only tree; the committed temp_test_case snapshots came from exactly that.
+    repo_history = sorted(Path("history").glob("run_*.json"))
+    evaluate(case="nda", live=False, out_dir=tmp_path)
+
+    runs = list((tmp_path / "history").glob("run_*.json"))
+    assert len(runs) == 1
+    assert json.loads(runs[0].read_text())["case"] == "nda"
+    assert sorted(Path("history").glob("run_*.json")) == repo_history
 
 
 def test_evaluate_catches_the_seeded_errors(tmp_path):
@@ -23,7 +41,6 @@ def test_evaluate_catches_the_seeded_errors(tmp_path):
 
 
 def test_evaluate_writes_json_scorecard(tmp_path):
-    import json
     path = evaluate(case="nda", live=False, out_dir=tmp_path, format_type="json")
     assert path.name == "scorecard.json"
     data = json.loads(path.read_text())
@@ -34,4 +51,78 @@ def test_evaluate_writes_json_scorecard(tmp_path):
     assert 0.0 < scores["risk_flag_accuracy"] < 1.0
     assert 0.0 < scores["citation_grounding"] < 1.0
     assert scores["hallucination_count"] == 1
+
+
+def _run_file(path: Path, scores: dict[str, dict]) -> Path:
+    path.write_text(json.dumps({"case": "all", "scores": scores}))
+    return path
+
+
+def test_compare_reports_a_regression_between_two_recorded_runs(tmp_path):
+    current = evaluate_case("nda", live=False)
+    better = dict(current, clause_f1=current["clause_f1"] + 0.01)
+    baseline = _run_file(tmp_path / "baseline.json", {"nda": better})
+    candidate = _run_file(tmp_path / "candidate.json", {"nda": current})
+
+    assert compare_runs(baseline=baseline, candidate=candidate) is True
+    assert compare_runs(baseline=candidate, candidate=baseline) is False
+
+
+def test_compare_counts_one_more_hallucination_as_a_regression(tmp_path):
+    current = evaluate_case("nda", live=False)
+    worse = dict(current, hallucination_count=current["hallucination_count"] + 1)
+    baseline = _run_file(tmp_path / "baseline.json", {"nda": current})
+    candidate = _run_file(tmp_path / "candidate.json", {"nda": worse})
+
+    assert compare_runs(baseline=baseline, candidate=candidate) is True
+
+
+def test_compare_covers_only_the_cases_the_baseline_recorded(tmp_path, capsys):
+    nda = evaluate_case("nda", live=False)
+    saas = evaluate_case("saas", live=False)
+    baseline = _run_file(tmp_path / "baseline.json", {"nda": nda})
+    candidate = _run_file(tmp_path / "candidate.json", {"nda": nda, "saas": saas})
+
+    assert compare_runs(baseline=baseline, candidate=candidate) is False
+    out = capsys.readouterr().out
+    assert "Not in the baseline, so not compared: saas" in out
+    assert "Case: SAAS" not in out
+
+
+def test_compare_refuses_a_candidate_missing_a_baseline_case(tmp_path):
+    nda = evaluate_case("nda", live=False)
+    baseline = _run_file(tmp_path / "baseline.json", {"nda": nda, "saas": nda})
+    candidate = _run_file(tmp_path / "candidate.json", {"nda": nda})
+
+    with pytest.raises(SystemExit) as exit_info:
+        compare_runs(baseline=baseline, candidate=candidate)
+    assert exit_info.value.code == 1
+
+
+def test_compare_refuses_to_compare_a_run_with_itself(tmp_path):
+    run = _run_file(tmp_path / "run.json", {"nda": evaluate_case("nda", live=False)})
+
+    with pytest.raises(SystemExit) as exit_info:
+        compare_runs(baseline=run, candidate=tmp_path / "." / "run.json")
+    assert exit_info.value.code == 1
+
+
+def test_compare_without_paths_scores_current_inputs_against_the_newest_run(tmp_path):
+    current = evaluate_case("nda", live=False)
+    _run_file(tmp_path / "run_20000101_000000.json", {"nda": current})
+    _run_file(tmp_path / "run_20000101_000001.json", {"nda": dict(current, clause_f1=1.0)})
+
+    assert compare_runs(tmp_path) is True
+
+
+def test_compare_cli_exits_non_zero_on_a_regression(tmp_path, monkeypatch):
+    current = evaluate_case("nda", live=False)
+    baseline = _run_file(tmp_path / "baseline.json", {"nda": dict(current, citation_grounding=1.0)})
+    candidate = _run_file(tmp_path / "candidate.json", {"nda": current})
+    argv = ["contract-eval", "compare", "--baseline", str(baseline), "--candidate", str(candidate)]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+    assert exit_info.value.code == 1
 
