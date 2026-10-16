@@ -36,7 +36,7 @@ This project consists of two synchronized repositories designed to fulfill disti
 | Dimension | `contract-review-eval-harness` | `contract-eval-web` |
 |---|---|---|
 | **Role** | Evaluation Engine & Ground Truth | Interactive Evidence Lab & Public Explorer |
-| **Language & Runtime** | Python 3.13 (uv, Pydantic, pytest) | TypeScript (React 19, Next.js 16, Vinext) |
+| **Language & Runtime** | Python 3.11+ (uv, Pydantic, pytest) | TypeScript (React 19, Next.js 16, Vinext) |
 | **Hosting & CI** | GitHub Actions / local CLI | OpenAI Sites / Cloudflare Workers |
 | **Authoritative Logic** | Definitive scoring, policy certification, v2 obligations | Deterministic browser-safe port of `score_review` |
 | **Data Access** | Offline synthetic contracts + optional `--live` adapters | Read-only static snapshot (`lib/benchmark.json`) |

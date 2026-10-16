@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "contract-review-eval-harness"
+type: software
+authors:
+  - family-names: "Förste"
+    given-names: "Sebastian"
+repository-code: "https://github.com/sebastianfoerste/contract-review-eval-harness"
+license: MIT
+version: 0.7.0rc1
+date-released: 2026-09-03
+abstract: >-
+  A deterministic, offline harness that scores AI contract reviews against
+  hand-written answer sets for synthetic contracts. It measures clause
+  extraction, risk-flag precision, recall and severity, and citation
+  grounding, where every citation must be an exact span of the normalised
+  contract. A release policy turns the scores into a decision (PILOT_ELIGIBLE,
+  HUMAN_REVIEW_REQUIRED or REJECT) recorded in a release certificate. No LLM
+  grades the reviews.
+keywords:
+  - legal AI
+  - contract review
+  - evaluation
+  - benchmark
+  - citation grounding
+  - hallucination
+  - release gate

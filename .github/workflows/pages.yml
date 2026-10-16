@@ -1,0 +1,65 @@
+name: pages
+
+# Publishes the committed evidence as a static site: the scorecard, the release
+# certificate, the dated live-run report, the leaderboard and the adversarial
+# robustness report. scripts/build_site.py renders them with the standard library
+# only, so the build needs no network beyond installing uv.
+#
+# GitHub Pages is not enabled on this repository yet, and a deploy to a repository
+# without Pages fails. So that main does not turn red in the meantime, the deploy job
+# only runs when the repository variable PAGES_ENABLED is 'true'. To publish: set
+# Settings > Pages > Source to "GitHub Actions", then add PAGES_ENABLED = true under
+# Settings > Secrets and variables > Actions > Variables. The build job always runs,
+# so a renderer that breaks still fails here before anyone enables deployment.
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; a newer push waits rather than cancelling a live deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Render the site
+        run: uv run python scripts/build_site.py --out site
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: vars.PAGES_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

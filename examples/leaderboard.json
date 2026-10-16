@@ -1,0 +1,216 @@
+{
+  "schema": "contract-review-eval.leaderboard.v1",
+  "policy": "contract-review-eval.strict-legal-release-policy.v2",
+  "alias_mode": "on",
+  "rows": [
+    {
+      "tool": "claude-opus-5",
+      "kind": "captured",
+      "date": "2026-09-01",
+      "harness_version": "0.7.0rc1",
+      "cases": [
+        "dpa",
+        "nda",
+        "saas"
+      ],
+      "metrics": {
+        "clause_f1": 0.6923269966748228,
+        "span_coverage": 0.9666666666666667,
+        "risk_f1": 0.5600804424333837,
+        "risk_severity_accuracy": 0.8888888888888888,
+        "citation_grounding": 1.0,
+        "hallucination_count": 0
+      },
+      "cost_usd": null,
+      "latency_ms": null,
+      "verdict": "HUMAN_REVIEW_REQUIRED",
+      "per_case": [
+        {
+          "case": "dpa",
+          "decision": "HUMAN_REVIEW_REQUIRED",
+          "blockers": [],
+          "review_items": [
+            "unexpected_clause_extracted",
+            "expected_clause_missed",
+            "risk_false_positive",
+            "expected_risk_missed"
+          ],
+          "review_sha256": "96a08eac9c6848e8ccaa6bb2b8f75039f0e73e11d05658f56a892a6fd84901a9",
+          "origin": {
+            "path": "examples/raw-output/dpa-claude-opus-5-2026-09-01.json",
+            "sha256": "78e68da86e008ff85dea00a855a1a46242d11b6dc096b9b62017557471493973",
+            "capture_ids": [
+              "legacy-dpa-2026-09-01"
+            ]
+          },
+          "scores": {
+            "clause_f1": 0.47619047619047616,
+            "span_coverage": 0.9,
+            "risk_f1": 0.3076923076923077,
+            "risk_severity_accuracy": 1.0,
+            "citation_grounding": 1.0,
+            "hallucination_count": 0
+          }
+        },
+        {
+          "case": "nda",
+          "decision": "HUMAN_REVIEW_REQUIRED",
+          "blockers": [],
+          "review_items": [
+            "unexpected_clause_extracted",
+            "expected_clause_missed",
+            "risk_false_positive",
+            "expected_risk_missed"
+          ],
+          "review_sha256": "7a328f3fe404f4d4bb0f295b4410e1fff8f32fd56a1baa01230ec4a18e1050bb",
+          "origin": {
+            "path": "examples/raw-output/nda-claude-opus-5-2026-09-01.json",
+            "sha256": "f5ec1291e3c0494a036d6b461cda54bfbaedb5dc81f4d04c506d06ae6d8affb4",
+            "capture_ids": [
+              "legacy-nda-2026-09-01"
+            ]
+          },
+          "scores": {
+            "clause_f1": 0.7826086956521738,
+            "span_coverage": 1.0,
+            "risk_f1": 0.6666666666666667,
+            "risk_severity_accuracy": 1.0,
+            "citation_grounding": 1.0,
+            "hallucination_count": 0
+          }
+        },
+        {
+          "case": "saas",
+          "decision": "HUMAN_REVIEW_REQUIRED",
+          "blockers": [],
+          "review_items": [
+            "unexpected_clause_extracted",
+            "expected_clause_missed",
+            "risk_false_positive",
+            "expected_risk_missed",
+            "risk_severity_mismatch"
+          ],
+          "review_sha256": "8331b1c703378796388bec5aecc634a45f4f524104d30dcbed3b8b5299361fdc",
+          "origin": {
+            "path": "examples/raw-output/saas-claude-opus-5-2026-09-01.json",
+            "sha256": "8eca917be2e6aa43161c57456d0dcc089d2d4c18eed93dda342bca496dfdef1d",
+            "capture_ids": [
+              "legacy-saas-2026-09-01"
+            ]
+          },
+          "scores": {
+            "clause_f1": 0.8181818181818182,
+            "span_coverage": 1.0,
+            "risk_f1": 0.7058823529411765,
+            "risk_severity_accuracy": 0.6666666666666666,
+            "citation_grounding": 1.0,
+            "hallucination_count": 0
+          }
+        }
+      ]
+    },
+    {
+      "tool": "stub adapter (deterministic baseline)",
+      "kind": "baseline",
+      "date": null,
+      "harness_version": "0.7.0rc1",
+      "cases": [
+        "dpa",
+        "nda",
+        "saas"
+      ],
+      "metrics": {
+        "clause_f1": 0.9551414768806072,
+        "span_coverage": 0.7181818181818181,
+        "risk_f1": 0.9222222222222222,
+        "risk_severity_accuracy": 0.5904761904761905,
+        "citation_grounding": 0.8842592592592592,
+        "hallucination_count": 3
+      },
+      "cost_usd": null,
+      "latency_ms": null,
+      "verdict": "REJECT",
+      "per_case": [
+        {
+          "case": "dpa",
+          "decision": "REJECT",
+          "blockers": [
+            "citation_grounding_below_100_percent",
+            "unsupported_citation_detected"
+          ],
+          "review_items": [
+            "unexpected_clause_extracted",
+            "risk_severity_mismatch"
+          ],
+          "review_sha256": "ac5b7e2cddc161d3e8cb8b22f0a6cade7f915e6b35924b2580d4c74950181271",
+          "origin": {
+            "path": "fixtures/dpa_stub.json",
+            "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe"
+          },
+          "scores": {
+            "clause_f1": 0.9523809523809523,
+            "span_coverage": 0.7,
+            "risk_f1": 1.0,
+            "risk_severity_accuracy": 0.6,
+            "citation_grounding": 0.875,
+            "hallucination_count": 1
+          }
+        },
+        {
+          "case": "nda",
+          "decision": "REJECT",
+          "blockers": [
+            "citation_grounding_below_100_percent",
+            "unsupported_citation_detected"
+          ],
+          "review_items": [
+            "unexpected_clause_extracted",
+            "risk_false_positive",
+            "expected_risk_missed",
+            "risk_severity_mismatch"
+          ],
+          "review_sha256": "fe6bb4f27bac02792dd5440732ba2105db97bcdbdbfb5911e096f8e32ec744a9",
+          "origin": {
+            "path": "fixtures/nda_stub.json",
+            "sha256": "f8f9b17131c68054df54c45d0782ae472914ec580ea3a345ab22df67b6e82fa8"
+          },
+          "scores": {
+            "clause_f1": 0.9565217391304348,
+            "span_coverage": 0.7272727272727273,
+            "risk_f1": 0.8333333333333334,
+            "risk_severity_accuracy": 0.6,
+            "citation_grounding": 0.8888888888888888,
+            "hallucination_count": 1
+          }
+        },
+        {
+          "case": "saas",
+          "decision": "REJECT",
+          "blockers": [
+            "citation_grounding_below_100_percent",
+            "unsupported_citation_detected"
+          ],
+          "review_items": [
+            "unexpected_clause_extracted",
+            "expected_risk_missed",
+            "risk_severity_mismatch"
+          ],
+          "review_sha256": "28205874a23fca4bf53281712a0410c65a043786f0677fbf7f7f3bd7ce92c0c2",
+          "origin": {
+            "path": "fixtures/saas_stub.json",
+            "sha256": "610ead111d79a99c1f78e2d4ccf86442a502f270d1d2dbc5dcb867209e814a21"
+          },
+          "scores": {
+            "clause_f1": 0.9565217391304348,
+            "span_coverage": 0.7272727272727273,
+            "risk_f1": 0.9333333333333333,
+            "risk_severity_accuracy": 0.5714285714285714,
+            "citation_grounding": 0.8888888888888888,
+            "hallucination_count": 1
+          }
+        }
+      ]
+    }
+  ],
+  "leaderboard_sha256": "be501ee986f3b891daa415fc1ad01562f6957f074a165b402d5d1d204c5e7e78"
+}

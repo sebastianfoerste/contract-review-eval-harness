@@ -10,7 +10,7 @@ Offline, deterministic, no API key. Synthetic contracts only. Not legal advice.
 
 ## Try it
 
-Needs [uv](https://docs.astral.sh/uv/) and Python 3.13+.
+Needs [uv](https://docs.astral.sh/uv/) and Python 3.11+.
 
 ```bash
 git clone https://github.com/sebastianfoerste/contract-review-eval-harness
@@ -21,7 +21,31 @@ uv run python -m contract_eval evaluate --case nda   # writes scorecard.md
 
 `make install && make test && make demo` does the same plus the test suite.
 
-PyPI: **coming**. The `contract-eval` package is not published yet, and `uvx` does not work today because the CLI reads the bundled `data/` and `expected/` folders from a repo checkout. Use the clone form above.
+Or skip the clone. The package carries the bundled cases, so `uvx` can run it straight from GitHub:
+
+```bash
+uvx --from git+https://github.com/sebastianfoerste/contract-review-eval-harness contract-eval evaluate --case nda
+```
+
+PyPI: **coming**. The `contract-eval` package is not published yet.
+
+## Score your own tool
+
+Export your tool's review as plain JSON in the shape of [`schemas/review-output.schema.json`](schemas/review-output.schema.json), then score it against a bundled contract:
+
+```bash
+uv run contract-eval score my-review.json --case nda   # exit 1 on REJECT
+```
+
+Or against your own contract and answer set, which never leave your machine:
+
+```bash
+uv run contract-eval score my-review.json --contract my-nda.md --gold my-nda.json
+```
+
+The scorer is the same either way. A result on your own answer set is marked *comparison only, not certifiable*, because the harness has not reviewed that answer set. See [docs/score-your-own-tool.md](docs/score-your-own-tool.md).
+
+To gate a pull request, use the repository's GitHub Action, which fails the job on `REJECT` and writes every scorecard to the job summary. See [docs/ci.md](docs/ci.md).
 
 ## Example output
 
@@ -43,6 +67,8 @@ A real run of the command above (the offline stub adapter, NDA case). The stub i
 ```
 
 (Selected rows; the full scorecard is in [`examples/scorecard.md`](examples/scorecard.md) and `.json`.)
+
+Each row's formula, denominator and edge cases are defined in [docs/metrics.md](docs/metrics.md).
 
 The citation that fails is the stub's claim, in [`fixtures/nda_stub.json`](fixtures/nda_stub.json), for the `notices` clause:
 
@@ -76,11 +102,13 @@ make certificate && make certificate-verify           # release certificate
 make robustness && make robustness-check              # adversarial campaign
 ```
 
-Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; see [live runs](docs/live-runs-and-capture.md)).
+Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; see [live runs](docs/live-runs-and-capture.md)). Other providers run through `--adapter openai-compatible --base-url <url> --model <id>` (OpenAI, Azure, Mistral, vLLM, Ollama), and `--adapter command --command 'python my_wrapper.py'` wraps your own product. Set `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` to record a cost estimate next to the latency in each capture.
 
 ## Demo and links
 
 - Screenshot and scorecard: [`docs/demo.png`](docs/demo.png), [`docs/scorecard.svg`](docs/scorecard.svg)
+- [Leaderboard](examples/leaderboard.md): every committed review output re-scored by the production scorer and decided by the release policy (`make leaderboard`)
+- [Quickstart notebook](examples/quickstart.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sebastianfoerste/contract-review-eval-harness/blob/main/examples/quickstart.ipynb), no install needed
 - [Release certificate](examples/release-certificate.md)
 - [Adversarial robustness report](examples/adversarial-robustness-report.md) and its [HTML view](examples/adversarial-robustness-report.html)
 - [Live-run snapshot, 2026-09-01](examples/live-run-claude-opus-5-2026-09-01.md)
@@ -89,10 +117,25 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 
 ## More detail
 
+- [Metric reference: formulas, denominators and release impact](docs/metrics.md)
+- [Score your own tool](docs/score-your-own-tool.md) and [gate CI on it](docs/ci.md)
 - [Release certificate, gates and robustness lab](docs/certificate-and-robustness.md)
 - [Live runs, capture and replay](docs/live-runs-and-capture.md)
 - [Gold sets, v1/v2 upgrade, evidence-bound scoring, gold schema v2](docs/gold-sets-and-evidence.md)
 - [Evidence Lab and parity vectors](docs/evidence-lab.md)
+
+## How this compares
+
+| Project | What it is | How answers are graded | Test data |
+|---|---|---|---|
+| [Vals Legal AI Report](https://www.vals.ai/industry-reports/vlair-2-27-25) (Vals AI) | A published report comparing legal AI tools with a lawyer baseline | An LLM graded the answers | Mostly private; a selection of question-answer pairs is published |
+| [DeepEval](https://deepeval.com/docs/metrics-hallucination) | A generic evaluation framework for LLM applications | Its `HallucinationMetric` uses an LLM as the judge | Your own |
+| [LegalBench](https://github.com/HazyResearch/legalbench) and [CUAD](https://github.com/The-Atticus-Project/cuad) | Datasets for testing model capability | Against the dataset's labels | Public |
+| This harness | A release gate for a contract-review product | Deterministic code, no LLM grader: citations must be exact spans of the contract (any miss is an automatic `REJECT`), and over-flagging lowers risk precision | Open synthetic answer sets, plus your own private ones |
+
+LegalBench and CUAD measure what a model can do. They are not a release gate for a review product. This harness also writes a [release certificate](docs/certificate-and-robustness.md) that records the decision and the inputs it was made on.
+
+Mathias Bock's [critique of the Vals report](https://bockster.substack.com/p/reviewing-the-review-a-critical-look) raises, among other points, the use of an LLM grader, the lack of a penalty for false positives, and the missing coverage of civil-law and non-English contracts. The design answers the first two: no LLM grades a review here, and a false positive lowers risk precision and sends the case to human review. The third is open work: a German-language NDA and an SPA under German law are waiting in [`candidates/`](candidates/README.md), with answer sets still to be written.
 
 ## Part of the EU regulation as code suite
 
