@@ -16,23 +16,38 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
+          # The newest uv inside the uv_build range pyproject.toml declares
+          # (>=0.11.23,<0.13.0); a newer uv warns that the range excludes it.
+          version: "0.12.24"
           enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.13
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --locked --all-extras --dev
 
       - name: Run unit tests
         run: uv run pytest -v
 
-      - name: Run baseline suite evaluation gate
-        run: uv run python -m contract_eval evaluate --case all
+      # git ls-files lists only committed snapshots, so the run this job writes can
+      # never become its own baseline.
+      - name: Select the committed regression baseline
+        run: |
+          baseline="$(git ls-files 'history/run_*.json' | sort | tail -n 1)"
+          test -n "$baseline" || { echo "No committed history/run_*.json to compare against."; exit 1; }
+          echo "Regression baseline: $baseline"
+          echo "REGRESSION_BASELINE=$baseline" >> "$GITHUB_ENV"
 
-      - name: Run comparison regression test
-        run: uv run python -m contract_eval compare
+      - name: Run baseline suite evaluation gate
+        run: uv run python -m contract_eval evaluate --case all --out "$RUNNER_TEMP/evaluation"
+
+      - name: Compare the fresh run against the committed baseline
+        run: |
+          shopt -s nullglob
+          runs=("$RUNNER_TEMP"/evaluation/history/run_*.json)
+          test "${#runs[@]}" -eq 1 || { echo "Expected one fresh run, found ${#runs[@]}."; exit 1; }
+          uv run python -m contract_eval compare --baseline "$REGRESSION_BASELINE" --candidate "${runs[0]}"
 
       - name: Verify every v2 obligation offset resolves in its source
         run: uv run python scripts/check_gold_v2.py
@@ -66,3 +81,9 @@ jobs:
 
       - name: Reject scorer drift against the committed web parity vectors
         run: uv run python scripts/check_parity_vectors.py
+
+      - name: Verify the candidate annotation pack against its hashes and corpus
+        run: uv run python -m contract_eval.candidate_annotation verify
+
+      - name: Verify every candidate experiment report reproduces
+        run: uv run python scripts/check_candidate_experiments.py

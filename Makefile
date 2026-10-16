@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check parity-vectors parity-check web-check web-export check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check parity-vectors parity-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status web-check web-export check
 
 install: ; uv sync
 test: ; uv run pytest -v
