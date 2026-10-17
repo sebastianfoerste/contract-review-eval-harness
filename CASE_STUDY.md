@@ -20,7 +20,7 @@ A legal engineer, innovation lead, or GC evaluating an AI contract-review tool b
 Grounding is checked against the actual document text, not the model's confidence. Any single ungrounded citation forces a **REJECT** verdict regardless of other scores — the harness is deliberately conservative. The gold set is human-authored, so the benchmark itself is reviewable.
 
 ## Evaluation
-The bundled run scores strong coverage but **catches a fabricated citation** ("Section 4.3 — Required Disclosures," which does not exist in the NDA) and a HIGH risk under-rated as LOW — and rejects the output. The point of the demo is to catch quietly plausible output a tired reviewer would pass.
+The bundled run scores strong coverage but **catches a fabricated citation** (a deemed-delivery rule for notices, "notices shall be deemed received three business days after posting", which the NDA does not contain) and a HIGH risk under-rated as LOW — and rejects the output. The point of the demo is to catch quietly plausible output a tired reviewer would pass.
 
 Every case makes that gap explicit. The offline stub fixture reaches **0.95 to 0.96 clause F1** across all three, finding every expected clause, against 0.50 to 0.60 risk-flag accuracy. Those figures describe the bundled fixture, not a model. On the DPA it rates an excluded on-site inspection right and a transfer clause carrying no Chapter V mechanism as low risk. On the SaaS agreement it rates a perpetual licence to train models on Customer Personal Data, and an indemnity requiring the customer to cover the provider's own IP infringement, as low risk. A reviewer reading only the coverage number would approve all three.
 
