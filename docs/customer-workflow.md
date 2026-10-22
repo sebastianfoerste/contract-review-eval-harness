@@ -17,7 +17,7 @@ how the group actually reviews.
 Run the harness on a representative contract. Walk the scorecard live:
 - Citation grounding is the trust number. Show it.
 - The hallucination count is the safety number. If it is non-zero, show which quote failed and that it would be rejected.
-- Risk-flag accuracy shows whether the model agrees with the group on what is risky.
+- Risk precision and recall show whether the model flags the same clauses as risky as the group does, and severity accuracy whether it rates them the same. Legacy risk-flag accuracy ignores over-flagging, so do not read it alone.
 
 ## Set the review gate
 The scorecard ends with "human review required." Use it to agree the operating rule: AI

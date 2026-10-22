@@ -24,10 +24,11 @@ are deliberately unremarkable: a reviewer who flags them is producing false posi
 
 Every case is built so that clause coverage and legal judgment come apart. The offline
 adapter reaches 0.95 to 0.96 clause F1 on all three — it finds every expected clause —
-against 0.50 to 0.60 risk-flag accuracy. On the DPA it rates the exclusion of on-site inspections and a transfer clause
+against 0.57 to 0.60 severity accuracy. On the DPA it rates the exclusion of on-site inspections and a transfer clause
 carrying no Chapter V mechanism as low risk; on the SaaS agreement it rates a perpetual
 licence to train models on Customer Personal Data and a reversed IP indemnity as low
-risk; on the NDA it under-rates a consent condition on legally compelled disclosure.
+risk; on the NDA it under-rates a consent condition on legally compelled disclosure and a
+free assignment to a competitor.
 A reviewer reading only the coverage number would approve all three.
 
 Adding a fourth contract type means adding four files and one entry in

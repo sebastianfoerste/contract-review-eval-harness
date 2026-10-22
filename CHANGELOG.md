@@ -40,6 +40,14 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Both annotators are named, with their agreement, from one registry in `contract_eval.annotators`. (#27)
 - The README leads with what the harness does and is rewritten for clarity. (#37, #42)
 - `CONTRIBUTING.md` is rewritten around three paths: add a case, add an adapter, volunteer as an annotator.
+- `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
+
+### Removed
+
+- `CLAUDE.md`, which held only generic skill routing; `AGENTS.md` keeps the repository guidance. (#41)
+- The weekly traffic snapshot workflow (`.github/workflows/traffic.yml`) added in 0.3.0. (#41)
+- The stale, unreferenced `docs/scorecard.svg`. (#41)
+- The tracked `history/run_*.json` files. Every evaluate run writes one, so they stay ignored, as does the root `run-provenance.json`. (#41)
 
 ### Fixed
 
@@ -47,6 +55,9 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - A set-precedence bug in campaign validation: `a | b - known_ids` parsed as `a | (b - known_ids)`. (#25)
 - The annotation template's commercial perspective described the migration instead of the review's standpoint. (#28)
 - Exported feedback items state `origin {"kind": "synthetic_fixture"}`, which the dashboard's feedback schema requires. (#34)
+- The NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices` argue from the Disclosing Party's side, which the answer set's `review_context` names, and the case study no longer calls all three gold sets receiving-side reviews. The four rationales were drafted with AI assistance and await the maintainer's adoption. Severities, flags and scores are unchanged. (#41)
+- Documented figures match the harness output: severity accuracy (0.57 to 0.60 across the cases) replaces legacy risk-flag accuracy as the headline risk figure, and the NDA's clause precision is 0.92, not 0.83. (#41)
+- The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
 
 ## [0.7.0-rc1] - 2026-09-03
 
@@ -123,7 +134,7 @@ This release candidate does not mark the benchmark as validated. The gold sets r
 
 - Clause coverage by source span. Each clause type carries a verbatim anchor and owns the region up to the next anchor; it counts as covered when a grounded citation falls inside that region. Labels never enter the comparison. Span coverage measures citation placement, not comprehension, and is reported beside the label-based scores. (#14)
 - `make anchor-check` and a CI step fail the build when an anchor matches zero places or more than one. (#14)
-- Gold sets state whose review they encode: party, governing law, objective and risk appetite. All three are conservative reviews from the receiving side under German law. (#14)
+- Gold sets state whose review they encode: party, governing law, objective and risk appetite. All three are conservative reviews for Northwind Materials GmbH under German law, with the GDPR also governing the DPA and the data-protection points of the SaaS agreement: as Disclosing Party to the NDA, as Customer under the SaaS agreement and as Controller under the DPA. (#14)
 
 ### Changed
 

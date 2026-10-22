@@ -22,7 +22,7 @@
   },
   "baseline_release_certificate": {
     "suite_decision": "REJECT",
-    "integrity_sha256": "cb08c9340dc45ea365d11458f489e703ebafe5df18c5f43f2aa0199e61440092"
+    "integrity_sha256": "830c36fcfc2a9dcf6c57c34b3db32060e328e4701582e6c7cc00ad323e7d3d9d"
   },
   "metrics": {
     "scenarios": 18,
@@ -49,8 +49,8 @@
       "bytes": 2351
     },
     "expected/nda.json": {
-      "sha256": "d4752986143f9e0f3bedf9ff1035f65f3b72ba2b00133f23507ec69e542223b8",
-      "bytes": 4118
+      "sha256": "53c6239b7a8870fb8f3bcdab3875f6d0ec15604f06702d94df8c5f7df13d07f9",
+      "bytes": 5583
     },
     "fixtures/nda_stub.json": {
       "sha256": "f8f9b17131c68054df54c45d0782ae472914ec580ea3a345ab22df67b6e82fa8",
@@ -81,7 +81,7 @@
       "bytes": 3823
     }
   },
-  "input_manifest_sha256": "9229f6be16ecc81519de2e19be80121841f26ef1b949a9c161816545c76c1c0a",
+  "input_manifest_sha256": "b864c6092ee94876597b9f5a09c41c75e912d9373ae0ca9d8a9a464145dbcbf5",
   "scenarios": [
     {
       "scenario_id": "nda-one-way-definition",
@@ -3002,5 +3002,5 @@
   ],
   "review_gate": "This synthetic campaign may support a human-supervised pilot decision. It never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "7728400e37582e8f880d8ca35d921c0fb29ed65a3fd9d415354ce281ef2e6b59"
+  "integrity_sha256": "3fe90a4e4a5454ef675619c7d6dc729fb539233a2471ad092d4f08473ad0e234"
 }

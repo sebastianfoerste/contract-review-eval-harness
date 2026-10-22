@@ -6,7 +6,9 @@
 
 Offline, deterministic, no API key. Synthetic contracts only. Not legal advice.
 
-![demo](docs/demo.png)
+![Actual output of make demo: the NDA scorecard](docs/demo.png)
+
+*Actual output of `make demo`, rendered as an image.*
 
 ## Try it
 
@@ -76,7 +78,7 @@ The citation that fails is the stub's claim, in [`fixtures/nda_stub.json`](fixtu
 
 That sentence is not in [`data/nda_sample.md`](data/nda_sample.md), so it counts as a hallucination. Any ungrounded citation is a hard `REJECT` under the release policy. The other eight quotes (for example `"shall remain in effect in perpetuity"` for the `term` clause) match exact spans of the contract.
 
-The same stub reaches 0.95 to 0.96 clause F1 on all three bundled contracts, against 0.50 to 0.60 risk-flag accuracy. It finds every expected clause but under-rates real risks, so a reviewer reading only the coverage number would approve it.
+The same stub reaches 0.95 to 0.96 clause F1 on all three bundled contracts, against 0.57 to 0.60 severity accuracy. It finds every expected clause but under-rates real risks, so a reviewer reading only the coverage number would approve it.
 
 ## Why this exists
 
@@ -106,14 +108,14 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 
 ## Demo and links
 
-- Screenshot and scorecard: [`docs/demo.png`](docs/demo.png), [`docs/scorecard.svg`](docs/scorecard.svg)
+- Actual output of `make demo`, rendered as an image: [`docs/demo.png`](docs/demo.png)
 - [Leaderboard](examples/leaderboard.md): every committed review output re-scored by the production scorer and decided by the release policy (`make leaderboard`)
 - [Quickstart notebook](examples/quickstart.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sebastianfoerste/contract-review-eval-harness/blob/main/examples/quickstart.ipynb), no install needed
 - [Release certificate](examples/release-certificate.md)
 - [Adversarial robustness report](examples/adversarial-robustness-report.md) and its [HTML view](examples/adversarial-robustness-report.html)
 - [Live-run snapshot, 2026-09-01](examples/live-run-claude-opus-5-2026-09-01.md)
 - [Case study](CASE_STUDY.md), [verification manifest](docs/verification-manifest.json), [reviewer guide](docs/reviewer-guide.md), [annotation guideline](docs/ANNOTATION_GUIDELINE.md), [project architecture](docs/PROJECT_ARCHITECTURE.md), [customer workflow](docs/customer-workflow.md)
-- Web explorer (Evidence Lab): maintained in a separate repository that is **not public yet**. See [docs/evidence-lab.md](docs/evidence-lab.md).
+- Web explorer (Evidence Lab): [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web), a separate public repository. There is no hosted demo: the app runs locally, as its README describes. See [docs/evidence-lab.md](docs/evidence-lab.md).
 
 ## More detail
 
@@ -157,4 +159,4 @@ Open tools by [@sebastianfoerste](https://github.com/sebastianfoerste) that trea
 - **Review-gated, not legal advice.** Every flagged risk and citation must be confirmed by a qualified lawyer. Pilot eligibility never authorizes autonomous contract reliance.
 - Live-model output is non-deterministic; a committed live run is a dated snapshot, not a stable benchmark.
 
-Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE](LICENSE).
+Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. One exception is pending: four NDA severity rationales were redrafted with AI assistance on 2026-10-13 and await the maintainer's adoption. [annotations/README.md](annotations/README.md) records which ones and what remains open. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE](LICENSE).

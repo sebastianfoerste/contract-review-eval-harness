@@ -2,6 +2,8 @@
 
 This project consists of two synchronized repositories designed to fulfill distinct roles within the legal AI contract evaluation lifecycle.
 
+Both repositories are public. [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web) has no hosted demo: the app runs locally, as its README describes.
+
 ```
                   +--------------------------------------------------+
                   |           Evaluation Engine & Source of Truth    |
