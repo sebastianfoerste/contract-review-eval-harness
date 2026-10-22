@@ -31,6 +31,9 @@ wheels/
 # Exported annotation bundle, regenerate with make annotation-bundle
 /annotations/bundle/
 
+# Static GitHub Pages site, regenerate with make site
+/site/
+
 # Environment files. Real values stay local; only example files are tracked.
 .env.*
 !.env.example

@@ -17,6 +17,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from contract_eval import paths
 from contract_eval.adjudication import compare, render_ledger
 from contract_eval.annotators import SECOND
 from contract_eval.cases import ALL_CASES
@@ -84,8 +85,8 @@ def _intake_files(root: Path, returned: Path, *, imported_names: bool = False) -
     files: dict[str, bytes] = {}
     records = []
     for case in ALL_CASES:
-        source_bytes = read_bytes(root / "data" / f"{case}_sample.md")
-        a_bytes = read_bytes(root / "annotations/drafts" / f"{case}.candidate.v2.json")
+        source_bytes = read_bytes(root / paths.source_file(case))
+        a_bytes = read_bytes(root / paths.DRAFTS_DIRECTORY / f"{case}.candidate.v2.json")
         b_bytes = read_bytes(returned / (f"{case}.json" if imported_names else f"{case}.{SECOND.slot}.v2.json"))
         source = source_bytes.decode("utf-8")
         a, b = load_gold(a_bytes, case, source), load_gold(b_bytes, case, source)
@@ -179,7 +180,7 @@ def _freeze_files(root: Path, gold_dir: Path, decisions_dir: Path) -> dict[str, 
         raw = read_bytes(gold_dir / f"{case}.v2.json")
         decision_bytes = read_bytes(decisions_dir / f"{case}.adjudication.json")
         decision = Adjudication.model_validate_json(decision_bytes)
-        gold = load_gold(raw, case, read_bytes(root / "data" / f"{case}_sample.md").decode("utf-8"))
+        gold = load_gold(raw, case, read_bytes(root / paths.source_file(case)).decode("utf-8"))
         if decision.case != case or decision.comparison_sha256 != row["comparisonSha256"]:
             raise ValueError(f"{case}: adjudication is not bound to the current comparison")
         if decision.approved_gold_sha256 != digest(raw):
@@ -226,8 +227,8 @@ def reference_status(root: Path) -> dict[str, Any]:
     try:
         # Validate candidates even before an independent return exists.
         for case in ALL_CASES:
-            source = read_bytes(root / "data" / f"{case}_sample.md")
-            candidate = read_bytes(root / "annotations/drafts" / f"{case}.candidate.v2.json")
+            source = read_bytes(root / paths.source_file(case))
+            candidate = read_bytes(root / paths.DRAFTS_DIRECTORY / f"{case}.candidate.v2.json")
             gold = load_gold(candidate, case, source.decode("utf-8"))
             records.append({"case": case, "sourceSha256": digest(source), "candidateSha256": digest(candidate),
                             "obligations": len(gold.obligations)})
@@ -252,5 +253,5 @@ def load_verified_gold(root: Path, case: str) -> ExpectedAnswerV2:
     if case not in ALL_CASES:
         raise ValueError(f"Unknown case: {case}")
     verify_frozen(root)
-    source = read_bytes(root / "data" / f"{case}_sample.md").decode("utf-8")
+    source = read_bytes(root / paths.source_file(case)).decode("utf-8")
     return load_gold(read_bytes(root / EVIDENCE / "frozen/gold" / f"{case}.v2.json"), case, source)

@@ -1,0 +1,72 @@
+name: Bug report
+description: The harness crashes, scores wrongly, or a check fails on a clean checkout.
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report one defect per issue. Use only the bundled synthetic contracts or your own synthetic text.
+        Do not paste real contracts, client data, secrets or API keys.
+
+  - type: input
+    id: command
+    attributes:
+      label: Command you ran
+      description: The exact command, with its arguments.
+      placeholder: make check, or uv run python -m contract_eval evaluate --case nda
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What you expected, for example a score, a decision (PILOT_ELIGIBLE, HUMAN_REVIEW_REQUIRED, REJECT) or a clean exit.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Harness version
+      description: >-
+        There is no --version flag. Give the git commit (`git rev-parse --short HEAD`)
+        or the installed package version
+        (`python -c "import importlib.metadata as m; print(m.version('contract-eval'))"`).
+      placeholder: 50389c8, or 0.7.0rc1
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Python version and OS
+      placeholder: Python 3.12.4 on Ubuntu 24.04, uv 0.8.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Traceback or command output. It is formatted as code automatically.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: data-check
+    attributes:
+      label: Data check
+      options:
+        - label: I removed any real client data, secrets and API keys from this report.
+          required: true

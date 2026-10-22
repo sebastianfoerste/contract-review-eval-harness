@@ -1,0 +1,37 @@
+# Copy to .github/workflows/contract-eval.yml in the repository that produces the
+# reviews. It scores every review JSON your tool wrote and fails the job on REJECT.
+# See docs/ci.md in contract-review-eval-harness for every input.
+name: contract-eval
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Replace with whatever runs your tool over the contracts and writes one
+      # review JSON per contract (schemas/review-output.schema.json).
+      - name: Produce the reviews
+        run: ./scripts/export-reviews.sh reviews/
+
+      # Once a release ships the action, pin its tag or a full commit SHA instead of main.
+      - name: Score the reviews
+        uses: sebastianfoerste/contract-review-eval-harness@main
+        with:
+          reviews: reviews/*.json
+          case: nda
+          # Or score against your own private contract and answer set:
+          # contract: contracts/msa.md
+          # gold: answer-sets/msa.json
+          # fail-on: human-review
+
+      - name: Keep the scorecards
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-eval-results
+          path: contract-eval-results/

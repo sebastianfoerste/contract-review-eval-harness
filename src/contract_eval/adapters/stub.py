@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from contract_eval import paths
 from contract_eval.capture import ProviderRequest, ProviderResponse, text_sha256
 from contract_eval.models import ReviewOutput
 from contract_eval.review_v2 import ReviewOutputV2
@@ -11,8 +12,8 @@ STUB_MODEL = "stub-fixture"
 
 
 class StubAdapter:
-    def __init__(self, fixtures_dir: Path = Path("fixtures")) -> None:
-        self._dir = fixtures_dir
+    def __init__(self, fixtures_dir: Path | None = None) -> None:
+        self._dir = fixtures_dir if fixtures_dir is not None else paths.project_root() / "fixtures"
 
     def capture(
         self, source_text: str, case: str
@@ -41,7 +42,7 @@ class StubAdapter:
         return request, response, raw_text
 
     def review(self, source_text: str, case: str) -> ReviewOutput:
-        data = json.loads((self._dir / f"{case}_stub.json").read_text())
+        data = json.loads((self._dir / f"{case}_stub.json").read_text(encoding="utf-8"))
         return ReviewOutput.model_validate(data)
 
     def review_v2(self, source_text: str, case: str) -> ReviewOutputV2:

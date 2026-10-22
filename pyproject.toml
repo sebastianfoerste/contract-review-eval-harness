@@ -3,10 +3,11 @@ name = "contract-eval"
 version = "0.7.0rc1"
 description = "Evaluation harness that measures the quality of AI contract review — clause extraction, risk flags, source citations — against a hand-authored answer set. Synthetic data, deterministic by default."
 readme = "README.md"
+license = "MIT"
 authors = [
     { name = "sebastianfoerste", email = "sebastianfoerste@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.13.4",
 ]
@@ -20,11 +21,45 @@ live = [
 [project.scripts]
 contract-eval = "contract_eval.cli:main"
 
+# Loads contract_eval.pytest_plugin in any pytest run where the package is installed.
+[project.entry-points.pytest11]
+contract_eval = "contract_eval.pytest_plugin"
+
 [build-system]
-requires = ["uv_build>=0.11.23,<0.13.0"]
-build-backend = "uv_build"
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/contract_eval"]
+
+# The bundled cases ship inside the wheel, so an install without a checkout can run
+# them. The repository copies stay where they are: committed certificates record their
+# paths and hashes. `contract_eval.paths` prefers a checkout and falls back to these.
+[tool.hatch.build.targets.wheel.force-include]
+"data" = "contract_eval/_bundled/data"
+"expected" = "contract_eval/_bundled/expected"
+"fixtures" = "contract_eval/_bundled/fixtures"
+"robustness/campaign.v1.json" = "contract_eval/_bundled/robustness/campaign.v1.json"
+"annotations/drafts" = "contract_eval/_bundled/annotations/drafts"
+
+[tool.hatch.build.targets.sdist]
+# Anchored patterns: a bare "data" would also match candidates/data.
+include = [
+    "/src",
+    "/data",
+    "/expected",
+    "/fixtures",
+    "/robustness/campaign.v1.json",
+    "/annotations/drafts",
+    "/README.md",
+    "/LICENSE",
+]
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.pytest.ini_options]
+# examples/ holds a test file for users to copy; tests/test_api.py runs it.
+testpaths = ["tests"]

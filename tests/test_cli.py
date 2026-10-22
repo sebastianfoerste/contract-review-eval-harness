@@ -35,3 +35,40 @@ def test_evaluate_writes_json_scorecard(tmp_path):
     assert 0.0 < scores["citation_grounding"] < 1.0
     assert scores["hallucination_count"] == 1
 
+
+
+def _subcommands(parser):
+    import argparse
+
+    return next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+
+
+def _listed_commands(parser) -> set[str]:
+    return {choice.dest for choice in _subcommands(parser)._choices_actions}
+
+
+def test_top_level_help_lists_user_commands_and_hides_maintainer_ones():
+    from contract_eval.cli import build_parser
+
+    parser = build_parser()
+    listed = _listed_commands(parser)
+    dev = _subcommands(parser).choices["dev"]
+
+    assert {"evaluate", "certify", "robustness", "score-output", "dev"} <= listed
+    maintainer = _listed_commands(dev)
+    assert {"verify-certificate", "verify-robustness", "reference-status", "evaluate-obligations"} <= maintainer
+    assert not listed & maintainer
+    assert "reference-status" not in parser.format_help()
+
+
+def test_maintainer_commands_run_with_and_without_the_dev_prefix(capsys):
+    import json
+
+    from contract_eval.cli import main
+
+    for argv in (
+        ["dev", "verify-certificate", "--certificate", "examples/release-certificate.json"],
+        ["verify-certificate", "--certificate", "examples/release-certificate.json"],
+    ):
+        main(argv)
+        assert json.loads(capsys.readouterr().out)["status"] == "VALID"
