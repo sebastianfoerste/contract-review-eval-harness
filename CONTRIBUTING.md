@@ -30,10 +30,13 @@ Everything in `make check` must pass before a pull request except its last step,
 checkout and fails when that sibling directory is absent. CI does not run it.
 
 If an output changes, regenerate the committed artifacts in `examples/` and commit them
-with your change: `make certificate` for the release certificate, `make robustness` for
-the adversarial report. Regenerate the parity vectors (`make parity-vectors`) only for an
-intended scoring change. `make demo` writes a scorecard for the NDA case to
-`scorecard.md`, which is not committed. The metric definitions are in [docs/metrics.md](docs/metrics.md).
+with your change: `uv run python -m contract_eval evaluate --case nda --out examples` (add
+`--format json` for `scorecard.json`) for the committed scorecard, `make certificate` for
+the release certificate, `make robustness` for the adversarial report. Regenerate the
+parity vectors (`make parity-vectors`) only for an intended scoring change. `make demo`
+prints the NDA scorecard. It writes `scorecard.md` and `run-provenance.json` to the
+repository root and `history/run_<timestamp>.json`, all ignored and none committed. The
+metric definitions are in [docs/metrics.md](docs/metrics.md).
 
 ## Path 1: add a case
 

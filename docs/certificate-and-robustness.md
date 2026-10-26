@@ -4,7 +4,7 @@ Moved from the README. See also the [release certificate](../examples/release-ce
 
 ## What the demo produces
 
-The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the harness catches a fabricated citation and marks the output for rejection. You can read the committed sample output in [`examples/scorecard.md`](../examples/scorecard.md) and [`examples/scorecard.json`](../examples/scorecard.json).
+The demo writes a scorecard with clause-level scoring, citation-grounding assessment and unsupported-citation detection. In the sample run, the scorecard reports one fabricated citation and says it must be rejected; the release certificate below rejects the NDA output on that ground. You can read the committed sample output in [`examples/scorecard.md`](../examples/scorecard.md) and [`examples/scorecard.json`](../examples/scorecard.json).
 
 The [release certificate](../examples/release-certificate.md) evaluates all bundled
 cases under a stricter legal-review policy. It hashes the source contract, gold
@@ -37,14 +37,24 @@ baseline release-certificate rejection.
 ```markdown
 # Contract Review Eval Scorecard: nda
 
+## Scores
+
 | Dimension | Score | Notes |
 |---|---:|---|
 | Clause precision | 0.92 | predicted clause types that were expected |
 | Clause recall | 1.00 | expected clause types that were found |
 | Clause F1 | 0.96 | harmonic mean of precision and recall |
-| Risk-flag accuracy | 0.50 | risky clauses flagged at the expected severity |
-| Citation grounding | 0.89 | 8/9 quotes grounded in the source |
+| Risk precision | 0.83 | flagged clauses that the gold set treats as risks |
+| Risk recall | 0.83 | gold risks the review flagged |
+| Risk F1 | 0.83 | harmonic mean of risk precision and recall |
+| Severity accuracy | 0.60 | correct severity among jointly identified risks |
+| Risk false positives | 1 | clauses flagged that the gold set does not treat as risks |
+| Risk missed | 1 | gold risks the review did not flag |
+| Duplicate / conflicting flags | 0 / 0 | predictions collapsing onto one clause |
+| Span coverage | 0.73 | gold clauses with a grounded citation inside them |
+| Citation grounding | 0.89 | 8/9 quotes matched as an exact span of the normalised source |
 | Hallucination count | 1 | cited quotes not grounded in the source |
+| Risk-flag accuracy (legacy) | 0.50 | blind to false positives; excluded from release decisions |
 ```
 
 
