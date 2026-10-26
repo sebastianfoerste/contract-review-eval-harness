@@ -6,7 +6,9 @@
 
 Offline, deterministic, no API key. Synthetic contracts only. Not legal advice.
 
-![demo](docs/demo.png)
+![Actual output of make demo: the NDA scorecard](docs/demo.png)
+
+*Actual output of `make demo`, rendered as an image.*
 
 ## Try it
 
@@ -106,7 +108,7 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 
 ## Demo and links
 
-- Screenshot and scorecard: [`docs/demo.png`](docs/demo.png), [`docs/scorecard.svg`](docs/scorecard.svg)
+- Actual output of `make demo`, rendered as an image: [`docs/demo.png`](docs/demo.png)
 - [Leaderboard](examples/leaderboard.md): every committed review output re-scored by the production scorer and decided by the release policy (`make leaderboard`)
 - [Quickstart notebook](examples/quickstart.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sebastianfoerste/contract-review-eval-harness/blob/main/examples/quickstart.ipynb), no install needed
 - [Release certificate](examples/release-certificate.md)
