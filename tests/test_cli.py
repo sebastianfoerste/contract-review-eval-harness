@@ -3,7 +3,10 @@ from pathlib import Path
 
 import pytest
 
+from contract_eval.cases import ALL_CASES
 from contract_eval.cli import compare_runs, evaluate, evaluate_case, main
+
+REGRESSION_BASELINE = Path(__file__).resolve().parents[1] / "examples" / "regression-baseline.json"
 
 
 def test_evaluate_writes_scorecard(tmp_path):
@@ -16,7 +19,8 @@ def test_evaluate_writes_scorecard(tmp_path):
 
 def test_evaluate_records_history_under_its_output_directory(tmp_path):
     # History written to the working directory polluted the checkout and failed in
-    # a read-only tree; the committed temp_test_case snapshots came from exactly that.
+    # a read-only tree; the temp_test_case snapshots once committed under history/
+    # came from exactly that.
     repo_history = sorted(Path("history").glob("run_*.json"))
     evaluate(case="nda", live=False, out_dir=tmp_path)
 
@@ -121,6 +125,32 @@ def test_compare_cli_exits_non_zero_on_a_regression(tmp_path):
 
     with pytest.raises(SystemExit) as exit_info:
         main(["compare", "--baseline", str(baseline), "--candidate", str(candidate)])
+    assert exit_info.value.code == 1
+
+
+def test_the_committed_regression_baseline_records_every_case():
+    # compare checks only the cases the baseline records, so a case added without
+    # `make regression-baseline` would never be compared in CI.
+    recorded = json.loads(REGRESSION_BASELINE.read_text(encoding="utf-8"))
+    assert recorded["case"] == "all"
+    assert sorted(recorded["scores"]) == sorted(ALL_CASES)
+
+
+def test_the_ci_gate_passes_a_fresh_run_and_fails_a_worse_one(tmp_path):
+    # The CI steps in miniature: evaluate into a scratch directory, then compare the
+    # run it recorded with the committed baseline.
+    evaluate(case="all", live=False, out_dir=tmp_path)
+    (fresh,) = (tmp_path / "history").glob("run_*.json")
+    gate = ["compare", "--baseline", str(REGRESSION_BASELINE), "--candidate"]
+
+    main([*gate, str(fresh)])
+
+    worse = json.loads(fresh.read_text(encoding="utf-8"))
+    worse["scores"]["dpa"]["hallucination_count"] += 1
+    doctored = tmp_path / "worse.json"
+    doctored.write_text(json.dumps(worse), encoding="utf-8")
+    with pytest.raises(SystemExit) as exit_info:
+        main([*gate, str(doctored)])
     assert exit_info.value.code == 1
 
 

@@ -1,0 +1,136 @@
+{
+  "timestamp": "2026-10-27T11:56:55.507909",
+  "case": "all",
+  "provenance": {
+    "schema": "contract-review-eval.run-provenance.v1",
+    "adapter": "stub",
+    "output_generated_at": "2026-10-27T11:56:55",
+    "scored_at": "2026-10-27T11:56:55",
+    "scorer_version": "0.7.0rc1",
+    "gold_set_sha256": {
+      "nda": "53c6239b7a8870fb8f3bcdab3875f6d0ec15604f06702d94df8c5f7df13d07f9",
+      "saas": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e",
+      "dpa": "e7f5ee192939560fa0ed3dd013eb77c438ab9f7fd27659d590471977d37f4a75"
+    },
+    "source_contract_sha256": {
+      "nda": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
+      "saas": "47f67a676df59622621a3fccfc09f0737d0564414df6e730f7accb9198145c73",
+      "dpa": "17a0c7b0dc7e74fe23fda6fcb394d331ada6e7286c2fb6a9497a9e58ed96f79e"
+    }
+  },
+  "scores": {
+    "nda": {
+      "clause_precision": 0.9166666666666666,
+      "clause_recall": 1.0,
+      "clause_f1": 0.9565217391304348,
+      "risk_flag_accuracy": 0.5,
+      "risk_precision": 0.8333333333333334,
+      "risk_recall": 0.8333333333333334,
+      "risk_f1": 0.8333333333333334,
+      "risk_severity_accuracy": 0.6,
+      "risk_false_positives": [
+        "governing_law"
+      ],
+      "risk_missed": [
+        "notices"
+      ],
+      "risk_severity_confusion": {
+        "high->low": 1,
+        "medium->medium": 1,
+        "high->medium": 1,
+        "high->high": 2
+      },
+      "risk_duplicate_flags": [],
+      "risk_conflicting_flags": [],
+      "span_coverage": 0.7272727272727273,
+      "span_uncovered_clauses": [
+        "injunctive_relief",
+        "no_license",
+        "notices"
+      ],
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
+      "hallucination_count": 1,
+      "thresholds": {
+        "f1": 0.85,
+        "risk_accuracy": 0.45,
+        "grounding_rate": 0.75,
+        "hallucinations": 1.0
+      }
+    },
+    "saas": {
+      "clause_precision": 0.9166666666666666,
+      "clause_recall": 1.0,
+      "clause_f1": 0.9565217391304348,
+      "risk_flag_accuracy": 0.5,
+      "risk_precision": 1.0,
+      "risk_recall": 0.875,
+      "risk_f1": 0.9333333333333333,
+      "risk_severity_accuracy": 0.5714285714285714,
+      "risk_false_positives": [],
+      "risk_missed": [
+        "subprocessors"
+      ],
+      "risk_severity_confusion": {
+        "high->high": 2,
+        "medium->low": 1,
+        "high->low": 2,
+        "medium->medium": 2
+      },
+      "risk_duplicate_flags": [],
+      "risk_conflicting_flags": [],
+      "span_coverage": 0.7272727272727273,
+      "span_uncovered_clauses": [
+        "data_export_on_termination",
+        "indemnity",
+        "subprocessors"
+      ],
+      "citation_grounded": 8,
+      "citation_total": 9,
+      "citation_grounding": 0.8888888888888888,
+      "hallucination_count": 1,
+      "thresholds": {
+        "f1": 0.85,
+        "risk_accuracy": 0.45,
+        "grounding_rate": 0.75,
+        "hallucinations": 1.0
+      }
+    },
+    "dpa": {
+      "clause_precision": 0.9090909090909091,
+      "clause_recall": 1.0,
+      "clause_f1": 0.9523809523809523,
+      "risk_flag_accuracy": 0.6,
+      "risk_precision": 1.0,
+      "risk_recall": 1.0,
+      "risk_f1": 1.0,
+      "risk_severity_accuracy": 0.6,
+      "risk_false_positives": [],
+      "risk_missed": [],
+      "risk_severity_confusion": {
+        "high->low": 2,
+        "medium->medium": 1,
+        "high->high": 2
+      },
+      "risk_duplicate_flags": [],
+      "risk_conflicting_flags": [],
+      "span_coverage": 0.7,
+      "span_uncovered_clauses": [
+        "audit_rights",
+        "governing_law",
+        "international_transfers"
+      ],
+      "citation_grounded": 7,
+      "citation_total": 8,
+      "citation_grounding": 0.875,
+      "hallucination_count": 1,
+      "thresholds": {
+        "f1": 0.85,
+        "risk_accuracy": 0.45,
+        "grounding_rate": 0.75,
+        "hallucinations": 1.0
+      }
+    }
+  }
+}

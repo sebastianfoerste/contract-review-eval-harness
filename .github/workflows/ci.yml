@@ -30,24 +30,19 @@ jobs:
       - name: Run unit tests
         run: uv run pytest -v
 
-      # git ls-files lists only committed snapshots, so the run this job writes can
-      # never become its own baseline.
-      - name: Select the committed regression baseline
-        run: |
-          baseline="$(git ls-files 'history/run_*.json' | sort | tail -n 1)"
-          test -n "$baseline" || { echo "No committed history/run_*.json to compare against."; exit 1; }
-          echo "Regression baseline: $baseline"
-          echo "REGRESSION_BASELINE=$baseline" >> "$GITHUB_ENV"
-
       - name: Run baseline suite evaluation gate
         run: uv run python -m contract_eval evaluate --case all --out "$RUNNER_TEMP/evaluation"
 
+      # The baseline is a tracked file outside the ignored history/ directories, so the
+      # run this job writes can never become its own baseline. AGENTS.md says when to
+      # regenerate it.
       - name: Compare the fresh run against the committed baseline
         run: |
+          git ls-files --error-unmatch examples/regression-baseline.json
           shopt -s nullglob
           runs=("$RUNNER_TEMP"/evaluation/history/run_*.json)
           test "${#runs[@]}" -eq 1 || { echo "Expected one fresh run, found ${#runs[@]}."; exit 1; }
-          uv run python -m contract_eval compare --baseline "$REGRESSION_BASELINE" --candidate "${runs[0]}"
+          uv run python -m contract_eval compare --baseline examples/regression-baseline.json --candidate "${runs[0]}"
 
       - name: Reject drift between the published JSON Schemas and the models
         run: uv run python scripts/export_schemas.py --check

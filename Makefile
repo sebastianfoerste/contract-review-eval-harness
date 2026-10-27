@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check site schemas schemas-check robustness robustness-check parity-vectors parity-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status web-check web-export check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check site schemas schemas-check robustness robustness-check parity-vectors parity-check regression-baseline regression-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status web-check web-export check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -34,6 +34,14 @@ robustness-check:
 	uv run python scripts/check_robustness_report.py
 parity-vectors: ; uv run python scripts/check_parity_vectors.py --write
 parity-check: ; uv run python scripts/check_parity_vectors.py
+regression-baseline:
+	rm -rf build/regression-run
+	uv run python -m contract_eval evaluate --case all --out build/regression-run
+	cp build/regression-run/history/run_*.json examples/regression-baseline.json
+regression-check:
+	rm -rf build/regression-run
+	uv run python -m contract_eval evaluate --case all --out build/regression-run
+	uv run python -m contract_eval compare --baseline examples/regression-baseline.json --candidate build/regression-run/history/run_*.json
 candidate-check: ; uv run pytest tests/test_candidates.py tests/test_candidate_annotation.py tests/test_candidate_adjudication.py tests/test_candidate_experiment.py tests/test_candidate_budget.py -q
 candidate-pack: ; uv run python -m contract_eval.candidate_annotation build
 candidate-pack-check: ; uv run python -m contract_eval.candidate_annotation verify
@@ -42,5 +50,5 @@ candidate-experiment-check: ; uv run python scripts/check_candidate_experiments.
 candidate-budget-status: ; uv run python -m contract_eval.candidate_budget status
 web-check: ; uv run python scripts/check_web_sync.py
 web-export: ; uv run python ../contract-eval-web/scripts/export-benchmark.py --repo .
-check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check leaderboard-check schemas-check certificate-check certificate-verify robustness-check parity-check candidate-pack-check candidate-experiment-check web-check
+check: test regression-check anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check leaderboard-check schemas-check certificate-check certificate-verify robustness-check parity-check candidate-pack-check candidate-experiment-check web-check
 

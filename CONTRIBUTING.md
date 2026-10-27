@@ -33,10 +33,14 @@ If an output changes, regenerate the committed artifacts in `examples/` and comm
 with your change: `uv run python -m contract_eval evaluate --case nda --out examples` (add
 `--format json` for `scorecard.json`) for the committed scorecard, `make certificate` for
 the release certificate, `make robustness` for the adversarial report. Regenerate the
-parity vectors (`make parity-vectors`) only for an intended scoring change. `make demo`
-prints the NDA scorecard. It writes `scorecard.md` and `run-provenance.json` to the
-repository root and `history/run_<timestamp>.json`, all ignored and none committed. The
-metric definitions are in [docs/metrics.md](docs/metrics.md).
+parity vectors (`make parity-vectors`) only for an intended scoring change. Regenerate
+the regression baseline (`make regression-baseline`) only when a score moves on purpose
+or a case is added: CI fails every run that scores worse than
+`examples/regression-baseline.json`. `make demo` prints the NDA scorecard. It writes
+`scorecard.md` and `run-provenance.json` to the repository root and
+`history/run_<timestamp>.json`, all ignored and none committed. Every evaluate run writes
+its `history/` under `--out`, so the scorecard command above also leaves an ignored
+`examples/history/`. The metric definitions are in [docs/metrics.md](docs/metrics.md).
 
 ## Path 1: add a case
 
@@ -52,11 +56,11 @@ are in the docstring of `src/contract_eval/cases.py`:
 5. One entry in `ALL_CASES` in `src/contract_eval/cases.py`. Every consumer derives its
    case list from it.
 
-Then run `make anchor-check`, `make certificate` and `make check`, review the changed
-certificate, and commit it. [docs/ANNOTATION_GUIDELINE.md](docs/ANNOTATION_GUIDELINE.md)
-explains how to write the agreement, choose clause types, assign severities, declare
-aliases and write anchors. [`candidates/`](candidates/README.md) shows two cases waiting
-for their answer sets.
+Then run `make anchor-check`, `make certificate`, `make regression-baseline` and
+`make check`, review the changed certificate and regression baseline, and commit them.
+[docs/ANNOTATION_GUIDELINE.md](docs/ANNOTATION_GUIDELINE.md) explains how to write the
+agreement, choose clause types, assign severities, declare aliases and write anchors.
+[`candidates/`](candidates/README.md) shows two cases waiting for their answer sets.
 
 ## Path 2: add an adapter
 

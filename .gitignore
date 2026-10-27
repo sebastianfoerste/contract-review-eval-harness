@@ -14,8 +14,9 @@ wheels/
 /scorecard.json
 /run-provenance.json
 
-# Generated run history (written by every evaluate run); not tracked
-/history/run_*.json
+# Generated run history: every evaluate run writes history/ under its --out directory;
+# not tracked. The regression gate's committed baseline is examples/regression-baseline.json.
+**/history/run_*.json
 
 # SQLite / local databases
 *.db

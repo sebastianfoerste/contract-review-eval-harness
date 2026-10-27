@@ -23,4 +23,4 @@ following the structure of `expected/nda.json`.
 2. Move the contract to `data/<case>_sample.md` and the answer set to `expected/<case>.json`.
 3. Write `fixtures/<case>_stub.json` with deliberately imperfect output, as described in `data/README.md`.
 4. Add the case to `ALL_CASES`.
-5. Run `make test`, `make anchor-check` and `make certificate`, then review the changed certificate and web export before committing.
+5. Run `make test`, `make anchor-check`, `make certificate` and `make regression-baseline`, then review the changed certificate, regression baseline and web export before committing.

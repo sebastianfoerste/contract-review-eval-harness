@@ -31,6 +31,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) and `CITATION.cff`.
 - This changelog.
 - `tests/test_docs.py`, an offline check of relative doc links, metric sections and issue forms.
+- `examples/regression-baseline.json`, a committed `evaluate --case all` run. CI compares every fresh run against it and fails on a regression. `make regression-check` runs the same comparison, and `make regression-baseline` regenerates the baseline after an intended score change.
 
 ### Changed
 

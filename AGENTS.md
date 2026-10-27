@@ -25,7 +25,8 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.
 - The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`.
 - `examples/web-parity-vectors.json` pins the scorer output in CI, where the web repository is absent. Regenerate it with `make parity-vectors` only for an intended scoring change, then run `make web-export`.
+- `examples/regression-baseline.json` is the committed run that CI and `make regression-check` compare a fresh `evaluate --case all` run against. `compare` exits 1 when a metric it tracks is worse for any case the baseline records. Regenerate the baseline with `make regression-baseline` only when a change moves a score on purpose or adds a case, and commit it with that change; `make test` fails until it records every case in `ALL_CASES`. Never regenerate it to get past a regression. `evaluate` writes `history/run_<timestamp>.json` under its `--out` directory, and those runs stay untracked.
 
 ## Commands
-`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make parity-check` · `make schemas` · `make leaderboard` · `make site` · `make web-check` · `make web-export` · `make check`.
+`make install` (uv sync) · `make test` · `make demo` (NDA scorecard) · `make demo-live` · `make parity-check` · `make regression-check` · `make schemas` · `make leaderboard` · `make site` · `make web-check` · `make web-export` · `make check`.
 
