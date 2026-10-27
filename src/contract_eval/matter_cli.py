@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from contract_eval.adapters.matter import (
+    MATTER_ADAPTERS,
     STUB_MODEL,
     MatterFixtureMissing,
     get_matter_adapter,
@@ -456,15 +457,26 @@ def add_parsers(add: Callable[[str, str], argparse.ArgumentParser]) -> None:
         help="condition id; repeat for several, default is all",
     )
     evaluate.add_argument("--split", default="all", choices=["dev", "eval", "all"])
-    evaluate.add_argument("--live", action="store_true", help="call the live model")
-    evaluate.add_argument("--model", default=None, help="model id for --live")
+    # The adapter flags of the case commands, cut down to the adapters a matter has, so
+    # --live means --adapter anthropic here too.
+    adapter = evaluate.add_mutually_exclusive_group()
+    adapter.add_argument(
+        "--adapter", default=None, choices=MATTER_ADAPTERS,
+        help="which adapter produces the review (default: stub)",
+    )
+    adapter.add_argument("--live", action="store_true", help="alias for --adapter anthropic")
+    evaluate.add_argument(
+        "--model", default=None,
+        help="model id for --adapter anthropic (default: CONTRACT_EVAL_MODEL, else claude-opus-5)",
+    )
     evaluate.add_argument(
         "--review", action="append", default=[], metavar="CONDITION=PATH",
         help="score this output file for a condition instead of calling the adapter",
     )
     evaluate.add_argument(
         "--log", default=None, type=Path,
-        help="experiment log to read and append to; --live uses experiments/<matter>/log.jsonl",
+        help="experiment log to read and append to; a live run, or one scored with "
+             "--review, uses experiments/<matter>/log.jsonl",
     )
     evaluate.add_argument("--out", default=None, type=Path, help="output directory")
 
@@ -538,7 +550,7 @@ def run(args: argparse.Namespace) -> int:
             args.matter, round_id,
             conditions=args.condition,
             split=None if args.split == "all" else args.split,
-            live=args.live, model=args.model, root=args.root,
+            live=args.live or args.adapter == "anthropic", model=args.model, root=args.root,
             reviews=reviews, log_path=args.log,
         )
         if args.out:

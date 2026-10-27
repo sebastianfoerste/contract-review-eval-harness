@@ -200,6 +200,10 @@ uv sync --extra live
 uv run python -m contract_eval matter-evaluate --round round1 --live
 ```
 
+`--live` is the alias for `--adapter anthropic`, as for the cases. The OpenAI-compatible
+and command adapters return a case review and have no matter counterpart. Another
+tool's matter review is scored from a file with `--review`, as shown below.
+
 Every attempt leaves a file in `captures/matters/<id>/`: the raw response when one
 came back, or a record of the failure when the call raised, so failed attempts can be
 counted. A capture is scored only as the matter, round and condition it was made for,

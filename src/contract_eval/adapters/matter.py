@@ -208,6 +208,12 @@ class LiveMatterAdapter:
         )
 
 
+# The `--adapter` names of the two matter adapters. The OpenAI-compatible and command
+# adapters return a case review, so they have no matter counterpart; another tool's
+# matter review is scored from a file with `matter-evaluate --review`.
+MATTER_ADAPTERS = ("stub", "anthropic")
+
+
 def get_matter_adapter(live: bool, model: str | None = None):
     if live:
         return LiveMatterAdapter(model=model)

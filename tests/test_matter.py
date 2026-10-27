@@ -594,6 +594,35 @@ def test_the_commands_are_reachable_from_the_entry_point():
     assert "Split: eval." in scored.stdout
 
 
+@pytest.mark.parametrize("flags", [["--live"], ["--adapter", "anthropic"]])
+def test_live_and_adapter_anthropic_select_the_live_matter_adapter(flags, monkeypatch):
+    from contract_eval.cli import build_parser
+    from contract_eval.matter_cli import run
+
+    calls = []
+
+    def stop_before_any_call(*args, **kwargs):
+        calls.append(kwargs)
+        raise RuntimeError("stopped before the adapter was called")
+
+    monkeypatch.setattr("contract_eval.matter_cli.evaluate_matter", stop_before_any_call)
+    args = build_parser().parse_args(
+        ["matter-evaluate", "--root", str(TOY), "--matter", "toy", "--model", "m-1", *flags]
+    )
+    assert run(args) == 1
+    assert (calls[0]["live"], calls[0]["model"]) == (True, "m-1")
+
+
+def test_the_matter_path_offers_only_its_own_adapters():
+    from contract_eval.cli import build_parser
+
+    parser = build_parser()
+    assert parser.parse_args(["matter-evaluate"]).adapter is None
+    for argv in (["--adapter", "command"], ["--live", "--adapter", "stub"]):
+        with pytest.raises(SystemExit):
+            parser.parse_args(["matter-evaluate", *argv])
+
+
 def run_sync(root: Path, *flags: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, "scripts/matter_sync.py", "--root", str(root), *flags],
