@@ -108,9 +108,11 @@ Three further rules keep a correct review from being marked down for how it is f
 |---|---|
 | Issue recall | Credit earned over expected issues |
 | Material-issue recall | The same, over issues of high materiality |
+| Conflict recall, position recall | Issue recall over that task's issues only |
 | Finding precision | Distinct issues found over findings made |
 | Escalation recall and precision | Gaps surfaced, and questions asked that the file already answers |
 | Action accuracy | Share of found positions with the expected action |
+| Materiality accuracy | Share of found conflicts and positions whose credited findings all carry the expected materiality. Escalation findings carry none and are ignored, so an issue credited only to them is left out |
 | False reassurance | Material positions the review said to accept and the answers say not to |
 | Citation grounding | Grounded citations over all citations, with misattributed, unsupported and hidden-document citations counted separately, and citations no finding relies on counted in the open |
 | Reviewer usefulness | Mean rating from recorded reviewer sessions, or "not measured" |
