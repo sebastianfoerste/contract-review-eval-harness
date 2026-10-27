@@ -533,8 +533,18 @@ def run(args: argparse.Namespace) -> int:
 
         if args.cmd == "matter-review-template":
             loaded = load_matter(args.matter, args.root)
+            review: MatterReview
             if args.review:
-                review: MatterReview = parse_review_file(args.review)
+                review, meta = load_review_file(args.review)
+                # Sessions are counted only for the round they name. A template for
+                # another round would pass matter-check and never reach a scorecard.
+                claimed = {k: meta[k] for k in ("matter_id", "round_id") if k in meta}
+                actual = {"matter_id": args.matter, "round_id": round_id}
+                if any(actual[k] != v for k, v in claimed.items()):
+                    raise ValueError(
+                        f"{args.review} was captured for {claimed}, and the template is "
+                        f"for {actual}"
+                    )
             elif args.condition:
                 review = get_matter_adapter(False).review(loaded, round_id, args.condition)
             else:

@@ -622,6 +622,30 @@ def test_outside_a_checkout_the_check_fails_rather_than_passing_on_nothing(tmp_p
     assert "runs from a repository checkout" in capsys.readouterr().out
 
 
+def test_a_review_template_refuses_a_capture_of_another_round(tmp_path, capsys):
+    """A session filled for the wrong round passes matter-check and is never counted."""
+    from contract_eval.adapters.matter import CAPTURE_SCHEMA
+    from contract_eval.cli import build_parser
+    from contract_eval.matter_cli import run
+
+    capture = tmp_path / "capture.json"
+    raw = (TOY / "matters" / "toy" / "fixtures" / "round1.matter.json").read_text()
+    capture.write_text(json.dumps({
+        "schema": CAPTURE_SCHEMA, "status": "returned", "matter_id": "toy",
+        "round_id": "round1", "condition_id": "matter", "raw_text": raw,
+    }))
+    out = tmp_path / "template.json"
+    argv = ["matter-review-template", "--root", str(TOY), "--matter", "toy",
+            "--review", str(capture), "--out", str(out)]
+
+    assert run(build_parser().parse_args([*argv, "--round", "round2"])) == 1
+    assert "was captured for" in capsys.readouterr().out
+    assert not out.exists()
+
+    assert run(build_parser().parse_args([*argv, "--round", "round1"])) == 0
+    assert json.loads(out.read_text())["round_id"] == "round1"
+
+
 def test_the_matter_path_offers_only_its_own_adapters():
     from contract_eval.cli import build_parser
 
