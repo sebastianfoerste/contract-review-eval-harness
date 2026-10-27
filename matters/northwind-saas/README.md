@@ -36,10 +36,11 @@ and unchanged. Their single-contract answers under `expected/` are not affected.
 | Prompts for the three conditions | Drafted. Untuned |
 | Answers, round 1 and round 2 | Draft answers authored |
 | Stub outputs | None. Written after the answers, deliberately imperfect, as for the cases |
-| Live outputs | None captured |
+| Live outputs | One: round 1 under `matter` (claude-sonnet-5-5, 2026-10-07), scored once against the draft answers and logged in `experiments/northwind-saas/log.jsonl`. The capture is not committed |
 | Reviewer sessions | None recorded |
 
-No score exists for this matter. `matter-evaluate` reports that and scores nothing.
+No stub output exists, so `matter-evaluate` scores nothing offline. The logged run
+covers one condition of round 1 and measures no difference between conditions.
 
 The documents contain deliberate tensions between the contracts, the vendor's
 statements and the client's position. They are not listed anywhere in this repository,
