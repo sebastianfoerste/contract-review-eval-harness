@@ -268,8 +268,9 @@ as excluded.
 
 - One matter, three contract types, one client side.
 - The contracts are the certified synthetic cases. The six further matter documents
-  were drafted with AI assistance to create tensions with them and with each other,
-  and need the author's review before the answers are written.
+  were drafted with AI assistance to create tensions with them and with each other.
+  The status table in the [matter's README](../matters/northwind-saas/README.md)
+  records their review.
 - Evidence binding measures where a review quoted. A finding that quotes the right
   passages and reasons wrongly about them earns credit for detection. Action accuracy
   and reviewer sessions are the checks on reasoning.
