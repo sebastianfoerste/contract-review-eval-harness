@@ -35,9 +35,10 @@ with your change: `uv run python -m contract_eval evaluate --case nda --out exam
 the release certificate, `make robustness` for the adversarial report. Regenerate the
 parity vectors (`make parity-vectors`) only for an intended scoring change. Regenerate
 the regression baseline (`make regression-baseline`) only when a score moves on purpose
-or a case is added: CI fails every run that scores worse than
-`examples/regression-baseline.json`. `make demo` prints the NDA scorecard. It writes
-`scorecard.md` and `run-provenance.json` to the repository root and
+or a case is added: CI fails a run in which a metric that `compare` tracks (clause
+precision, recall and F1, risk-flag accuracy, citation grounding, hallucination count) is
+worse than in `examples/regression-baseline.json`. `make demo` prints the NDA scorecard.
+It writes `scorecard.md` and `run-provenance.json` to the repository root and
 `history/run_<timestamp>.json`, all ignored and none committed. Every evaluate run writes
 its `history/` under `--out`, so the scorecard command above also leaves an ignored
 `examples/history/`. The metric definitions are in [docs/metrics.md](docs/metrics.md).
