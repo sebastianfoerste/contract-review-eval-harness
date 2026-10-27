@@ -223,6 +223,10 @@ uv run python -m contract_eval matter-evaluate --round round1 \
 This allows outputs to be captured before the answers are written and scored
 afterwards, which keeps the answers independent of the outputs.
 
+`captures/` is not committed. A matter capture kept in the repository goes under
+`matters/<id>/captures/`, never in `examples/captures/`: the leaderboard reads every
+file there as a case capture and fails on a matter capture.
+
 ## Reviewer sessions
 
 A score against the answers shows what a review found. It does not show whether a
