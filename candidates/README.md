@@ -10,6 +10,9 @@ Two synthetic contracts that are not yet part of the evaluated suite:
 Neither case appears in `ALL_CASES` in `src/contract_eval/cases.py`, so no score,
 certificate or robustness run includes them.
 
+`mycounsel/` holds the separate native My Counsel track, which is outside `ALL_CASES`
+and every certificate; see [its README](mycounsel/README.md).
+
 ## What is missing
 
 The answer sets in `candidates/expected/` are empty by design. The harness claims
