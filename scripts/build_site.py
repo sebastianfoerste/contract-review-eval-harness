@@ -13,12 +13,19 @@ renderer covers what these files use (headings, paragraphs, pipe tables, lists,
 fenced and inline code, links, bold and italic) and escapes every piece of source
 text, so a quote lifted from a contract can never become markup on the page.
 Output carries no build time, so the same inputs produce the same bytes.
+
+With `--wheel`, the site also carries the playground: the static page in
+`playground/`, the package wheel it installs into Pyodide, and `samples.json`
+with the bundled contracts and three example reviews per case. The examples are
+built with the package's own scorer, which is the one import outside the
+standard library.
 """
 
 from __future__ import annotations
 
 import argparse
 import html
+import json
 import re
 import shutil
 from dataclasses import dataclass
@@ -26,6 +33,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "site"
+PLAYGROUND = ROOT / "playground"
+PLAYGROUND_FILES: tuple[str, ...] = ("index.html", "styles.css", "app.mjs", "runtime.mjs", "score.py")
+WHEEL_MARKER = "{{WHEEL}}"
 SITE_TITLE = "contract-review-eval-harness"
 REPOSITORY_URL = "https://github.com/sebastianfoerste/contract-review-eval-harness"
 
@@ -286,11 +296,20 @@ def _document(title: str, body: str, *, source: str | None = None) -> str:
     )
 
 
-def _index() -> str:
+PLAYGROUND_PAGE = Page(
+    "playground/index.html",
+    "playground/",
+    "Playground",
+    "Score your own review JSON against a bundled case, in the browser, with the same scorer.",
+)
+
+
+def _index(*, playground: bool = False) -> str:
+    pages = (*PAGES, *COPIED, *((PLAYGROUND_PAGE,) if playground else ()))
     items = "\n".join(
         f'<li><a href="{html.escape(page.output, quote=True)}">{html.escape(page.title)}</a>'
         f" — {html.escape(page.summary)}</li>"
-        for page in (*PAGES, *COPIED)
+        for page in pages
     )
     body = (
         f"<h1>{SITE_TITLE}</h1>\n"
@@ -303,11 +322,85 @@ def _index() -> str:
     return _document(SITE_TITLE, body)
 
 
-def build(out: Path, root: Path = ROOT) -> list[Path]:
-    """Write the site under `out` and return the files written, index first."""
+def _title(contract: str) -> str:
+    heading = next((line for line in contract.splitlines() if line.startswith("# ")), "# Contract")
+    return heading[2:].replace("(SYNTHETIC)", "").strip()
+
+
+def playground_samples(root: Path = ROOT) -> dict:
+    """The bundled contracts and three example reviews per case, one per decision.
+
+    `stub` is the deliberately imperfect fixture, which the policy rejects for its
+    fabricated citation. `grounded` drops every ungrounded citation from it, which
+    leaves the review items for a human. `answer_key` restates the answer set as a
+    review, quoting each clause anchor, and is the only one eligible for a pilot.
+    """
+    from contract_eval import paths
+    from contract_eval.api import load_case
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.scorer import grounded_span
+
+    cases = {}
+    for name in ALL_CASES:
+        case = load_case(name, root=root)
+        expected = case.expected
+        stub = json.loads((root / paths.fixture_file(name)).read_text(encoding="utf-8"))
+        grounded = {
+            **stub,
+            "citations": [c for c in stub["citations"] if grounded_span(case.source_text, c["quote"]) is not None],
+        }
+        grounded.pop("_comment", None)
+        answer_key = {
+            "clauses": [
+                {"clause_type": clause, "text": f"The {clause.replace('_', ' ')} clause."}
+                for clause in expected.clause_types
+            ],
+            "risk_flags": [
+                {"clause_type": clause, "severity": severity, "rationale": expected.severity_rationale[clause]}
+                for clause, severity in expected.risk_flags.items()
+            ],
+            "citations": [
+                {"quote": anchor, "clause_type": clause} for clause, anchor in expected.clause_anchors.items()
+            ],
+            "abstentions": [],
+        }
+        context = expected.review_context
+        cases[name] = {
+            "title": _title(case.source_text),
+            "contract": case.source_text,
+            "context": context.model_dump() if context else None,
+            "clause_count": len(expected.clause_types),
+            "risk_count": len(expected.risk_flags),
+            "reviews": {"stub": stub, "grounded": grounded, "answer_key": answer_key},
+        }
+    return {"cases": cases}
+
+
+def build_playground(out: Path, wheel: Path, root: Path = ROOT) -> list[Path]:
+    """Copy the playground into `out/playground/` with the wheel it installs."""
+    target = out / "playground"
+    target.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name in PLAYGROUND_FILES:
+        text = (PLAYGROUND / name).read_text(encoding="utf-8")
+        path = target / name
+        path.write_text(text.replace(WHEEL_MARKER, wheel.name), encoding="utf-8")
+        written.append(path)
+    samples = target / "samples.json"
+    samples.write_text(json.dumps(playground_samples(root), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    shutil.copyfile(wheel, target / wheel.name)
+    return [*written, samples, target / wheel.name]
+
+
+def build(out: Path, root: Path = ROOT, *, wheel: Path | None = None) -> list[Path]:
+    """Write the site under `out` and return the files written, index first.
+
+    `wheel` is the built contract-eval wheel. Without it the playground is left out,
+    because the page cannot score anything without the package.
+    """
     out.mkdir(parents=True, exist_ok=True)
     written = [out / "index.html"]
-    written[0].write_text(_index(), encoding="utf-8")
+    written[0].write_text(_index(playground=wheel is not None), encoding="utf-8")
     for page in PAGES:
         markdown = (root / page.source).read_text(encoding="utf-8")
         target = out / page.output
@@ -317,14 +410,22 @@ def build(out: Path, root: Path = ROOT) -> list[Path]:
         target = out / page.output
         shutil.copyfile(root / page.source, target)
         written.append(target)
+    if wheel is not None:
+        written.extend(build_playground(out, wheel, root))
     return written
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="directory to write the site into")
+    parser.add_argument(
+        "--wheel", type=Path, default=None,
+        help="contract-eval wheel to serve with the playground (uv build --wheel); omit to leave the playground out",
+    )
     args = parser.parse_args(argv)
-    for path in build(args.out):
+    if args.wheel is not None and not (args.wheel.is_file() and args.wheel.suffix == ".whl"):
+        parser.error(f"--wheel {args.wheel} is not a wheel file")
+    for path in build(args.out, wheel=args.wheel):
         print(f"wrote {path}")
     return 0
 
