@@ -5,6 +5,12 @@ import json
 import sys
 from pathlib import Path
 
+# The dashboard refuses a feedback item that does not state its origin. These items come
+# from eval runs on synthetic contracts under an invented persona, so the kind is fixed.
+# `approved_aggregate` and `participant_session` describe real evidence and need an
+# approval or consent reference; no script may write them.
+ORIGIN_KIND = "synthetic_fixture"
+
 def export_feedback(write: bool, dashboard_path: str):
     history_dir = Path("history")
     if not history_dir.exists():
@@ -48,6 +54,7 @@ def export_feedback(write: bool, dashboard_path: str):
             
             feedback_item = {
                 "id": f"fb-gen-{timestamp}-{counter}",
+                "origin": {"kind": ORIGIN_KIND},
                 "accountId": acct_id,
                 "sourcePersona": "Associate",
                 "text": text,

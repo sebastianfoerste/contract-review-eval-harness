@@ -34,6 +34,9 @@ jobs:
       - name: Run comparison regression test
         run: uv run python -m contract_eval compare
 
+      - name: Reject drift between the published JSON Schemas and the models
+        run: uv run python scripts/export_schemas.py --check
+
       - name: Verify every v2 obligation offset resolves in its source
         run: uv run python scripts/check_gold_v2.py
 
@@ -48,6 +51,9 @@ jobs:
 
       - name: Reject drift in the generated live-run report
         run: uv run python scripts/check_live_run_report.py
+
+      - name: Reject drift in the generated leaderboard
+        run: uv run python scripts/build_leaderboard.py --check
 
       - name: Verify every clause anchor locates exactly one clause
         run: uv run python scripts/check_clause_anchors.py
@@ -64,6 +70,9 @@ jobs:
       - name: Check the committed robustness artifacts
         run: uv run python scripts/check_robustness_report.py
 
+      - name: Reject scorer drift against the committed web parity vectors
+        run: uv run python scripts/check_parity_vectors.py
+
       - name: Verify matter document hashes and answer offsets
         run: |
           uv run python scripts/matter_sync.py
@@ -71,3 +80,104 @@ jobs:
 
       - name: Verify matter manifests, answers and fixtures
         run: uv run python -m contract_eval matter-check
+
+  python-compat:
+    # The job above runs every check on 3.13. This one holds the declared minimum in
+    # pyproject.toml: the suite and the full offline pipeline on 3.11 and 3.12.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run unit tests
+        run: uv run pytest -q
+
+      - name: Run baseline suite evaluation gate
+        run: uv run python -m contract_eval evaluate --case all
+
+      - name: Recompute the release certificate from source inputs
+        run: uv run python -m contract_eval verify-certificate --certificate examples/release-certificate.json
+
+      - name: Verify the adversarial robustness campaign
+        run: uv run python -m contract_eval verify-robustness --report examples/adversarial-robustness-report.json --campaign robustness/campaign.v1.json
+
+  wheel:
+    # The wheel carries the bundled cases, so an install with no checkout must run
+    # them and reproduce the committed certificate byte for byte.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Build the sdist and wheel
+        run: uv build
+
+      - name: Install the wheel into a clean Python 3.11 environment
+        run: |
+          uv venv --python 3.11 "$RUNNER_TEMP/wheel-env"
+          uv pip install --python "$RUNNER_TEMP/wheel-env/bin/python" dist/*.whl
+
+      - name: Run a bundled case outside the checkout
+        run: |
+          mkdir "$RUNNER_TEMP/smoke" && cd "$RUNNER_TEMP/smoke"
+          "$RUNNER_TEMP/wheel-env/bin/contract-eval" evaluate --case nda
+          test -s scorecard.md
+          "$RUNNER_TEMP/wheel-env/bin/contract-eval" certify --out cert
+          cmp cert/release-certificate.json "$GITHUB_WORKSPACE/examples/release-certificate.json"
+
+      - name: Run the copyable pytest example against the installed wheel
+        # The example's contract_case fixture comes from the plugin the wheel registers
+        # under pytest11, so a wheel without that entry point fails here.
+        run: |
+          uv pip install --python "$RUNNER_TEMP/wheel-env/bin/python" pytest
+          mkdir "$RUNNER_TEMP/plugin" && cp examples/test_my_reviewer.py "$RUNNER_TEMP/plugin/"
+          cd "$RUNNER_TEMP/plugin"
+          "$RUNNER_TEMP/wheel-env/bin/python" -m pytest -q test_my_reviewer.py
+
+  action:
+    # Runs the repository's own action the way another repository would. The NDA stub
+    # carries a fabricated citation, so the action has to fail it with REJECT.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Score the NDA stub through the action
+        id: stub
+        continue-on-error: true
+        uses: ./
+        with:
+          reviews: fixtures/nda_stub.json
+          case: nda
+          out: action-results
+
+      - name: Require the action to have rejected the stub
+        env:
+          OUTCOME: ${{ steps.stub.outcome }}
+        run: |
+          test "$OUTCOME" = failure
+          python3 -c 'import json, sys; sys.exit(json.load(open("action-results/fixtures__nda_stub.json"))["decision"] != "REJECT")'

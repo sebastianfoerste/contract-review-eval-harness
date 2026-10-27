@@ -2,6 +2,8 @@
 
 This project consists of two synchronized repositories designed to fulfill distinct roles within the legal AI contract evaluation lifecycle.
 
+Both repositories are public. [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web) has no hosted demo: the app runs locally, as its README describes.
+
 ```
                   +--------------------------------------------------+
                   |           Evaluation Engine & Source of Truth    |
@@ -36,7 +38,7 @@ This project consists of two synchronized repositories designed to fulfill disti
 | Dimension | `contract-review-eval-harness` | `contract-eval-web` |
 |---|---|---|
 | **Role** | Evaluation Engine & Ground Truth | Interactive Evidence Lab & Public Explorer |
-| **Language & Runtime** | Python 3.13 (uv, Pydantic, pytest) | TypeScript (React 19, Next.js 16, Vinext) |
+| **Language & Runtime** | Python 3.11+ (uv, Pydantic, pytest) | TypeScript (React 19, Next.js 16, Vinext) |
 | **Hosting & CI** | GitHub Actions / local CLI | OpenAI Sites / Cloudflare Workers |
 | **Authoritative Logic** | Definitive scoring, policy certification, v2 obligations | Deterministic browser-safe port of `score_review` |
 | **Data Access** | Offline synthetic contracts + optional `--live` adapters | Read-only static snapshot (`lib/benchmark.json`) |
@@ -53,7 +55,8 @@ This project consists of two synchronized repositories designed to fulfill disti
 
 2. **Automated Parity Verification**:
    - `contract-review-eval-harness/scripts/check_web_sync.py`: Verifies that `contract-eval-web` hashes match the harness, validates version alignment (`0.7.0rc1`), and re-evaluates all parity vectors.
-   - `make web-check`: Embedded directly in the harness's standard `make check` target.
+   - `make web-check`: Embedded directly in the harness's standard `make check` target. It needs the web repository checked out next to the harness, so it does not run in GitHub Actions.
+   - `contract-review-eval-harness/scripts/check_parity_vectors.py` (`make parity-check`): Runs in GitHub Actions. It fails when the committed `examples/web-parity-vectors.json` no longer reproduces byte-for-byte from the current scorer, which makes every scoring change a reviewed diff and the cue to re-export the web app.
    - `contract-eval-web/tests/scoring.test.mjs`: Node test suite that runs 32 tests verifying TypeScript scoring against the exported Python vectors.
 
 ---

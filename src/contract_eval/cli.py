@@ -6,23 +6,30 @@ import json
 import sys
 from pathlib import Path
 
-from contract_eval.adapters import adapter_identifier, get_adapter
+from contract_eval import paths
+from contract_eval.adapters import (
+    AdapterChoice,
+    adapter_choice,
+    adapter_identifier,
+    add_adapter_arguments,
+    get_adapter,
+)
+# Re-exported: score_review and its helpers lived here before contract_eval.api, and
+# callers import them from this module.
+from contract_eval.api import (  # noqa: F401
+    canonical_clause,
+    canonicalise_risk_flags,
+    regression_violations,
+    score_review,
+)
 from contract_eval.cases import ALL_CASES
-from contract_eval.models import ExpectedAnswer, ReviewOutput
+from contract_eval.models import ExpectedAnswer, ReviewOutput  # noqa: F401
 from contract_eval.provenance import run_provenance, write_provenance
 from contract_eval.scorecard import render
 from contract_eval.release_certificate import (
     build_release_certificate,
     render_release_certificate,
     verify_release_certificate,
-)
-from contract_eval.scorer import (
-    citation_grounding,
-    clause_scores,
-    count_hallucinations,
-    risk_flag_accuracy,
-    risk_metrics,
-    span_coverage,
 )
 from contract_eval.robustness import (
     build_robustness_report,
@@ -31,125 +38,21 @@ from contract_eval.robustness import (
 )
 
 
-def canonical_clause(clause_type: str, aliases: dict[str, str]) -> str:
-    """Map a declared synonym onto the gold set's own name for the same clause.
-
-    Adapters name clauses in their own vocabulary: `no_licence` for `no_license`,
-    `sub_processors` for `subprocessors`, `permitted_disclosures` for the singular.
-    Scoring those as missed clauses measures vocabulary, not legal judgment, and
-    quietly reports a correct review as a failure. Aliases are declared in the gold
-    set so the mapping is reviewable.
-    """
-    return aliases.get(clause_type, clause_type)
-
-
-def canonicalise_risk_flags(
-    risk_flags: list,
-    aliases: dict[str, str],
-) -> tuple[dict[str, str], list[str], list[str]]:
-    """Collapse predicted flags onto canonical clause names, visibly.
-
-    A dict comprehension silently kept the last flag whenever two predictions
-    canonicalised onto the same clause, so a review flagging `sub_processors` high
-    and `subprocessors` low scored as whichever came second. Duplicates are now
-    reported, and a duplicate carrying a different severity is a conflict: the
-    review contradicts itself about one clause and cannot be treated as agreeing
-    with the gold set.
-    """
-    seen: dict[str, str] = {}
-    duplicates: list[str] = []
-    conflicts: list[str] = []
-    for flag in risk_flags:
-        canonical = canonical_clause(flag.clause_type, aliases)
-        if canonical in seen:
-            duplicates.append(canonical)
-            if seen[canonical] != flag.severity:
-                conflicts.append(canonical)
-            continue
-        seen[canonical] = flag.severity
-    return seen, sorted(set(duplicates)), sorted(set(conflicts))
-
-
-def score_review(
-    source_text: str,
-    expected: ExpectedAnswer,
-    output: ReviewOutput,
-    *,
-    alias_mode: str = "on",
-) -> dict:
-    """Score one review. Pure: no file access, no network, no adapter.
-
-    Extracted so a live evaluation and an offline replay of the same captured bytes
-    run through identical code. If replay had its own scoring path, a replayed score
-    would prove nothing about the published one.
-
-    `alias_mode` selects whether declared clause synonyms are applied, which is what
-    makes the aliases-off and aliases-on comparison a controlled experiment rather
-    than two different scorers.
-    """
-    if alias_mode not in ("on", "off"):
-        raise ValueError(f"alias_mode must be 'on' or 'off', got {alias_mode!r}")
-    aliases = expected.clause_aliases if alias_mode == "on" else {}
-    source = source_text
-    clause = clause_scores(
-        expected.clause_types,
-        [canonical_clause(c.clause_type, aliases) for c in output.clauses],
-    )
-    predicted_flags, duplicate_flags, conflicting_flags = canonicalise_risk_flags(
-        output.risk_flags, aliases
-    )
-    risk_accuracy = risk_flag_accuracy(expected.risk_flags, predicted_flags)
-    risk = risk_metrics(expected.risk_flags, predicted_flags)
-    citation = citation_grounding(source, output.citations)
-    hallucinations = count_hallucinations(source, output.citations)
-    coverage = span_coverage(source, expected.clause_anchors, output.citations)
-
-    # Base thresholds matching the stub adapter baseline
-    thresholds = {
-        "f1": 0.85,
-        "risk_accuracy": 0.45,
-        "grounding_rate": 0.75,
-        "hallucinations": 1.0,
-    }
-    if expected.thresholds:
-        thresholds.update(expected.thresholds)
-
-    return {
-        "clause_precision": clause.precision,
-        "clause_recall": clause.recall,
-        "clause_f1": clause.f1,
-        "risk_flag_accuracy": risk_accuracy,
-        "risk_precision": risk.precision,
-        "risk_recall": risk.recall,
-        "risk_f1": risk.f1,
-        "risk_severity_accuracy": risk.severity_accuracy,
-        "risk_false_positives": risk.false_positives,
-        "risk_missed": risk.missed,
-        "risk_severity_confusion": risk.severity_confusion,
-        "risk_duplicate_flags": duplicate_flags,
-        "risk_conflicting_flags": conflicting_flags,
-        "span_coverage": coverage.coverage,
-        "span_uncovered_clauses": coverage.uncovered,
-        "citation_grounded": citation.grounded,
-        "citation_total": citation.total,
-        "citation_grounding": citation.grounding_rate,
-        "hallucination_count": hallucinations,
-        "thresholds": thresholds,
-    }
-
-
-def load_case_inputs(case: str, root: Path = Path(".")) -> tuple[str, ExpectedAnswer]:
-    source = (root / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
+def load_case_inputs(case: str, root: Path | None = None) -> tuple[str, ExpectedAnswer]:
+    root = paths.resolve_root(root)
+    source = (root / paths.source_file(case)).read_text(encoding="utf-8")
     expected = ExpectedAnswer.model_validate(
-        json.loads((root / "expected" / f"{case}.json").read_text(encoding="utf-8"))
+        json.loads((root / paths.gold_file(case)).read_text(encoding="utf-8"))
     )
     return source, expected
 
 
-def evaluate_case(case: str, live: bool, model: str | None = None) -> dict:
+def evaluate_case(
+    case: str, live: bool, model: str | None = None, adapter: AdapterChoice | None = None
+) -> dict:
     """Produce and score one review through the adapter."""
     source, expected = load_case_inputs(case)
-    output = get_adapter(live, model=model).review(source_text=source, case=case)
+    output = get_adapter(live, model=model, choice=adapter).review(source_text=source, case=case)
     return score_review(source, expected, output, alias_mode="on")
 
 
@@ -178,12 +81,12 @@ def render_multi(scores: dict) -> str:
     return "\n".join(parts)
 
 
-def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format_type: str = "markdown", model: str | None = None) -> Path:
+def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format_type: str = "markdown", model: str | None = None, adapter: AdapterChoice | None = None) -> Path:
     cases_to_eval = ALL_CASES if case == "all" else [case]
     run_scores = {}
 
     for c in cases_to_eval:
-        run_scores[c] = evaluate_case(c, live, model=model)
+        run_scores[c] = evaluate_case(c, live, model=model, adapter=adapter)
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -209,7 +112,7 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
 
     provenance = run_provenance(
         tuple(cases_to_eval),
-        adapter=adapter_identifier(live, model),
+        adapter=adapter_identifier(live, model, choice=adapter),
         # The adapter produced this output during this call, so the two dates
         # coincide here. Re-scoring a stored output must set them apart.
         output_generated_at=datetime.datetime.now().isoformat(timespec="seconds"),
@@ -231,18 +134,11 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
 
     # Gating checks (only enforce if not bypassed)
     if not no_gate:
-        violations = []
-        for c in cases_to_eval:
-            s = run_scores[c]
-            t = s["thresholds"]
-            if s["clause_f1"] < t["f1"]:
-                violations.append(f"[{c.upper()}] Clause F1 score {s['clause_f1']:.2f} is below threshold {t['f1']:.2f}")
-            if s["risk_flag_accuracy"] < t["risk_accuracy"]:
-                violations.append(f"[{c.upper()}] Risk-flag accuracy {s['risk_flag_accuracy']:.2f} is below threshold {t['risk_accuracy']:.2f}")
-            if s["citation_grounding"] < t["grounding_rate"]:
-                violations.append(f"[{c.upper()}] Citation grounding rate {s['citation_grounding']:.2f} is below threshold {t['grounding_rate']:.2f}")
-            if float(s["hallucination_count"]) > t["hallucinations"]:
-                violations.append(f"[{c.upper()}] Hallucination count {s['hallucination_count']} is above threshold {t['hallucinations']:.0f}")
+        violations = [
+            violation
+            for c in cases_to_eval
+            for violation in regression_violations(c, run_scores[c])
+        ]
 
         if violations:
             print("\n=== demo-regression-policy.v2 GATE FAILED ===")
@@ -348,6 +244,7 @@ def robustness(
     live: bool,
     runs: int,
     model: str | None = None,
+    adapter: AdapterChoice | None = None,
 ) -> dict:
     scores = {
         case: evaluate_case(case, live=False)
@@ -355,8 +252,8 @@ def robustness(
     }
     certificate = build_release_certificate(scores)
     report = build_robustness_report(
-        campaign_path,
-        get_adapter(live, model=model),
+        paths.resolve_input(campaign_path),
+        get_adapter(live, model=model, choice=adapter),
         certificate,
         runs=runs,
     )
@@ -374,39 +271,149 @@ def verify_robustness(
         for case in ALL_CASES
     }
     expected = build_robustness_report(
-        campaign_path,
+        paths.resolve_input(campaign_path),
         get_adapter(False),
         build_release_certificate(scores),
     )
     return verify_robustness_report(report, expected)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(prog="contract-eval")
-    sub = parser.add_subparsers(dest="cmd", required=True)
-    reference = sub.add_parser("reference-status", help="verify the annotation evidence chain and report release eligibility")
+class ScoreInputError(ValueError):
+    """A review, contract or answer set given to `score` cannot be read or parsed."""
+
+
+def _review_hint(review: Path) -> str:
+    """Point a captured-review envelope at the command that verifies and replays it."""
+    try:
+        data = json.loads(review.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    from contract_eval.capture import CAPTURE_SCHEMA
+
+    if isinstance(data, dict) and data.get("schema") == CAPTURE_SCHEMA:
+        return (
+            " It looks like a captured review; re-score it with "
+            f"`contract-eval score-output --input {review}`."
+        )
+    return ""
+
+
+def score(
+    review: Path,
+    *,
+    case: str | None = None,
+    contract: Path | None = None,
+    gold: Path | None = None,
+    alias_mode: str = "on",
+) -> dict:
+    """Score any tool's plain review JSON; no adapter, no capture envelope.
+
+    A bundled case is scored against the reviewed answer set the release certificate
+    uses. Your own contract and answer set go through the same `score_review`, and the
+    result is comparison-only, the rule replay applies to drifted inputs: the harness
+    cannot vouch for an answer set it has not reviewed.
+    """
+    from pydantic import ValidationError
+
+    from contract_eval.api import evaluate_review, load_case
+
+    try:
+        target = load_case(case) if case is not None else load_case(contract=contract, gold=gold)
+    except ValidationError as exc:
+        raise ScoreInputError(
+            f"{gold} is not a valid answer set (see schemas/expected-answer.schema.json):\n{exc}"
+        ) from exc
+    except (OSError, ValueError) as exc:
+        raise ScoreInputError(str(exc)) from exc
+    try:
+        result = evaluate_review(review, target, alias_mode=alias_mode)
+    except ValidationError as exc:
+        raise ScoreInputError(
+            f"{review} is not a plain review JSON (see schemas/review-output.schema.json)."
+            f"{_review_hint(review)}\n{exc}"
+        ) from exc
+    except OSError as exc:
+        raise ScoreInputError(str(exc)) from exc
+    return result.to_dict()
+
+
+def score_exit_code(decision: str, fail_on: str = "reject") -> int:
+    """1 when the decision fails the gate: REJECT always, human review on request."""
+    failing = {"REJECT"} if fail_on == "reject" else {"REJECT", "HUMAN_REVIEW_REQUIRED"}
+    return 1 if decision in failing else 0
+
+
+def _add_dev_commands(sub: argparse._SubParsersAction, *, listed: bool) -> None:
+    """Maintainer commands: listed under `contract-eval dev`, and also accepted at the
+    top level, unlisted, so existing scripts, Make targets and CI steps keep working."""
+
+    def add(name: str, help_text: str) -> argparse.ArgumentParser:
+        if listed:
+            return sub.add_parser(name, help=help_text, description=help_text)
+        return sub.add_parser(name, description=help_text)
+
+    reference = add("reference-status", "verify the annotation evidence chain and report release eligibility")
     reference.add_argument("--require-final", action="store_true", help="fail until every reference is verified and frozen")
     reference.add_argument("--out", type=Path, help="write the verified status JSON")
-    intake = sub.add_parser("reference-import", help="import all original second-annotator returns without overwriting evidence")
+    intake = add("reference-import", "import all original second-annotator returns without overwriting evidence")
     intake.add_argument("--returned", required=True, type=Path)
-    prepare = sub.add_parser("reference-prepare", help="write blank adjudication records bound to the imported comparison")
+    prepare = add("reference-prepare", "write blank adjudication records bound to the imported comparison")
     prepare.add_argument("--out", required=True, type=Path)
-    freeze = sub.add_parser("reference-freeze", help="verify written decisions and atomically freeze all references")
+    freeze = add("reference-freeze", "verify written decisions and atomically freeze all references")
     freeze.add_argument("--gold-dir", required=True, type=Path)
     freeze.add_argument("--decisions-dir", required=True, type=Path)
-    
+
+    verify = add("verify-certificate", "re-run the offline benchmark and verify a release certificate")
+    verify.add_argument(
+        "--certificate",
+        default="examples/release-certificate.json",
+        type=Path,
+        help="release certificate JSON to verify",
+    )
+    obl = add("evaluate-obligations", "score a case through the evidence-bound v2 path")
+    obl.add_argument("--case", default="nda", help="case name, or all")
+    add_adapter_arguments(obl)
+    obl.add_argument("--model", default=None, help="model id for --adapter anthropic or openai-compatible")
+    obl.add_argument("--out", default=None, type=Path, help="output directory")
+
+    vc = add("verify-capture", "verify a captured review's schema, integrity and embedded inputs")
+    vc.add_argument("--input", required=True, type=Path, help="captured review JSON")
+
+    verify_robust = add("verify-robustness", "rebuild the offline campaign and verify its input-bound report")
+    verify_robust.add_argument(
+        "--report",
+        default="examples/adversarial-robustness-report.json",
+        type=Path,
+    )
+    verify_robust.add_argument(
+        "--campaign",
+        default="robustness/campaign.v1.json",
+        type=Path,
+    )
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="contract-eval",
+        description="Score an AI contract review against a hand-authored answer set.",
+        epilog="maintainer commands: contract-eval dev --help",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sub = parser.add_subparsers(dest="cmd", required=True, metavar="<command>")
+
     ev = sub.add_parser("evaluate", help="score an adapter's review against the expected answers")
     ev.add_argument("--case", default="nda", help="case name (nda, saas, all)")
-    ev.add_argument("--live", action="store_true", help="use the live adapter instead of the stub")
+    add_adapter_arguments(ev)
     ev.add_argument(
         "--model",
         default=None,
-        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-5)",
+        help="model id for --adapter anthropic (default: CONTRACT_EVAL_MODEL, else claude-opus-5) "
+             "or openai-compatible (required)",
     )
     ev.add_argument("--out", default=".", type=Path, help="output directory for scorecard.md")
     ev.add_argument("--no-gate", action="store_true", help="do not exit with code 1 on regression/failure")
     ev.add_argument("--format", default="markdown", choices=["markdown", "json"], help="output format (markdown, json)")
-    
+
     sub.add_parser("compare", help="compare the current scores against the latest saved run in history")
     cert = sub.add_parser(
         "certify",
@@ -414,16 +421,6 @@ def main() -> None:
     )
     cert.add_argument("--case", default="all", help="case name (nda, saas, all)")
     cert.add_argument("--out", default="examples", type=Path, help="certificate output directory")
-    verify = sub.add_parser(
-        "verify-certificate",
-        help="re-run the offline benchmark and verify a release certificate",
-    )
-    verify.add_argument(
-        "--certificate",
-        default="examples/release-certificate.json",
-        type=Path,
-        help="release certificate JSON to verify",
-    )
     robust = sub.add_parser(
         "robustness",
         help="run the adversarial minimal-pair contract review campaign",
@@ -440,15 +437,12 @@ def main() -> None:
         type=Path,
         help="robustness report output directory",
     )
-    robust.add_argument(
-        "--live",
-        action="store_true",
-        help="use the optional live adapter",
-    )
+    add_adapter_arguments(robust)
     robust.add_argument(
         "--model",
         default=None,
-        help="model id for --live (default: CONTRACT_EVAL_MODEL, else claude-opus-5)",
+        help="model id for --adapter anthropic (default: CONTRACT_EVAL_MODEL, else claude-opus-5) "
+             "or openai-compatible (required)",
     )
     robust.add_argument(
         "--runs",
@@ -458,20 +452,6 @@ def main() -> None:
         metavar="1..5",
         help="adapter runs per original and mutated contract",
     )
-    obl = sub.add_parser(
-        "evaluate-obligations",
-        help="score a case through the evidence-bound v2 path",
-    )
-    obl.add_argument("--case", default="nda", help="case name, or all")
-    obl.add_argument("--live", action="store_true", help="use the live adapter")
-    obl.add_argument("--model", default=None, help="model id for --live")
-    obl.add_argument("--out", default=None, type=Path, help="output directory")
-
-    vc = sub.add_parser(
-        "verify-capture",
-        help="verify a captured review's schema, integrity and embedded inputs",
-    )
-    vc.add_argument("--input", required=True, type=Path, help="captured review JSON")
 
     so = sub.add_parser(
         "score-output",
@@ -489,28 +469,56 @@ def main() -> None:
              "the result is then comparison-only and ineligible for certification",
     )
 
-    verify_robust = sub.add_parser(
-        "verify-robustness",
-        help="rebuild the offline campaign and verify its input-bound report",
+    sc = sub.add_parser(
+        "score",
+        help="score your own tool's review JSON against a bundled or your own answer set",
+        description=(
+            "Score a plain review JSON (schemas/review-output.schema.json) and print the "
+            "scorecard. Exit status: 0 passed, 1 REJECT (or human review with "
+            "--fail-on human-review), 2 unreadable input."
+        ),
     )
-    verify_robust.add_argument(
-        "--report",
-        default="examples/adversarial-robustness-report.json",
-        type=Path,
+    sc.add_argument("review", type=Path, help="review JSON produced by the tool under test")
+    sc.add_argument("--case", default=None, help=f"bundled case: {', '.join(ALL_CASES)}")
+    sc.add_argument("--contract", default=None, type=Path, help="your contract, instead of --case")
+    sc.add_argument(
+        "--gold", default=None, type=Path,
+        help="your answer set for --contract (schemas/expected-answer.schema.json)",
     )
-    verify_robust.add_argument(
-        "--campaign",
-        default="robustness/campaign.v1.json",
-        type=Path,
+    sc.add_argument(
+        "--aliases", default="on", choices=["on", "off"],
+        help="apply the answer set's declared clause synonyms (default: on)",
+    )
+    sc.add_argument("--format", default="markdown", choices=["markdown", "json"], help="what to print")
+    sc.add_argument("--out", default=None, type=Path, help="also write score-<case>.md and .json here")
+    sc.add_argument(
+        "--fail-on", default="reject", choices=["reject", "human-review"],
+        help="lowest decision that exits 1 (default: reject)",
     )
 
     from contract_eval import matter_cli
 
     matter_cli.add_parsers(sub)
 
-    args = parser.parse_args()
+    dev = sub.add_parser(
+        "dev",
+        help="maintainer commands: verification, reference evidence, obligations",
+        description="Maintainer commands. Each is also accepted without the `dev` prefix.",
+    )
+    _add_dev_commands(dev.add_subparsers(dest="dev_cmd", required=True, metavar="<command>"), listed=True)
+    _add_dev_commands(sub, listed=False)
+    return parser
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.cmd == "dev":
+        args.cmd = args.dev_cmd
 
     if args.cmd.startswith("matter-"):
+        from contract_eval import matter_cli
+
         sys.exit(matter_cli.run(args))
     elif args.cmd == "evaluate":
         try:
@@ -521,9 +529,10 @@ def main() -> None:
                 no_gate=args.no_gate,
                 format_type=args.format,
                 model=args.model,
+                adapter=adapter_choice(args),
             )
             print(f"wrote {path}")
-        except ValueError as e:
+        except (ValueError, RuntimeError) as e:  # RuntimeError: adapter failures
             print(f"Error: {e}")
             sys.exit(1)
     elif args.cmd == "compare":
@@ -544,8 +553,9 @@ def main() -> None:
                 live=args.live,
                 runs=args.runs,
                 model=args.model,
+                adapter=adapter_choice(args),
             )
-        except (OSError, ValueError, KeyError) as exc:
+        except (OSError, ValueError, KeyError, RuntimeError) as exc:
             print(f"Error: {exc}")
             sys.exit(1)
         print(
@@ -578,7 +588,9 @@ def main() -> None:
 
         cases = ALL_CASES if args.case == "all" else [args.case]
         for case in cases:
-            result = evaluate_obligations(case, live=args.live, model=args.model)
+            result = evaluate_obligations(
+                case, live=args.live, model=args.model, adapter=adapter_choice(args)
+            )
             if args.out:
                 args.out.mkdir(parents=True, exist_ok=True)
                 (args.out / f"obligation-scorecard-{case}.json").write_text(
@@ -620,6 +632,37 @@ def main() -> None:
         print(json.dumps(verification, indent=2))
         if verification["status"] != "VALID":
             sys.exit(1)
+    elif args.cmd == "score":
+        from contract_eval.scorecard import render_score
+
+        own = args.contract is not None or args.gold is not None
+        if args.case is not None and own:
+            parser.error("score: pass --case for a bundled case, or --contract and --gold, not both")
+        if args.case is None and (args.contract is None or args.gold is None):
+            parser.error("score: pass --case <name>, or both --contract and --gold")
+        try:
+            result = score(
+                args.review,
+                case=args.case,
+                contract=args.contract,
+                gold=args.gold,
+                alias_mode=args.aliases,
+            )
+        except ScoreInputError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(2)
+        markdown = render_score(result)
+        encoded_result = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+        if args.out:
+            args.out.mkdir(parents=True, exist_ok=True)
+            for suffix, text in (("md", markdown), ("json", encoded_result)):
+                path = args.out / f"score-{result['case']}.{suffix}"
+                path.write_text(text, encoding="utf-8")
+                print(f"wrote {path}", file=sys.stderr)
+        print(markdown if args.format == "markdown" else encoded_result, end="")
+        code = score_exit_code(result["decision"], args.fail_on)
+        if code:
+            sys.exit(code)
 
 
 if __name__ == "__main__":

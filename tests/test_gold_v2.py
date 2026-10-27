@@ -17,7 +17,7 @@ def _minimal(**overrides):
         "case": "nda",
         "review_context": {
             "party": "Disclosing Party",
-            "commercial_perspective": "receiving side",
+            "commercial_perspective": "disclosing side",
             "governing_law": "Germany",
             "jurisdiction": "Germany",
             "objective": "pre-signature review",
