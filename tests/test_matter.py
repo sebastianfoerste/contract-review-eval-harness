@@ -613,6 +613,15 @@ def test_live_and_adapter_anthropic_select_the_live_matter_adapter(flags, monkey
     assert (calls[0]["live"], calls[0]["model"]) == (True, "m-1")
 
 
+def test_outside_a_checkout_the_check_fails_rather_than_passing_on_nothing(tmp_path, capsys):
+    """The wheel does not ship matters/, so a run there must not report a pass."""
+    from contract_eval.cli import build_parser
+    from contract_eval.matter_cli import run
+
+    assert run(build_parser().parse_args(["matter-check", "--root", str(tmp_path)])) == 1
+    assert "runs from a repository checkout" in capsys.readouterr().out
+
+
 def test_the_matter_path_offers_only_its_own_adapters():
     from contract_eval.cli import build_parser
 

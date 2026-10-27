@@ -16,7 +16,7 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `action.yml` + `src/contract_eval/github_action.py` — the composite GitHub Action that gates another repository's CI on `contract-eval score`.
 - `scripts/build_leaderboard.py` (`examples/leaderboard.*`, drift-checked in CI) and `scripts/build_site.py` (static `site/` for GitHub Pages).
 - `src/contract_eval/matter.py`, `matter_scorer.py`, `matter_experiment.py`, `matter_cli.py`, `reviewer_sessions.py` — the matter path: several documents, rounds, conditions, evidence-bound scoring per document. See `docs/MATTER_EVALUATION.md`.
-- `matters/<id>/` — a synthetic matter: `matter.json` manifest, `documents/`, `prompts/`, `expected/<round>.json`, optional `fixtures/` and `reviews/`. Contracts under `data/` are referenced by path, never copied.
+- `matters/<id>/` — a synthetic matter: `matter.json` manifest, `documents/`, `prompts/`, `expected/<round>.json`, optional `fixtures/` and `reviews/`. Contracts under `data/` are referenced by path, never copied. The wheel does not ship `matters/`, so the matter path runs from a checkout.
 - `tests/` — pytest. `tests/fixtures/mini_matter/` is a toy matter whose answers are test data.
 
 ## Rules

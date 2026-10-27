@@ -506,6 +506,13 @@ def run(args: argparse.Namespace) -> int:
     try:
         if args.cmd == "matter-check":
             matters = list_matters(args.root) if args.matter == "all" else [args.matter]
+            if not matters:
+                # The wheel ships the cases but not matters/, so outside a checkout this
+                # check would otherwise pass having checked nothing.
+                raise ValueError(
+                    f"no matter found under {args.root / MATTERS_DIR}; the matter path "
+                    "runs from a repository checkout"
+                )
             failed = False
             for matter_id in matters:
                 report = check_matter(matter_id, args.root)

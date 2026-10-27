@@ -22,6 +22,12 @@ each stage. The first matter is in [`matters/northwind-saas/`](../matters/northw
 Every document hash is checked on load. An edited document is refused until its hash
 is recorded again, because every answer is a position in specific text.
 
+The matter path runs from a repository checkout. The wheel ships the three cases but
+not `matters/`, and every matter document, the contracts under `data/` included, is
+read relative to `--root`, which defaults to the working directory. Run the commands
+from the repository root. They are maintainer commands: `contract-eval dev --help`
+lists them, and each also runs without the `dev` prefix, as in the examples below.
+
 ## Three tasks
 
 An expected issue belongs to one task.
@@ -264,5 +270,6 @@ author's own review and worked examples are counted as excluded.
 - Evidence binding measures where a review quoted. A finding that quotes the right
   passages and reasons wrongly about them earns credit for detection. Action accuracy
   and reviewer sessions are the checks on reasoning.
-- The matter path is not part of the release certificate, the robustness campaign or
-  the web export.
+- The matter path is not part of the release certificate, the robustness campaign, the
+  leaderboard, the GitHub Action or the web export, and the wheel does not ship
+  `matters/`.
