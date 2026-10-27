@@ -136,6 +136,18 @@ def test_the_committed_regression_baseline_records_every_case():
     assert sorted(recorded["scores"]) == sorted(ALL_CASES)
 
 
+def test_the_committed_regression_baseline_holds_the_current_scores():
+    # compare fails only when a score falls. A baseline left behind after an intended
+    # rise would let that score fall back unnoticed, so every score change has to
+    # regenerate the baseline in the same diff.
+    recorded = json.loads(REGRESSION_BASELINE.read_text(encoding="utf-8"))["scores"]
+    for case in ALL_CASES:
+        assert recorded.get(case) == evaluate_case(case, live=False), (
+            f"examples/regression-baseline.json is stale for {case}: run "
+            "`make regression-baseline` only if the score change is intended"
+        )
+
+
 def test_the_ci_gate_passes_a_fresh_run_and_fails_a_worse_one(tmp_path):
     # The CI steps in miniature: evaluate into a scratch directory, then compare the
     # run it recorded with the committed baseline.
