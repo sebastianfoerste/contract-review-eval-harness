@@ -72,3 +72,16 @@ def test_maintainer_commands_run_with_and_without_the_dev_prefix(capsys):
     ):
         main(argv)
         assert json.loads(capsys.readouterr().out)["status"] == "VALID"
+
+
+def test_matter_commands_are_maintainer_commands(capsys):
+    from contract_eval.cli import build_parser, main
+
+    parser = build_parser()
+    matter = {"matter-evaluate", "matter-check", "matter-prompt", "matter-review-template"}
+    assert matter <= _listed_commands(_subcommands(parser).choices["dev"])
+    assert not matter & _listed_commands(parser)
+
+    for argv in (["dev", "matter-check"], ["matter-check"]):
+        main(argv)
+        assert "matter check passed" in capsys.readouterr().out

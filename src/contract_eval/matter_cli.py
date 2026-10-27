@@ -21,7 +21,7 @@ import json
 import re
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from contract_eval.adapters.matter import (
     STUB_MODEL,
@@ -436,16 +436,20 @@ def _check_gold(loaded: LoadedMatter, round_id: str, gold, errors, notices) -> N
 # ------------------------------------------------------------------------------- cli
 
 
-def add_parsers(sub: argparse._SubParsersAction) -> None:
+def add_parsers(add: Callable[[str, str], argparse.ArgumentParser]) -> None:
+    """Register the matter commands through `add(name, help)`.
+
+    cli.py passes the factory it uses for the maintainer commands, so these are listed
+    under `contract-eval dev` and accepted, unlisted, at the top level.
+    """
+
     def common(parser: argparse.ArgumentParser, with_round: bool = True) -> None:
         parser.add_argument("--matter", default=DEFAULT_MATTER, help="matter id")
         parser.add_argument("--root", default=Path("."), type=Path, help="repository root")
         if with_round:
             parser.add_argument("--round", default=None, help="round id; default is the first")
 
-    evaluate = sub.add_parser(
-        "matter-evaluate", help="score one round of a matter under each condition"
-    )
+    evaluate = add("matter-evaluate", "score one round of a matter under each condition")
     common(evaluate)
     evaluate.add_argument(
         "--condition", action="append", default=None,
@@ -464,17 +468,17 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     )
     evaluate.add_argument("--out", default=None, type=Path, help="output directory")
 
-    check = sub.add_parser("matter-check", help="verify a matter's documents, answers and fixtures")
+    check = add("matter-check", "verify a matter's documents, answers and fixtures")
     check.add_argument("--matter", default="all", help="matter id, or all")
     check.add_argument("--root", default=Path("."), type=Path, help="repository root")
 
-    prompt = sub.add_parser("matter-prompt", help="print the prompt a condition produces")
+    prompt = add("matter-prompt", "print the prompt a condition produces")
     common(prompt)
     prompt.add_argument("--condition", required=True)
 
-    template = sub.add_parser(
+    template = add(
         "matter-review-template",
-        help="write a blank reviewer session for one output, with the condition withheld",
+        "write a blank reviewer session for one output, with the condition withheld",
     )
     common(template)
     template.add_argument("--condition", default=None, help="condition whose stub output to rate")
