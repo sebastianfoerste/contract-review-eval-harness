@@ -24,6 +24,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Captures record the adapter call's latency and, when `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` are set, a cost estimate with the prices it assumed. Both fields are omitted while unset, so existing captures keep their bytes and digests.
 - `scripts/build_leaderboard.py` re-scores every committed review output and writes `examples/leaderboard.md` and `.json`; CI rejects drift.
 - `scripts/build_site.py` renders the scorecard, certificate, live run and leaderboard into a static site, and `.github/workflows/pages.yml` deploys it once the `PAGES_ENABLED` repository variable is `true`. The site is published at <https://sebastianfoerste.github.io/contract-review-eval-harness/> and linked from the README.
+- A browser playground at `/playground/` on the results site. It installs the package wheel into Pyodide and scores a pasted or imported review against a bundled case, shows the release decision, every citation, clause and risk against the answer set, and highlights the cited text in the contract. Its JSON and Markdown exports are the files `contract-eval score --out` writes for the same review. Three example reviews per case reach each of the three decisions. `make site` builds the wheel and the playground.
 - `examples/quickstart.ipynb`, a notebook that opens in Colab.
 - `docs/metrics.md`: one section per scorecard row with its formula, denominator, edge cases and whether the row can block a release.
 - A "How this compares" section in the README.

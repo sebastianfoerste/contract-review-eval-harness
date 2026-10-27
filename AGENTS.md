@@ -14,7 +14,8 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - `data/<case>_sample.md` — synthetic contracts. `expected/<case>.json` — gold answers. `fixtures/<case>_stub.json` — stub model output. The wheel ships byte-identical copies; `src/contract_eval/paths.py` resolves the working directory first, then an editable checkout, then that bundled copy.
 - `src/contract_eval/schemas.py` — JSON Schemas for a review and an answer set, generated from the models into `schemas/`; `make schemas-check` rejects drift.
 - `action.yml` + `src/contract_eval/github_action.py` — the composite GitHub Action that gates another repository's CI on `contract-eval score`.
-- `scripts/build_leaderboard.py` (`examples/leaderboard.*`, drift-checked in CI) and `scripts/build_site.py` (static `site/` for GitHub Pages).
+- `scripts/build_leaderboard.py` (`examples/leaderboard.*`, drift-checked in CI) and `scripts/build_site.py` (static `site/` for GitHub Pages; with `--wheel` it adds the playground).
+- `playground/` — the browser playground: a static page whose worker installs the wheel into Pyodide and scores through `playground/score.py`, which calls `contract_eval.cli.score`. Keep its exported JSON identical to the CLI's (`tests/test_playground.py`).
 - `tests/` — pytest.
 
 ## Rules

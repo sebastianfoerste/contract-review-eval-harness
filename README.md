@@ -112,6 +112,7 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 - [Leaderboard](examples/leaderboard.md): every committed review output re-scored by the production scorer and decided by the release policy (`make leaderboard`)
 - [Quickstart notebook](examples/quickstart.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sebastianfoerste/contract-review-eval-harness/blob/main/examples/quickstart.ipynb), no install needed
 - [Results site](https://sebastianfoerste.github.io/contract-review-eval-harness/): the scorecard, release certificate, live run, leaderboard and robustness report as web pages, rebuilt from the committed evidence on every push to `main`. Read-only, nothing to install.
+- [Playground](https://sebastianfoerste.github.io/contract-review-eval-harness/playground/): paste your tool's review JSON, pick a bundled contract and score it in the browser. It runs the package wheel through Pyodide, so the exported JSON matches `contract-eval score` byte for byte, and the review never leaves the tab.
 - [Release certificate](examples/release-certificate.md)
 - [Adversarial robustness report](examples/adversarial-robustness-report.md) and its [HTML view](examples/adversarial-robustness-report.html)
 - [Live-run snapshot, 2026-09-01](examples/live-run-claude-opus-5-2026-09-01.md)
