@@ -5,12 +5,12 @@ name: pages
 # robustness report. scripts/build_site.py renders them with the standard library
 # only, so the build needs no network beyond installing uv.
 #
-# GitHub Pages is not enabled on this repository yet, and a deploy to a repository
-# without Pages fails. So that main does not turn red in the meantime, the deploy job
-# only runs when the repository variable PAGES_ENABLED is 'true'. To publish: set
-# Settings > Pages > Source to "GitHub Actions", then add PAGES_ENABLED = true under
-# Settings > Secrets and variables > Actions > Variables. The build job always runs,
-# so a renderer that breaks still fails here before anyone enables deployment.
+# The site is published at https://sebastianfoerste.github.io/contract-review-eval-harness/
+# (Settings > Pages > Source is "GitHub Actions"). A deploy to a repository without
+# Pages fails, so the deploy job only runs when the repository variable PAGES_ENABLED
+# is 'true' (Settings > Secrets and variables > Actions > Variables). Any other value
+# turns deployment off. The build job always runs, so a renderer that breaks still
+# fails here even while deployment is off.
 
 on:
   push:
