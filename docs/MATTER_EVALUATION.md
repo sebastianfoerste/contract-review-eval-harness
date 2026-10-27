@@ -236,9 +236,9 @@ uv run python -m contract_eval matter-review-template --round round1 \
 
 The template names the output by hash and does not name the condition. A capture made
 for another matter or round is refused, because a session counts only for the round it
-names. The reviewer records, for each finding, `accepted`, `corrected` or `rejected`, a usefulness score
-and, unless accepted, a reason. They also record review time, the time until the draft
-was reviewable, and any material issue the output missed.
+names. The reviewer records, for each finding, `accepted`, `corrected` or `rejected`, a
+usefulness score and, unless accepted, a reason. They also record review time, the time
+until the draft was reviewable, and any material issue the output missed.
 
 | Score | Meaning |
 |---:|---|
