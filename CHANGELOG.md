@@ -32,6 +32,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - This changelog.
 - `tests/test_docs.py`, an offline check of relative doc links, metric sections and issue forms.
 - `examples/regression-baseline.json`, a committed `evaluate --case all` run. CI compares every fresh run against it and fails on a regression. `make regression-check` runs the same comparison, and `make regression-baseline` regenerates the baseline after an intended score change.
+- The native My Counsel candidate track under `candidates/mycounsel/`, outside `ALL_CASES` and every certificate: scoring of one recording, a blind annotation pack, written adjudication between two annotations, preregistered experiments and a cumulative EUR spend ledger. CI verifies the pack against its hashes and checks that every experiment report reproduces.
 
 ### Changed
 
@@ -42,6 +43,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The README leads with what the harness does and is rewritten for clarity. (#37, #42)
 - `CONTRIBUTING.md` is rewritten around three paths: add a case, add an adapter, volunteer as an annotator.
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
+- CI installs dependencies with `uv sync --locked`, so a `uv.lock` that disagrees with `pyproject.toml` fails the build instead of being resolved again.
 
 ### Removed
 
@@ -59,6 +61,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices` argue from the Disclosing Party's side, which the answer set's `review_context` names, and the case study no longer calls all three gold sets receiving-side reviews. The four rationales were drafted with AI assistance and await the maintainer's adoption. Severities, flags and scores are unchanged. (#41)
 - Documented figures match the harness output: severity accuracy (0.57 to 0.60 across the cases) replaces legacy risk-flag accuracy as the headline risk figure, and the NDA's clause precision is 0.92, not 0.83. (#41)
 - The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
+- `evaluate` wrote `history/` to the working directory whatever `--out` said, so tests wrote into the checkout. It now writes under `--out`. `compare` took the newest history file, which straight after `evaluate` is the run just written, so CI compared that run with itself and passed even on a regression. `compare` now takes `--baseline` and `--candidate`, refuses to compare a file with itself, covers the cases the baseline recorded and exits 1 on a regression.
 
 ## [0.7.0-rc1] - 2026-09-03
 
