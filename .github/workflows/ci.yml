@@ -16,9 +16,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          # The newest uv inside the uv_build range pyproject.toml declares
-          # (>=0.11.23,<0.13.0); a newer uv warns that the range excludes it.
-          version: "0.12.24"
+          version: "latest"
           enable-cache: true
 
       - name: Set up Python
@@ -113,7 +111,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --locked --all-extras --dev
 
       - name: Run unit tests
         run: uv run pytest -q
