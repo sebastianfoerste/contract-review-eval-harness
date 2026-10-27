@@ -25,7 +25,7 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - Synthetic data only. Never add a real agreement or client data.
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.
 - Matter answers under `matters/<id>/expected/` are written by the reviewing lawyer. Never generate them, and never write a stub fixture for a round whose answers are pending. After editing a matter document or an answer quote, run `uv run python scripts/matter_sync.py --write`.
-- The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`.
+- The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`. The export also hashes every module under `src/contract_eval/`, the matter modules included, so a change to any of them fails `make web-check` until `make web-export` runs.
 - `examples/web-parity-vectors.json` pins the scorer output in CI, where the web repository is absent. Regenerate it with `make parity-vectors` only for an intended scoring change, then run `make web-export`.
 
 ## Commands
