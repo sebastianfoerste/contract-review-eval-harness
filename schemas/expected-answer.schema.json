@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/sebastianfoerste/contract-review-eval-harness/main/schemas/expected-answer.schema.json",
+  "$comment": "Also enforced when the answer set is loaded, beyond this schema: unique clause types; risk flags only for declared clause types; exactly one non-blank severity_rationale entry per risk flag; when clause_anchors is present, exactly one anchor per clause type; aliases must target a declared clause type and must not shadow one.",
+  "$defs": {
+    "ReviewContext": {
+      "additionalProperties": false,
+      "description": "Whose review this gold set encodes.\n\nA severity is only defensible relative to a position. An uncapped fee increase is\nhigh risk for the customer and unremarkable for the provider; an audit exclusion\nreads differently under a regime that mandates the right. Leaving this implicit\nmade the gold sets look like statements about the contract rather than statements\nfrom a party's side of it.",
+      "properties": {
+        "party": {
+          "title": "Party",
+          "type": "string"
+        },
+        "governing_law": {
+          "title": "Governing Law",
+          "type": "string"
+        },
+        "objective": {
+          "title": "Objective",
+          "type": "string"
+        },
+        "risk_appetite": {
+          "enum": [
+            "conservative",
+            "balanced",
+            "commercial"
+          ],
+          "title": "Risk Appetite",
+          "type": "string"
+        }
+      },
+      "required": [
+        "party",
+        "governing_law",
+        "objective",
+        "risk_appetite"
+      ],
+      "title": "ReviewContext",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The gold set stored in expected/<case>.json.\n\nUnknown fields are rejected. A gold set is the benchmark's ground truth, so a\nmisspelled key must fail loudly rather than being silently ignored: an earlier\n`_severity_rationale` key sat in these files unvalidated because Pydantic\ndropped it.",
+  "properties": {
+    "comment": {
+      "default": "",
+      "title": "Comment",
+      "type": "string"
+    },
+    "review_context": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReviewContext"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "clause_types": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Clause Types",
+      "type": "array"
+    },
+    "risk_flags": {
+      "additionalProperties": {
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "type": "string"
+      },
+      "title": "Risk Flags",
+      "type": "object"
+    },
+    "severity_rationale": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Severity Rationale",
+      "type": "object"
+    },
+    "thresholds": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Thresholds",
+      "type": "object"
+    },
+    "clause_aliases": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Clause Aliases",
+      "type": "object"
+    },
+    "clause_anchors": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Clause Anchors",
+      "type": "object"
+    }
+  },
+  "required": [
+    "clause_types",
+    "risk_flags"
+  ],
+  "title": "ExpectedAnswer",
+  "type": "object"
+}

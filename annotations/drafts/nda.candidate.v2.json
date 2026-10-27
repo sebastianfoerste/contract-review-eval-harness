@@ -30,7 +30,7 @@
       ],
       "risk": {
         "severity": "medium",
-        "rationale": "medium — a definition covering all information whether or not marked confidential is over-broad and lacks the standard public-domain, prior-possession and independent-development carve-outs. It is worse than market but negotiable.",
+        "rationale": "medium — for the discloser, a definition covering all information whether or not marked confidential, without the standard public-domain, prior-possession and independent-development carve-outs, looks protective, but it invites a dispute over what was protected at all and adds to the exposure of the perpetual term it is paired with. Off-market and negotiable.",
         "source_category": "legal_judgment",
         "source_reference": null
       },
@@ -59,7 +59,7 @@
       "aliases": [],
       "risk": {
         "severity": "high",
-        "rationale": "high — a perpetual confidentiality obligation with no survival period and no trade-secret carve-out is unenforceable in substance and unmanageable in practice; the receiving party cannot ever demonstrate compliance has ended.",
+        "rationale": "high — for the disclosing party the risk is that this protection may not hold, not that it is burdensome. German law does not make a perpetual confidentiality obligation unenforceable as such, but an obligation with no end, no survival period and no trade-secret distinction, attached to an all-information definition, is exposed to challenge, in particular if the discloser's own form counts as standard business terms, because the content review of standard terms protects the other party to the form, not the party that put it forward. If it falls, the discloser cannot be sure how long, or whether, contractual protection covers the technical information it is about to share, and a disclosure cannot be undone. A defined survival period, with protection for trade secrets for as long as they remain secret, is the more defensible position for the discloser.",
         "source_category": "legal_judgment",
         "source_reference": null
       },
@@ -103,7 +103,7 @@
       ],
       "risk": {
         "severity": "high",
-        "rationale": "high — conditioning a legally compelled disclosure on the disclosing party's prior written consent is not capable of performance. The standard position is notice where lawful and cooperation in seeking protective relief, not consent.",
+        "rationale": "high — for the discloser this is weak protection at the point it matters. Whenever consent is withheld, the clause puts the receiving party between the agreement and a disclosure that law, a court or a regulator compels, so the discloser's control rests on a condition the other side cannot honour without disobeying that compulsion, and the clause gives the discloser no express right to cooperation in seeking protective relief. The standard position is notice where lawful and cooperation in seeking protective relief, not consent.",
         "source_category": "legal_judgment",
         "source_reference": null
       },
@@ -179,7 +179,7 @@
       ],
       "risk": {
         "severity": "low",
-        "rationale": "low — email-only notice with no read receipt or deemed-delivery rule is slightly off-market and worth a note, not a blocker.",
+        "rationale": "low — email notice that takes effect when sent, not on receipt as § 130(1) BGB provides by default for a declaration to an absent party, puts the risk of a notice that is lost, filtered or undelivered on whichever party it is addressed to, the discloser included. Slightly off-market and worth a note, not a blocker.",
         "source_category": "legal_judgment",
         "source_reference": null
       },

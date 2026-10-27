@@ -14,6 +14,8 @@ import json
 from importlib import metadata
 from pathlib import Path
 
+from contract_eval import paths
+
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -26,12 +28,14 @@ def scorer_version() -> str:
         return "unknown"
 
 
-def gold_set_digests(cases: tuple[str, ...], root: Path = Path(".")) -> dict[str, str]:
-    return {case: _sha256(root / "expected" / f"{case}.json") for case in cases}
+def gold_set_digests(cases: tuple[str, ...], root: Path | None = None) -> dict[str, str]:
+    root = paths.resolve_root(root)
+    return {case: _sha256(root / paths.gold_file(case)) for case in cases}
 
 
-def source_digests(cases: tuple[str, ...], root: Path = Path(".")) -> dict[str, str]:
-    return {case: _sha256(root / "data" / f"{case}_sample.md") for case in cases}
+def source_digests(cases: tuple[str, ...], root: Path | None = None) -> dict[str, str]:
+    root = paths.resolve_root(root)
+    return {case: _sha256(root / paths.source_file(case)) for case in cases}
 
 
 def run_provenance(
@@ -40,7 +44,7 @@ def run_provenance(
     adapter: str,
     output_generated_at: str | None = None,
     scored_at: str | None = None,
-    root: Path = Path("."),
+    root: Path | None = None,
 ) -> dict[str, object]:
     """Describe a scored run.
 

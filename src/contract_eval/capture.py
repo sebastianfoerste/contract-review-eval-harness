@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 from contract_eval.models import ReviewOutput
 
@@ -43,6 +43,8 @@ CaptureState = Literal[
     "interrupted",
     "completed",
 ]
+
+_OPTIONAL_MEASUREMENTS = ("latency_seconds", "cost")
 
 # States that carry a scoreable, fully parsed review. Everything else is evidence of
 # an attempt and must never reach the scorer.
@@ -102,6 +104,59 @@ class ProviderResponse(BaseModel):
     output_tokens: int | None = None
 
 
+class TokenPrices(BaseModel):
+    """User-supplied prices. Never defaulted: a vendor price list in code goes stale."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    usd_per_million_input_tokens: float = Field(ge=0)
+    usd_per_million_output_tokens: float = Field(ge=0)
+
+    @classmethod
+    def from_env(cls) -> "TokenPrices | None":
+        """Read CONTRACT_EVAL_USD_PER_MTOK_INPUT and _OUTPUT; None unless both are set."""
+        raw_in = os.environ.get("CONTRACT_EVAL_USD_PER_MTOK_INPUT")
+        raw_out = os.environ.get("CONTRACT_EVAL_USD_PER_MTOK_OUTPUT")
+        if not raw_in or not raw_out:
+            return None
+        return cls(
+            usd_per_million_input_tokens=float(raw_in),
+            usd_per_million_output_tokens=float(raw_out),
+        )
+
+
+class CostEstimate(BaseModel):
+    """An estimate, with the prices and token counts it was computed from.
+
+    Carrying the inputs makes the number reproducible from the capture alone, and
+    makes plain which price list a published cost assumed.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    currency: Literal["USD"] = "USD"
+    prices: TokenPrices
+    input_tokens: int
+    output_tokens: int
+    estimated_cost: float
+
+
+def estimate_cost(response: "ProviderResponse", prices: TokenPrices | None) -> CostEstimate | None:
+    """None when no price is configured or the provider reported no token counts."""
+    if prices is None or response.input_tokens is None or response.output_tokens is None:
+        return None
+    cost = (
+        response.input_tokens * prices.usd_per_million_input_tokens
+        + response.output_tokens * prices.usd_per_million_output_tokens
+    ) / 1_000_000
+    return CostEstimate(
+        prices=prices,
+        input_tokens=response.input_tokens,
+        output_tokens=response.output_tokens,
+        estimated_cost=round(cost, 8),
+    )
+
+
 class CaptureError(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -146,7 +201,21 @@ class CapturedReview(BaseModel):
 
     error: CaptureError | None = None
 
+    # Wall-clock seconds around the adapter call, and the cost it implies at the
+    # prices the user supplied. Both are omitted from the serialised capture while
+    # unset, so captures written before they existed keep their bytes and digests.
+    latency_seconds: float | None = None
+    cost: CostEstimate | None = None
+
     integrity_sha256: str | None = None
+
+    @model_serializer(mode="wrap")
+    def _omit_unset_measurements(self, handler: Any) -> dict[str, Any]:
+        data = handler(self)
+        for key in _OPTIONAL_MEASUREMENTS:
+            if data.get(key) is None:
+                data.pop(key, None)
+        return data
 
     def payload_without_integrity(self) -> dict[str, Any]:
         data = self.model_dump(mode="json", by_alias=True)

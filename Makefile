@@ -1,8 +1,10 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check robustness robustness-check parity-vectors parity-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status web-check web-export check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check site schemas schemas-check robustness robustness-check parity-vectors parity-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status web-check web-export check
 
 install: ; uv sync
 test: ; uv run pytest -v
-demo: ; uv run python -m contract_eval evaluate --case nda
+demo:
+	uv run python -m contract_eval evaluate --case nda
+	@cat scorecard.md
 demo-live: ; uv run --extra live python -m contract_eval evaluate --case all --live
 certificate: ; uv run python -m contract_eval certify --case all --out examples
 certificate-check: ; uv run python scripts/check_release_certificate.py
@@ -11,6 +13,11 @@ capture-check: ; uv run pytest tests/test_capture.py -q
 replay-check: ; uv run pytest tests/test_replay.py -q
 live-run-report: ; uv run python scripts/generate_live_run_report.py
 live-run-check: ; uv run python scripts/check_live_run_report.py
+leaderboard: ; uv run python scripts/build_leaderboard.py
+leaderboard-check: ; uv run python scripts/build_leaderboard.py --check
+site: ; uv run python scripts/build_site.py
+schemas: ; uv run python scripts/export_schemas.py
+schemas-check: ; uv run python scripts/export_schemas.py --check
 gold-v2-check: ; uv run python scripts/check_gold_v2.py
 evidence-check: ; uv run pytest tests/test_evidence_binding.py tests/test_policy_v3.py tests/test_v2_pipeline.py -q
 obligations-demo: ; uv run python -m contract_eval evaluate-obligations --case all
@@ -35,5 +42,5 @@ candidate-experiment-check: ; uv run python scripts/check_candidate_experiments.
 candidate-budget-status: ; uv run python -m contract_eval.candidate_budget status
 web-check: ; uv run python scripts/check_web_sync.py
 web-export: ; uv run python ../contract-eval-web/scripts/export-benchmark.py --repo .
-check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check certificate-check certificate-verify robustness-check parity-check web-check candidate-pack-check candidate-experiment-check
+check: test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check leaderboard-check schemas-check certificate-check certificate-verify robustness-check parity-check candidate-pack-check candidate-experiment-check web-check
 

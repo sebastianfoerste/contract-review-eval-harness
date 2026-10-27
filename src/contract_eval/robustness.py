@@ -10,6 +10,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from contract_eval import paths
 from contract_eval.adapters.base import Adapter
 from contract_eval.cases import ALL_CASES
 from contract_eval.models import ReviewOutput
@@ -417,22 +418,31 @@ def _decision(
     return "PILOT_ELIGIBLE", []
 
 
+def _manifest_key(path: Path, root: Path) -> str:
+    # POSIX separators keep the manifest identical on every platform. A campaign kept
+    # outside the case root is recorded by the path it was given.
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _input_manifest(root: Path, campaign_path: Path) -> dict[str, Any]:
-    paths = [campaign_path]
+    files = [campaign_path]
     for case in ALL_CASES:
-        paths.extend(
+        files.extend(
             [
-                root / "data" / f"{case}_sample.md",
-                root / "expected" / f"{case}.json",
-                root / "fixtures" / f"{case}_stub.json",
+                root / paths.source_file(case),
+                root / paths.gold_file(case),
+                root / paths.fixture_file(case),
             ]
         )
     return {
-        str(path.relative_to(root)): {
+        _manifest_key(path, root): {
             "sha256": file_sha256(path),
             "bytes": path.stat().st_size,
         }
-        for path in paths
+        for path in files
     }
 
 
@@ -442,15 +452,16 @@ def build_robustness_report(
     baseline_certificate: dict[str, Any],
     *,
     runs: int = 1,
-    root: Path = Path("."),
+    root: Path | None = None,
 ) -> dict[str, Any]:
     if runs < 1 or runs > 5:
         raise ValueError("robustness runs must be between 1 and 5")
+    root = paths.resolve_root(root)
     campaign = load_campaign(campaign_path)
     results: list[dict[str, Any]] = []
     original_cache: dict[str, list[ReviewOutput]] = {}
     for scenario in campaign.scenarios:
-        source = (root / "data" / f"{scenario.base_case}_sample.md").read_text(
+        source = (root / paths.source_file(scenario.base_case)).read_text(
             encoding="utf-8"
         )
         mutated = apply_mutations(source, scenario.operations)

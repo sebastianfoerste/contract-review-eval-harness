@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/sebastianfoerste/contract-review-eval-harness/main/schemas/review-output.schema.json",
+  "$defs": {
+    "Abstention": {
+      "properties": {
+        "clause_type": {
+          "description": "snake_case identifier of the affected clause.",
+          "title": "Clause Type",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clause_type",
+        "reason"
+      ],
+      "title": "Abstention",
+      "type": "object"
+    },
+    "Citation": {
+      "properties": {
+        "quote": {
+          "description": "Text copied verbatim from the contract, character for character. Do not paraphrase, reorder or abbreviate.",
+          "title": "Quote",
+          "type": "string"
+        },
+        "clause_type": {
+          "description": "snake_case identifier of the clause this quote supports.",
+          "title": "Clause Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "quote",
+        "clause_type"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "Clause": {
+      "properties": {
+        "clause_type": {
+          "description": "snake_case identifier of the clause type, lowercase, words separated by underscores, no spaces or punctuation. For example: confidentiality, governing_law, limitation_of_liability.",
+          "title": "Clause Type",
+          "type": "string"
+        },
+        "text": {
+          "description": "One short sentence describing the clause.",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clause_type",
+        "text"
+      ],
+      "title": "Clause",
+      "type": "object"
+    },
+    "RiskFlag": {
+      "properties": {
+        "clause_type": {
+          "description": "snake_case identifier of the clause, for example limitation_of_liability.",
+          "title": "Clause Type",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clause_type",
+        "severity",
+        "rationale"
+      ],
+      "title": "RiskFlag",
+      "type": "object"
+    }
+  },
+  "description": "What an adapter returns for a contract.",
+  "properties": {
+    "clauses": {
+      "items": {
+        "$ref": "#/$defs/Clause"
+      },
+      "title": "Clauses",
+      "type": "array"
+    },
+    "risk_flags": {
+      "items": {
+        "$ref": "#/$defs/RiskFlag"
+      },
+      "title": "Risk Flags",
+      "type": "array"
+    },
+    "citations": {
+      "items": {
+        "$ref": "#/$defs/Citation"
+      },
+      "title": "Citations",
+      "type": "array"
+    },
+    "abstentions": {
+      "items": {
+        "$ref": "#/$defs/Abstention"
+      },
+      "title": "Abstentions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "clauses",
+    "risk_flags",
+    "citations"
+  ],
+  "title": "ReviewOutput",
+  "type": "object"
+}

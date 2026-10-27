@@ -9,11 +9,12 @@ wheels/
 # Virtual environments
 .venv
 
-# Generated scorecard (run output; see examples/sample-output.md for a committed copy)
+# Generated scorecard and run provenance (run output; see examples/ for committed copies)
 /scorecard.md
 /scorecard.json
+/run-provenance.json
 
-# Generated run history; committed snapshots remain tracked
+# Generated run history (written by every evaluate run); not tracked
 /history/run_*.json
 
 # SQLite / local databases
@@ -32,3 +33,10 @@ wheels/
 
 # Zipped candidate annotation pack, regenerate with make candidate-bundle
 /candidates/mycounsel/annotation-bundle/
+
+# Static GitHub Pages site, regenerate with make site
+/site/
+
+# Environment files. Real values stay local; only example files are tracked.
+.env.*
+!.env.example

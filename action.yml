@@ -1,0 +1,80 @@
+# Score contract-review JSON in another repository's CI and fail the job on REJECT.
+#
+# The action installs contract-eval from the action's own checkout, so it works before
+# the package is on PyPI and always matches the ref you pin. Inputs reach the scorer as
+# environment variables, never interpolated into a script. See docs/ci.md.
+name: "contract-eval: score contract reviews"
+description: "Score AI contract-review JSON against an answer set with exact-span citation grounding and no LLM grader. Fails on REJECT."
+author: "Sebastian Förste"
+branding:
+  icon: check-square
+  color: blue
+
+inputs:
+  reviews:
+    description: "Review JSON files to score: whitespace-separated paths or glob patterns (** recurses)."
+    required: true
+  case:
+    description: "Bundled case to score against: nda, saas or dpa. Leave empty when you pass contract and gold."
+    required: false
+    default: ""
+  contract:
+    description: "Your own contract, scored with gold instead of a bundled case."
+    required: false
+    default: ""
+  gold:
+    description: "Your answer set JSON for contract (schemas/expected-answer.schema.json)."
+    required: false
+    default: ""
+  aliases:
+    description: "Apply the answer set's declared clause synonyms: on or off."
+    required: false
+    default: "on"
+  fail-on:
+    description: "Lowest decision that fails the step: reject or human-review."
+    required: false
+    default: "reject"
+  out:
+    description: "Directory for each review's scorecard (.md) and sealed JSON result."
+    required: false
+    default: "contract-eval-results"
+  python-version:
+    description: "Python that runs the harness, 3.11 or later."
+    required: false
+    default: "3.12"
+
+outputs:
+  decision:
+    description: "Worst release decision across the scored reviews."
+    value: ${{ steps.score.outputs.decision }}
+  results-dir:
+    description: "Directory holding the scorecards and JSON results."
+    value: ${{ steps.score.outputs.results-dir }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: Install contract-eval from the action's checkout
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        PYTHON_VERSION: ${{ inputs.python-version }}
+      run: |
+        uv venv --python "$PYTHON_VERSION" "$RUNNER_TEMP/contract-eval"
+        uv pip install --python "$RUNNER_TEMP/contract-eval/bin/python" "$ACTION_PATH"
+
+    - name: Score the reviews
+      id: score
+      shell: bash
+      env:
+        INPUT_REVIEWS: ${{ inputs.reviews }}
+        INPUT_CASE: ${{ inputs.case }}
+        INPUT_CONTRACT: ${{ inputs.contract }}
+        INPUT_GOLD: ${{ inputs.gold }}
+        INPUT_ALIASES: ${{ inputs.aliases }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_OUT: ${{ inputs.out }}
+      run: '"$RUNNER_TEMP/contract-eval/bin/python" -m contract_eval.github_action'

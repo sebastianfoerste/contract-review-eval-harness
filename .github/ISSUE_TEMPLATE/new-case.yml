@@ -1,0 +1,65 @@
+name: New case
+description: Propose a new synthetic contract with a hand-written answer set.
+title: "[new case] "
+labels: ["new case"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A case is a synthetic contract plus the answer set a review is scored against. Adding one means these files and one entry:
+
+        - `data/<case>_sample.md`: the synthetic contract
+        - `expected/<case>.json`: the hand-written answer set
+        - `fixtures/<case>_stub.json`: the deterministic offline adapter output
+        - `robustness/campaign.v1.json`: scenarios naming the case (optional)
+        - `src/contract_eval/cases.py`: add the case to `ALL_CASES`
+
+        Read the [annotation guideline](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/ANNOTATION_GUIDELINE.md) before you write the contract.
+
+  - type: input
+    id: contract-type
+    attributes:
+      label: Contract type
+      description: The bundled cases are an NDA, a SaaS agreement and a DPA.
+      placeholder: e.g. software licence, supply agreement, consultancy agreement
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-it-tests
+    attributes:
+      label: What the case tests
+      description: >-
+        The clauses a review must find, the risk flags you plan to plant and their
+        severities, and any citation trap (text a review is likely to misquote or invent).
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Source of the synthetic contract
+      description: >-
+        How the contract was or will be written. Fabricate it. Do not adapt a real
+        agreement, a client precedent or a template whose provenance you cannot state.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: pull-request
+    attributes:
+      label: Will you open the pull request yourself?
+      options:
+        - Yes, contract, answer set and stub fixture
+        - Yes, but I need help with the answer set
+        - No, I am proposing the case only
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: synthetic-only
+    attributes:
+      label: Synthetic data only
+      options:
+        - label: The contract is synthetic. It contains no real client data and no personal data.
+          required: true

@@ -1,5 +1,4 @@
 import json
-import sys
 from pathlib import Path
 
 import pytest
@@ -115,14 +114,48 @@ def test_compare_without_paths_scores_current_inputs_against_the_newest_run(tmp_
     assert compare_runs(tmp_path) is True
 
 
-def test_compare_cli_exits_non_zero_on_a_regression(tmp_path, monkeypatch):
+def test_compare_cli_exits_non_zero_on_a_regression(tmp_path):
     current = evaluate_case("nda", live=False)
     baseline = _run_file(tmp_path / "baseline.json", {"nda": dict(current, citation_grounding=1.0)})
     candidate = _run_file(tmp_path / "candidate.json", {"nda": current})
-    argv = ["contract-eval", "compare", "--baseline", str(baseline), "--candidate", str(candidate)]
-    monkeypatch.setattr(sys, "argv", argv)
 
     with pytest.raises(SystemExit) as exit_info:
-        main()
+        main(["compare", "--baseline", str(baseline), "--candidate", str(candidate)])
     assert exit_info.value.code == 1
 
+
+def _subcommands(parser):
+    import argparse
+
+    return next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+
+
+def _listed_commands(parser) -> set[str]:
+    return {choice.dest for choice in _subcommands(parser)._choices_actions}
+
+
+def test_top_level_help_lists_user_commands_and_hides_maintainer_ones():
+    from contract_eval.cli import build_parser
+
+    parser = build_parser()
+    listed = _listed_commands(parser)
+    dev = _subcommands(parser).choices["dev"]
+
+    assert {"evaluate", "certify", "robustness", "score-output", "dev"} <= listed
+    maintainer = _listed_commands(dev)
+    assert {"verify-certificate", "verify-robustness", "reference-status", "evaluate-obligations"} <= maintainer
+    assert not listed & maintainer
+    assert "reference-status" not in parser.format_help()
+
+
+def test_maintainer_commands_run_with_and_without_the_dev_prefix(capsys):
+    import json
+
+    from contract_eval.cli import main
+
+    for argv in (
+        ["dev", "verify-certificate", "--certificate", "examples/release-certificate.json"],
+        ["verify-certificate", "--certificate", "examples/release-certificate.json"],
+    ):
+        main(argv)
+        assert json.loads(capsys.readouterr().out)["status"] == "VALID"
