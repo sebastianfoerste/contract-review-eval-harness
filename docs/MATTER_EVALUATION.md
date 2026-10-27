@@ -230,7 +230,8 @@ lawyer would use it. That is recorded by a person, per finding.
 
 ```bash
 uv run python -m contract_eval matter-review-template --round round1 \
-  --review captures/matters/northwind-saas/<file>.json --out session-R01.json
+  --review captures/matters/northwind-saas/<file>.json \
+  --out matters/northwind-saas/session-template-round1.json
 ```
 
 The template names the output by hash and does not name the condition. The reviewer
@@ -245,10 +246,12 @@ was reviewable, and any material issue the output missed.
 | 2 | Not useful. Correct or harmless, but it told me nothing I needed. |
 | 1 | Misleading. Wrong in a way that would have cost time or caused harm if relied on. |
 
-A completed session goes in `matters/<id>/reviews/`. Reviewers are recorded under a
-pseudonym such as `R01`. Each session declares an `evidence_class`. Only sessions by
-practising lawyers other than the author count toward the usefulness figure; the
-author's own review and worked examples are counted as excluded.
+A completed session goes in `matters/<id>/reviews/`. Every file there is validated as
+a completed session, so a blank template stays in the matter directory beside it.
+Reviewers are recorded under a pseudonym such as `R01`. Each session declares an
+`evidence_class`. Only sessions by practising lawyers other than the author count
+toward the usefulness figure; the author's own review and worked examples are counted
+as excluded.
 
 ## What may be claimed
 

@@ -37,7 +37,7 @@ and unchanged. Their single-contract answers under `expected/` are not affected.
 | Answers, round 1 and round 2 | Draft answers authored |
 | Stub outputs | None. Written after the answers, deliberately imperfect, as for the cases |
 | Live outputs | One: round 1 under `matter` (claude-sonnet-5-5, 2026-10-07), scored once against the draft answers and logged in `experiments/northwind-saas/log.jsonl`. The capture is not committed |
-| Reviewer sessions | None recorded |
+| Reviewer sessions | None recorded. `session-template-round1.json` is a blank session for that output |
 
 No stub output exists, so `matter-evaluate` scores nothing offline. The logged run
 covers one condition of round 1 and measures no difference between conditions.
