@@ -42,6 +42,13 @@ and unchanged. Their single-contract answers under `expected/` are not affected.
 No stub output exists, so `matter-evaluate` scores nothing offline. The logged run
 covers one condition of round 1 and measures no difference between conditions.
 
+That run scored the whole of round 1 (split `all`), its evaluation issues included,
+against the draft answers. Once `expected/round1.json` changes, for example when the
+answers are frozen, every later round 1 run that scores the evaluation split prints
+**Not held out**. A run of the `matter` condition with another prompt, model or effort
+does so already. A held-out comparison between conditions on frozen answers therefore
+rests on round 2 or a second matter.
+
 The documents contain deliberate tensions between the contracts, the vendor's
 statements and the client's position. They are not listed anywhere in this repository,
 so that the answers are written from the documents and not from a list.
