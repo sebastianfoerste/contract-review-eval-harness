@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 import pytest
+
+from contract_eval.cli import evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -72,7 +75,7 @@ def exported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> list[dict]:
     feedback_file = dashboard / "data" / "feedback.json"
     feedback_file.write_text(json.dumps([EXISTING_ITEM]), encoding="utf-8")
 
-    # The exporter reads `history/` relative to the working directory.
+    # Without --history the exporter reads `history/` relative to the working directory.
     monkeypatch.chdir(tmp_path)
     _exporter().export_feedback(write=True, dashboard_path=str(dashboard))
     return json.loads(feedback_file.read_text(encoding="utf-8"))
@@ -110,3 +113,27 @@ def test_the_exporter_cannot_be_pointed_at_a_real_evidence_kind() -> None:
 
 def test_existing_dashboard_items_are_left_untouched(exported: list[dict]) -> None:
     assert exported[0] == EXISTING_ITEM
+
+
+def test_the_history_option_reads_a_run_written_under_another_out_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # evaluate writes history/ under its --out directory, so ./history holds only the
+    # runs made with the default --out.
+    evaluate(case="nda", live=False, out_dir=tmp_path / "out")
+    dashboard = tmp_path / "dashboard"
+    (dashboard / "data").mkdir(parents=True)
+    feedback_file = dashboard / "data" / "feedback.json"
+    feedback_file.write_text("[]", encoding="utf-8")
+
+    # The working directory has no history/, so only --history can find the run.
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", [
+        "export_feedback.py", "--write", "--dashboard", str(dashboard),
+        "--history", str(tmp_path / "out" / "history"),
+    ])
+    _exporter().main()
+
+    (item,) = json.loads(feedback_file.read_text(encoding="utf-8"))
+    assert item["origin"] == SYNTHETIC_ORIGIN
+    assert "NDA review" in item["text"]

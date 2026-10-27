@@ -11,15 +11,15 @@ from pathlib import Path
 # approval or consent reference; no script may write them.
 ORIGIN_KIND = "synthetic_fixture"
 
-def export_feedback(write: bool, dashboard_path: str):
-    history_dir = Path("history")
+def export_feedback(write: bool, dashboard_path: str, history_path: str = "history"):
+    history_dir = Path(history_path)
     if not history_dir.exists():
-        print("No evaluation history found. Run evaluate first.")
+        print(f"No evaluation history found in {history_dir}/. Run evaluate first.")
         sys.exit(1)
 
     run_files = sorted(history_dir.glob("run_*.json"), key=lambda f: f.name)
     if not run_files:
-        print("No evaluation history runs found. Run evaluate first.")
+        print(f"No evaluation history runs found in {history_dir}/. Run evaluate first.")
         sys.exit(1)
 
     latest_file = run_files[-1]
@@ -92,9 +92,10 @@ def main():
     parser = argparse.ArgumentParser(description="Export quality regressions as dashboard feedback items")
     parser.add_argument("--write", action="store_true", help="Write directly to the dashboard feedback data file")
     parser.add_argument("--dashboard", default="../legal-ai-adoption-dashboard", help="Path to dashboard root directory")
+    parser.add_argument("--history", default="history", help="Run history directory to read; evaluate writes it under its --out directory")
     args = parser.parse_args()
     
-    export_feedback(args.write, args.dashboard)
+    export_feedback(args.write, args.dashboard, args.history)
 
 if __name__ == "__main__":
     main()
