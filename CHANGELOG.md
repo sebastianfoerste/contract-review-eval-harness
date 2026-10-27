@@ -23,7 +23,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `--adapter stub|anthropic|openai-compatible|command`. The OpenAI-compatible adapter reaches any Chat Completions endpoint through a configurable base URL; the command adapter runs any program that reads the contract on stdin and prints review JSON. `--live` stays an alias for `--adapter anthropic`.
 - Captures record the adapter call's latency and, when `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` are set, a cost estimate with the prices it assumed. Both fields are omitted while unset, so existing captures keep their bytes and digests.
 - `scripts/build_leaderboard.py` re-scores every committed review output and writes `examples/leaderboard.md` and `.json`; CI rejects drift.
-- `scripts/build_site.py` renders the scorecard, certificate, live run and leaderboard into a static site, and `.github/workflows/pages.yml` deploys it once the `PAGES_ENABLED` repository variable is `true`.
+- `scripts/build_site.py` renders the scorecard, certificate, live run and leaderboard into a static site, and `.github/workflows/pages.yml` deploys it once the `PAGES_ENABLED` repository variable is `true`. The site is published at <https://sebastianfoerste.github.io/contract-review-eval-harness/> and linked from the README.
 - `examples/quickstart.ipynb`, a notebook that opens in Colab.
 - `docs/metrics.md`: one section per scorecard row with its formula, denominator, edge cases and whether the row can block a release.
 - A "How this compares" section in the README.
