@@ -156,10 +156,10 @@ Open tools by [@sebastianfoerste](https://github.com/sebastianfoerste) that trea
 
 ## Limitations and safety
 
-- **Synthetic data.** Every contract under `data/` is fabricated for evaluation. No real agreement, client or personal data.
+- **Synthetic data.** Every contract under `data/` and every matter document under `matters/` is fabricated for evaluation. No real agreement, client or personal data.
 - **Single annotator.** The gold sets encode one reviewer's judgment; no second-annotator review or blind adjudication yet. That reviewer is a hard external dependency for gold schema v2.
 - **Bounded scope.** Three contract types (NDA, SaaS, DPA), thirty-two clause types and eighteen perturbations. Not a general contract-understanding benchmark.
 - **Review-gated, not legal advice.** Every flagged risk and citation must be confirmed by a qualified lawyer. Pilot eligibility never authorizes autonomous contract reliance.
 - Live-model output is non-deterministic; a committed live run is a dated snapshot, not a stable benchmark.
 
-Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. One exception is pending: four NDA severity rationales were redrafted with AI assistance on 2026-10-13 and await the maintainer's adoption. [annotations/README.md](annotations/README.md) records which ones and what remains open. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE](LICENSE).
+Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. One exception is pending: four NDA severity rationales were redrafted with AI assistance on 2026-10-13 and await the maintainer's adoption. [annotations/README.md](annotations/README.md) records which ones and what remains open. The six documents written for the first matter were drafted with AI assistance, as [matter evaluation](docs/MATTER_EVALUATION.md) records. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE](LICENSE).
