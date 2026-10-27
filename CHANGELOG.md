@@ -35,6 +35,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 
 ### Changed
 
+- The maintainer adopted the four NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices`. Their references to §§ 130, 305 and 307 BGB were re-checked against gesetze-im-internet.de, and the NDA candidate's `legal_position_date` is 2026-10-27. The notes marking them as pending are removed. Severities, flags and scores are unchanged.
 - `requires-python` is now `>=3.11`. 0.7.0rc1 required 3.12.
 - Maintainer commands (`reference-*`, `verify-*`, `evaluate-obligations`) move under `contract-eval dev`. They stay accepted, unlisted, at the top level, so Make targets, CI steps and docs keep working. `cli.py` re-exports the functions that moved to `contract_eval.api`, so existing imports keep working.
 - Schema v1 is an input format, not a parallel system. `contract_eval.upgrade` converts v1 reviews and gold sets to v2, so legacy captures can enter the evidence-bound path. The committed `fixtures/*_stub.v2.json` files are removed; the stub adapter upgrades its v1 fixture on load. (#26)

@@ -17,7 +17,7 @@ A legal engineer, innovation lead, or GC evaluating an AI contract-review tool b
 6. **Span coverage** asks, independently of what the review called anything, whether it quoted from inside every clause of the document.
 
 ## Controls
-Grounding is checked against the actual document text, not the model's confidence. In the release certificate, any single ungrounded citation forces a **REJECT** regardless of other scores — the harness is deliberately conservative. The gold set is human-authored, so the benchmark itself is reviewable. The exception is four NDA rationales redrafted with AI assistance on 2026-10-13, which await the maintainer's adoption (see [annotations/README.md](annotations/README.md)).
+Grounding is checked against the actual document text, not the model's confidence. In the release certificate, any single ungrounded citation forces a **REJECT** regardless of other scores — the harness is deliberately conservative. The gold set is human-authored, so the benchmark itself is reviewable.
 
 ## Evaluation
 The bundled NDA run finds every expected clause but **catches a fabricated citation**: a quote saying notices are "deemed received three business days after posting", which appears nowhere in the NDA (citation grounding 8/9). It also rates the free assignment to a competitor LOW and the consent condition on compelled disclosure MEDIUM, where the answer set says HIGH (severity accuracy 0.60). The scorecard reports these failures and says the fabricated citation must be rejected; the release certificate rejects the output. The point of the demo is to catch quietly plausible output a tired reviewer would pass.
