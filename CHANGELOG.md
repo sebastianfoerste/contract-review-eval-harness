@@ -25,6 +25,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Captures record the adapter call's latency and, when `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` are set, a cost estimate with the prices it assumed. Both fields are omitted while unset, so existing captures keep their bytes and digests.
 - `scripts/build_leaderboard.py` re-scores every committed review output and writes `examples/leaderboard.md` and `.json`; CI rejects drift.
 - `scripts/build_site.py` renders the scorecard, certificate, live run and leaderboard into a static site, and `.github/workflows/pages.yml` deploys it once the `PAGES_ENABLED` repository variable is `true`. The site is published at <https://sebastianfoerste.github.io/contract-review-eval-harness/> and linked from the README.
+- A browser playground at `/playground/` on the results site. It installs the package wheel into Pyodide and scores a pasted or imported review against a bundled case, shows the release decision, every citation, clause and risk against the answer set, and highlights the cited text in the contract. Its JSON and Markdown exports are the files `contract-eval score --out` writes for the same review. Three example reviews per case reach each of the three decisions. `make site` builds the wheel and the playground.
 - `examples/quickstart.ipynb`, a notebook that opens in Colab.
 - `docs/metrics.md`: one section per scorecard row with its formula, denominator, edge cases and whether the row can block a release.
 - A "How this compares" section in the README.
@@ -35,6 +36,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 
 ### Changed
 
+- The maintainer adopted the four NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices`. Their references to §§ 130, 305 and 307 BGB were re-checked against gesetze-im-internet.de, and the NDA candidate's `legal_position_date` is 2026-10-27. The notes marking them as pending are removed. Severities, flags and scores are unchanged.
 - `requires-python` is now `>=3.11`. 0.7.0rc1 required 3.12.
 - Maintainer commands (`reference-*`, `verify-*`, `evaluate-obligations`) move under `contract-eval dev`. They stay accepted, unlisted, at the top level, so Make targets, CI steps and docs keep working. `cli.py` re-exports the functions that moved to `contract_eval.api`, so existing imports keep working.
 - Schema v1 is an input format, not a parallel system. `contract_eval.upgrade` converts v1 reviews and gold sets to v2, so legacy captures can enter the evidence-bound path. The committed `fixtures/*_stub.v2.json` files are removed; the stub adapter upgrades its v1 fixture on load. (#26)

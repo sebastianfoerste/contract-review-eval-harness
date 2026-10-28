@@ -3,7 +3,9 @@ name: pages
 # Publishes the committed evidence as a static site: the scorecard, the release
 # certificate, the dated live-run report, the leaderboard and the adversarial
 # robustness report. scripts/build_site.py renders them with the standard library
-# only, so the build needs no network beyond installing uv.
+# only, so the build needs no network beyond installing uv. The site also carries the
+# playground (playground/), which installs the wheel built here into Pyodide and
+# scores a pasted review in the visitor's browser.
 #
 # The site is published at https://sebastianfoerste.github.io/contract-review-eval-harness/
 # (Settings > Pages > Source is "GitHub Actions"). A deploy to a repository without
@@ -41,8 +43,11 @@ jobs:
       - name: Set up Python
         run: uv python install 3.13
 
+      - name: Build the wheel the playground installs
+        run: uv build --wheel --out-dir build/playground-wheel
+
       - name: Render the site
-        run: uv run python scripts/build_site.py --out site
+        run: uv run python scripts/build_site.py --out site --wheel build/playground-wheel/contract_eval-*.whl
 
       - name: Upload the Pages artifact
         uses: actions/upload-pages-artifact@v3
