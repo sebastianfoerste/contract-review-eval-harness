@@ -45,7 +45,8 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The README leads with what the harness does and is rewritten for clarity. (#37, #42)
 - `CONTRIBUTING.md` is rewritten around three paths: add a case, add an adapter, volunteer as an annotator.
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
-- CI installs dependencies with `uv sync --locked`, so a `uv.lock` that disagrees with `pyproject.toml` fails the build instead of being resolved again.
+- The CI jobs that run `uv sync` pass `--locked`, so a `uv.lock` that disagrees with `pyproject.toml` fails the build instead of being resolved again.
+- `compare` exits 1 on a regression, also when run without flags, where it printed a warning and exited 0. `evaluate --out DIR` writes its run history to `DIR/history/` instead of `./history/`.
 
 ### Removed
 
