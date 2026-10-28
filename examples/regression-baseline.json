@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-10-27T11:56:55.507909",
+  "timestamp": "2026-10-28T10:52:32.401731",
   "case": "all",
   "provenance": {
     "schema": "contract-review-eval.run-provenance.v1",
     "adapter": "stub",
-    "output_generated_at": "2026-10-27T11:56:55",
-    "scored_at": "2026-10-27T11:56:55",
+    "output_generated_at": "2026-10-28T10:52:32",
+    "scored_at": "2026-10-28T10:52:32",
     "scorer_version": "0.7.0rc1",
     "gold_set_sha256": {
-      "nda": "53c6239b7a8870fb8f3bcdab3875f6d0ec15604f06702d94df8c5f7df13d07f9",
+      "nda": "ed95991a0f96b42d80a218a108feaac04904ed0fef15f6b077febd6dc31ced58",
       "saas": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e",
       "dpa": "e7f5ee192939560fa0ed3dd013eb77c438ab9f7fd27659d590471977d37f4a75"
     },
