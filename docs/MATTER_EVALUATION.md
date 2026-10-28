@@ -282,7 +282,7 @@ as excluded.
   passages and reasons wrongly about them earns credit for detection. Action accuracy
   and reviewer sessions are the checks on reasoning.
 - The matter path is not part of the release certificate, the robustness campaign, the
-  leaderboard or the GitHub Action, and the wheel does not ship `matters/`. The web
-  export carries no matter data, but it hashes every module under `src/contract_eval/`,
-  the matter modules included, so a change to matter code needs `make web-export`, and
-  `make web-check` fails until then.
+  leaderboard, the playground or the GitHub Action, and the wheel does not ship
+  `matters/`. The web export carries no matter data, but it hashes every module under
+  `src/contract_eval/`, the matter modules included, so a change to matter code needs
+  `make web-export`, and `make web-check` fails until then.
