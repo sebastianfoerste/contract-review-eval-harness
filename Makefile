@@ -15,7 +15,7 @@ live-run-report: ; uv run python scripts/generate_live_run_report.py
 live-run-check: ; uv run python scripts/check_live_run_report.py
 leaderboard: ; uv run python scripts/build_leaderboard.py
 leaderboard-check: ; uv run python scripts/build_leaderboard.py --check
-site: ; uv run python scripts/build_site.py
+site: ; rm -rf build/playground-wheel && uv build --wheel --out-dir build/playground-wheel && uv run python scripts/build_site.py --wheel build/playground-wheel/contract_eval-*.whl
 schemas: ; uv run python scripts/export_schemas.py
 schemas-check: ; uv run python scripts/export_schemas.py --check
 gold-v2-check: ; uv run python scripts/check_gold_v2.py

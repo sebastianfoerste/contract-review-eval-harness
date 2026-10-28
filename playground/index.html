@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Score an AI contract review against a hand-authored answer set in your browser. Deterministic scoring, every citation checked against the contract, nothing you paste leaves the page. Synthetic contracts only. Not legal advice.">
+<link rel="canonical" href="https://sebastianfoerste.github.io/contract-review-eval-harness/playground/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="contract-review-eval-harness">
+<meta property="og:url" content="https://sebastianfoerste.github.io/contract-review-eval-harness/playground/">
+<meta property="og:title" content="Contract Review Eval Harness: run it in your browser">
+<meta property="og:description" content="Score an AI contract review against a hand-authored answer set in your browser. Deterministic scoring, every citation checked against the contract. Not legal advice.">
+<title>Contract Review Eval Harness: Playground</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#workspace">Skip to review</a>
+<header class="site-header">
+  <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">C<span>✓</span></span><span>Contract Review <strong>Eval Harness</strong></span></a>
+  <nav aria-label="Resources"><span class="local-badge"><span aria-hidden="true">●</span> Runs in your browser</span><a href="../">Results</a><a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/metrics.md">Metrics</a><a href="https://github.com/sebastianfoerste/contract-review-eval-harness">View source <span aria-hidden="true">↗</span></a></nav>
+</header>
+<main>
+  <section class="intro" aria-labelledby="page-title">
+    <div><p class="eyebrow">THE REVIEW SCORING BENCH</p><h1 id="page-title">Score an AI contract review.<br><span>Every citation checked against the contract.</span></h1><p class="intro-copy">Paste the review your tool produced for one of the synthetic contracts.<br class="desktop-break"> The harness scores clauses, risks and citations against a hand-authored answer set and applies the release policy.</p></div>
+    <aside class="scope-note"><span class="note-label">BUILT FOR RELEASE GATES</span><p>Deterministic scoring.<br>No LLM grader.</p><span>Pilot eligible supports a supervised pilot at most. A lawyer still confirms every flag and citation.</span></aside>
+  </section>
+  <ol class="steps" aria-label="Scoring workflow"><li><span>01</span> Choose a contract</li><li><span>02</span> Paste the review</li><li><span>03</span> Score &amp; export</li></ol>
+
+  <div class="workspace" id="workspace">
+    <section class="panel draft-panel" aria-labelledby="draft-heading">
+      <div class="panel-heading"><div><span class="eyebrow">INPUT</span><h2 id="draft-heading">Review under test</h2></div><span class="file-badge" id="case-badge">NDA</span></div>
+      <div class="draft-controls">
+        <label for="case">Contract</label>
+        <select id="case"><option value="nda">Mutual NDA</option><option value="saas">SaaS subscription agreement</option><option value="dpa">Data processing agreement</option></select>
+        <p class="context" id="context">Loading the answer set…</p>
+        <label for="example">Start with an example review</label>
+        <div class="example-row"><select id="example"><option value="stub">Bundled stub · one fabricated citation</option><option value="grounded">Stub without the fabricated citation</option><option value="answer_key">Answer-key review · built from the answer set</option></select><button id="load-example" disabled>Load</button></div>
+        <div class="import-row"><button id="import" class="text-button">↑ Import review JSON</button><span>Local file · JSON up to 1 MB</span><input type="file" id="file" accept=".json,application/json" hidden></div>
+        <label class="check-row"><input type="checkbox" id="aliases" checked> Apply the answer set's declared clause aliases</label>
+        <p id="sample-error" class="error" role="alert" hidden></p>
+      </div>
+      <div class="editor-heading"><label for="input">Review JSON</label><button class="text-button" id="format">Format JSON</button></div>
+      <textarea id="input" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="draft-help input-error" placeholder='{"clauses": [], "risk_flags": [], "citations": []}'></textarea>
+      <div class="editor-meta"><span id="shape">Paste or load a review</span><span id="size">0 KB</span></div>
+      <p id="input-error" class="error" role="alert" hidden></p>
+      <div class="run-area"><button class="primary" id="run" disabled>Score review <span aria-hidden="true">↗</span></button><span class="shortcut">⌘ / Ctrl + Enter</span></div>
+      <div class="runtime"><span class="status-dot" id="status-dot" aria-hidden="true"></span><span id="status" role="status">Preparing the scorer…</span><button id="retry" class="text-button" hidden>Retry</button></div>
+      <p class="draft-help" id="draft-help">Your review stays in this tab and is cleared when you close it. The Python runtime downloads on first use. The review must follow <a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/schemas/review-output.schema.json">the review schema</a>; citations must quote the contract verbatim.</p>
+      <button id="download-draft" class="text-button save-draft">↓ Save review</button>
+      <details class="contract" id="contract-details">
+        <summary><span class="eyebrow">SOURCE</span><span id="contract-title">The contract</span></summary>
+        <p class="contract-note" id="contract-note">Synthetic. Citations are matched against this text after normalising case, punctuation and whitespace.</p>
+        <pre id="contract" tabindex="0" aria-label="Contract text"></pre>
+      </details>
+    </section>
+
+    <section class="panel results-panel" aria-labelledby="results-heading" aria-busy="false">
+      <div class="panel-heading"><div><span class="eyebrow">OUTPUT</span><h2 id="results-heading">Scorecard</h2></div><span class="file-badge" id="result-state">Awaiting score</span></div>
+      <div id="empty" class="empty-state"><div class="document-icon" aria-hidden="true"><span></span><span></span><span></span><b>✓</b></div><h3>Your scorecard starts here</h3><p>Load an example or paste your tool's review JSON,<br>then score it against the answer set.</p><div class="legend"><span class="badge blocker">Blocker</span><span class="badge review">Review</span><span class="badge pass">Pass</span></div><p class="empty-footnote">Deterministic code. No language model grades the review.</p></div>
+      <div id="results" hidden>
+        <div class="report-heading"><h3 id="report-title"></h3><p id="report-meta"></p></div>
+        <p id="stale" class="notice" role="status" hidden>Review or settings changed. Score again to refresh this scorecard and enable export.</p>
+        <div class="decision" id="decision"><span class="note-label">RELEASE DECISION</span><strong id="decision-value"></strong><p id="decision-note"></p></div>
+        <div class="metrics" aria-label="Score summary"><div><span id="count-blockers">0</span><label>Blockers</label></div><div><span id="count-review">0</span><label>Review items</label></div><div><span id="clause-f1">0.00</span><label>Clause F1</label></div><div><span id="grounding">0/0</span><label>Grounded citations</label></div></div>
+        <details class="all-scores"><summary>All scores</summary><div class="table-wrap"><table><thead><tr><th scope="col">Dimension</th><th scope="col">Score</th><th scope="col">What it counts</th></tr></thead><tbody id="score-table"></tbody></table></div></details>
+        <div class="finding-toolbar"><div class="filters" role="group" aria-label="Filter findings"><button data-filter="open" aria-pressed="true">Open items</button><button data-filter="citation" aria-pressed="false">Citations</button><button data-filter="clause" aria-pressed="false">Clauses</button><button data-filter="risk" aria-pressed="false">Risks</button><button data-filter="all" aria-pressed="false">All</button></div><label for="search" class="sr-only">Search findings, clauses or quotes</label><input id="search" type="search" placeholder="Search findings, clauses or quotes…"></div>
+        <div class="list-meta"><p id="visible-count" class="visible-count" role="status"></p><button id="toggle-all" class="text-button" aria-pressed="false">Expand all</button></div>
+        <div id="findings" class="findings"></div>
+        <div class="export-bar"><span id="export-hint">Take the result with you</span><div><button id="export-json" disabled>↓ JSON result</button><button id="export-md" disabled>↓ Markdown scorecard</button></div></div>
+      </div>
+      <p id="run-error" class="error" role="alert" hidden></p>
+    </section>
+  </div>
+  <section class="explainer" aria-label="How to read the findings"><div><span class="badge blocker">Blocker</span><p>A citation is not an exact span of the contract, or the review cites nothing. Any blocker rejects the review, whatever its other scores.</p></div><div><span class="badge review">Review</span><p>A requirement of the release policy is unmet: a missed or unexpected clause, a missed or extra risk, a wrong severity, or a duplicate flag. A qualified reviewer decides.</p></div><div><span class="badge pass">Pass</span><p>The item matches the answer set. A review with no blockers and no review items is pilot eligible, which still requires a lawyer to confirm every flag and citation.</p></div></section>
+  <section class="basis" aria-labelledby="basis-heading"><h2 id="basis-heading">What the scores rest on</h2><p>This page runs <code>{{WHEEL}}</code>, the same package as the command line, inside your browser. The exported JSON is the result <code>contract-eval score</code> writes for the same file and case. The answer sets were written by hand for three synthetic contracts and record whose side each severity is judged from. A score measures agreement with that answer set; it is not a public benchmark result. <a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/metrics.md">Read the metric reference ↗</a></p></section>
+</main>
+<footer><span>Contract Review Eval Harness <span class="footer-dot">·</span> Open source, MIT license</span><span>Synthetic contracts only · Not legal advice <a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/score-your-own-tool.md">Score your own tool ↗</a></span></footer>
+<noscript><p class="error">JavaScript is required for the browser scorer. You can also use the Python CLI linked under View source.</p></noscript>
+<script type="module" src="app.mjs" data-wheel="{{WHEEL}}"></script>
+</body>
+</html>
