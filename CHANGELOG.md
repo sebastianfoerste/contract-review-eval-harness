@@ -32,6 +32,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) and `CITATION.cff`.
 - This changelog.
 - `tests/test_docs.py`, an offline check of relative doc links, metric sections and issue forms.
+- `tests/test_readme.py`: the README stays at 350 words or fewer, uses only absolute links, links only to repository files that exist, and copies its scorecard rows verbatim from `examples/scorecard.md`.
 
 ### Changed
 
@@ -41,6 +42,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Schema v1 is an input format, not a parallel system. `contract_eval.upgrade` converts v1 reviews and gold sets to v2, so legacy captures can enter the evidence-bound path. The committed `fixtures/*_stub.v2.json` files are removed; the stub adapter upgrades its v1 fixture on load. (#26)
 - Both annotators are named, with their agreement, from one registry in `contract_eval.annotators`. (#27)
 - The README leads with what the harness does and is rewritten for clarity. (#37, #42)
+- The README is cut to a pitch, a quick start, a scorecard excerpt and links, under 350 words. Its other sections (why this exists, the live-run finding, what it checks, more commands, how this compares, the suite list, limitations and safety) move unchanged to `docs/overview.md`. Its links and image are absolute, so it renders as the PyPI long description.
 - `CONTRIBUTING.md` is rewritten around three paths: add a case, add an adapter, volunteer as an annotator.
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
 
