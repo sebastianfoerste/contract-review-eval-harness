@@ -121,6 +121,7 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 
 ## More detail
 
+- [Legal engineering explainer: the contracts, the gold sets, every metric, the design principles and likely interview questions](docs/legal-engineering-explainer.md)
 - [Metric reference: formulas, denominators and release impact](docs/metrics.md)
 - [Score your own tool](docs/score-your-own-tool.md) and [gate CI on it](docs/ci.md)
 - [Release certificate, gates and robustness lab](docs/certificate-and-robustness.md)
