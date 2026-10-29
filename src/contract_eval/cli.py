@@ -24,7 +24,7 @@ from contract_eval.api import (  # noqa: F401
 )
 from contract_eval.cases import ALL_CASES
 from contract_eval.models import ExpectedAnswer, ReviewOutput  # noqa: F401
-from contract_eval.provenance import run_provenance, write_provenance
+from contract_eval.provenance import run_provenance, scorer_version, write_provenance
 from contract_eval.scorecard import render
 from contract_eval.release_certificate import (
     build_release_certificate,
@@ -343,6 +343,19 @@ def score_exit_code(decision: str, fail_on: str = "reject") -> int:
     return 1 if decision in failing else 0
 
 
+CASE_CHOICES = [*ALL_CASES, "all"]
+
+
+def _add_case_argument(parser: argparse.ArgumentParser, default: str) -> None:
+    """`--case` for commands that run bundled cases: an unknown name is a usage error."""
+    parser.add_argument(
+        "--case",
+        default=default,
+        choices=CASE_CHOICES,
+        help=f"case name: {', '.join(ALL_CASES)}, or all (default: {default})",
+    )
+
+
 def _add_dev_commands(sub: argparse._SubParsersAction, *, listed: bool) -> None:
     """Maintainer commands: listed under `contract-eval dev`, and also accepted at the
     top level, unlisted, so existing scripts, Make targets and CI steps keep working."""
@@ -371,7 +384,7 @@ def _add_dev_commands(sub: argparse._SubParsersAction, *, listed: bool) -> None:
         help="release certificate JSON to verify",
     )
     obl = add("evaluate-obligations", "score a case through the evidence-bound v2 path")
-    obl.add_argument("--case", default="nda", help="case name, or all")
+    _add_case_argument(obl, default="nda")
     add_adapter_arguments(obl)
     obl.add_argument("--model", default=None, help="model id for --adapter anthropic or openai-compatible")
     obl.add_argument("--out", default=None, type=Path, help="output directory")
@@ -399,10 +412,11 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="maintainer commands: contract-eval dev --help",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {scorer_version()}")
     sub = parser.add_subparsers(dest="cmd", required=True, metavar="<command>")
 
     ev = sub.add_parser("evaluate", help="score an adapter's review against the expected answers")
-    ev.add_argument("--case", default="nda", help="case name (nda, saas, all)")
+    _add_case_argument(ev, default="nda")
     add_adapter_arguments(ev)
     ev.add_argument(
         "--model",
@@ -419,7 +433,7 @@ def build_parser() -> argparse.ArgumentParser:
         "certify",
         help="issue an input-bound release decision over the synthetic benchmark suite",
     )
-    cert.add_argument("--case", default="all", help="case name (nda, saas, all)")
+    _add_case_argument(cert, default="all")
     cert.add_argument("--out", default="examples", type=Path, help="certificate output directory")
     robust = sub.add_parser(
         "robustness",
@@ -525,7 +539,7 @@ def main(argv: list[str] | None = None) -> None:
             )
             print(f"wrote {path}")
         except (ValueError, RuntimeError) as e:  # RuntimeError: adapter failures
-            print(f"Error: {e}")
+            print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
     elif args.cmd == "compare":
         compare_runs()

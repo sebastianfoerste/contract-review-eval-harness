@@ -32,6 +32,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) and `CITATION.cff`.
 - This changelog.
 - `tests/test_docs.py`, an offline check of relative doc links, metric sections and issue forms.
+- `contract-eval --version` prints the installed package version.
 - Ruff in the dev group, configured with its long-standing default rules (`E4`, `E7`, `E9`, `F`) for Python 3.11. CI runs `uv run ruff check src tests scripts`. The violations are fixed in the code: unused imports, a mid-module import in `scorer.py`, one-line compound statements and an ambiguous variable name. Behaviour is unchanged.
 - `tests/test_readme.py`: the README stays at 350 words or fewer, uses only absolute links, links only to repository files that exist, and copies its scorecard rows verbatim from `examples/scorecard.md`.
 
@@ -39,6 +40,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 
 - The maintainer adopted the four NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices`. Their references to §§ 130, 305 and 307 BGB were re-checked against gesetze-im-internet.de, and the NDA candidate's `legal_position_date` is 2026-10-27. The notes marking them as pending are removed. Severities, flags and scores are unchanged.
 - `requires-python` is now `>=3.11`. 0.7.0rc1 required 3.12.
+- `evaluate` writes its `Error:` line to stderr, as `score` does.
 - Maintainer commands (`reference-*`, `verify-*`, `evaluate-obligations`) move under `contract-eval dev`. They stay accepted, unlisted, at the top level, so Make targets, CI steps and docs keep working. `cli.py` re-exports the functions that moved to `contract_eval.api`, so existing imports keep working.
 - Schema v1 is an input format, not a parallel system. `contract_eval.upgrade` converts v1 reviews and gold sets to v2, so legacy captures can enter the evidence-bound path. The committed `fixtures/*_stub.v2.json` files are removed; the stub adapter upgrades its v1 fixture on load. (#26)
 - Both annotators are named, with their agreement, from one registry in `contract_eval.annotators`. (#27)
@@ -63,6 +65,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices` argue from the Disclosing Party's side, which the answer set's `review_context` names, and the case study no longer calls all three gold sets receiving-side reviews. The four rationales were drafted with AI assistance and await the maintainer's adoption. Severities, flags and scores are unchanged. (#41)
 - Documented figures match the harness output: severity accuracy (0.57 to 0.60 across the cases) replaces legacy risk-flag accuracy as the headline risk figure, and the NDA's clause precision is 0.92, not 0.83. (#41)
 - The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
+- `evaluate`, `certify` and `evaluate-obligations` accepted any `--case`, and an unknown one ended in a `FileNotFoundError` traceback. They now accept only a bundled case or `all`, and exit 2 with a usage message that lists them. The help text, which named only `nda`, `saas` and `all`, is built from `ALL_CASES`.
 
 ### Security
 
