@@ -90,7 +90,9 @@ def test_a_program_that_cannot_be_executed_fails_clearly(tmp_path, capsys):
     with pytest.raises(SystemExit) as exited:
         main(["evaluate", "--adapter", "command", "--command", str(script), "--out", str(tmp_path)])
     assert exited.value.code == 1
-    assert "Error: command could not be run" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert "Error: command could not be run" in captured.err
+    assert "Error:" not in captured.out
 
 
 def test_command_is_split_without_a_shell(tmp_path):
@@ -136,4 +138,6 @@ def test_cli_reports_a_failing_command_without_a_traceback(tmp_path, capsys):
         main(["evaluate", "--adapter", "command", "--command", command, "--out", str(tmp_path)])
 
     assert exited.value.code == 1
-    assert "Error: command exited with status 2" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert "Error: command exited with status 2" in captured.err
+    assert "Error:" not in captured.out

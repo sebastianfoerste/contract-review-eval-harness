@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from contract_eval.reference_evidence import import_returns
+from contract_eval.reference_evidence import import_returns  # noqa: E402 - needs the sys.path insert above
 
 
 def main() -> int:

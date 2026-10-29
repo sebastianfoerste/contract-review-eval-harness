@@ -94,8 +94,8 @@ def _weighted_kappa(pairs: list[tuple[str, str]]) -> float | None:
         return None
     labels = ["low", "medium", "high"]
     n = len(pairs)
-    a_counts = {l: sum(1 for a, _ in pairs if a == l) for l in labels}
-    b_counts = {l: sum(1 for _, b in pairs if b == l) for l in labels}
+    a_counts = {label: sum(1 for a, _ in pairs if a == label) for label in labels}
+    b_counts = {label: sum(1 for _, b in pairs if b == label) for label in labels}
     if max(a_counts.values()) == n or max(b_counts.values()) == n:
         return None
 
@@ -211,7 +211,7 @@ def render_ledger(case: str, report: AgreementReport) -> str:
         f"- Obligation agreement: {report.obligation_agreement:.3f}",
         f"- Exact risk agreement: {report.exact_risk_agreement:.3f}",
         f"- Severity agreement: {report.severity_agreement:.3f}",
-        f"- Weighted kappa: "
+        "- Weighted kappa: "
         + (f"{report.weighted_kappa:.3f}" if report.weighted_kappa is not None
            else "not defined for this sample"),
         "",

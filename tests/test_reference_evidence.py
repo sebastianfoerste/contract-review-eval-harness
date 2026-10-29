@@ -1,5 +1,4 @@
 """Synthetic evidence only: these fixtures never become benchmark annotations."""
-from pathlib import Path
 import json
 import shutil
 
@@ -110,12 +109,18 @@ def test_incomplete_or_unbound_adjudication_cannot_freeze(workspace, mutation):
     prepare_decisions(workspace)
     path = workspace / "decisions/nda.adjudication.json"
     raw = json.loads(path.read_text())
-    if mutation == "missing": raw["decisions"] = []
-    elif mutation == "duplicate": raw["decisions"].append(raw["decisions"][0])
-    elif mutation == "blank": raw["decisions"][0]["resolution"] = " "
-    elif mutation == "wrong_hash": raw["comparison_sha256"] = "0" * 64
-    elif mutation == "wrong_case": raw["case"] = "saas"
-    elif mutation == "wrong_gold": raw["approved_gold_sha256"] = "0" * 64
+    if mutation == "missing":
+        raw["decisions"] = []
+    elif mutation == "duplicate":
+        raw["decisions"].append(raw["decisions"][0])
+    elif mutation == "blank":
+        raw["decisions"][0]["resolution"] = " "
+    elif mutation == "wrong_hash":
+        raw["comparison_sha256"] = "0" * 64
+    elif mutation == "wrong_case":
+        raw["case"] = "saas"
+    elif mutation == "wrong_gold":
+        raw["approved_gold_sha256"] = "0" * 64
     elif mutation == "unreviewed":
         proposed = workspace / "proposed/nda.v2.json"
         gold = json.loads(proposed.read_text())
@@ -123,7 +128,8 @@ def test_incomplete_or_unbound_adjudication_cannot_freeze(workspace, mutation):
         proposed.write_bytes(encoded(gold))
         raw["approved_gold_sha256"] = digest(proposed.read_bytes())
     path.write_bytes(encoded(raw))
-    with pytest.raises(ValueError): freeze(workspace)
+    with pytest.raises(ValueError):
+        freeze(workspace)
     assert not (workspace / EVIDENCE / "frozen").exists()
 
 

@@ -11,8 +11,6 @@ from contract_eval import paths
 from contract_eval.capture import (
     CaptureError,
     CapturedReview,
-    ProviderRequest,
-    ProviderResponse,
     TokenPrices,
     estimate_cost,
     snapshot_of,

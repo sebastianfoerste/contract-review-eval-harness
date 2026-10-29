@@ -6,7 +6,6 @@ it is a claim rather than a derivation.
 
 import filecmp
 import json
-import shutil
 import sys
 import tempfile
 from pathlib import Path

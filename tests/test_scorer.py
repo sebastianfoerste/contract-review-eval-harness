@@ -89,8 +89,11 @@ def _nda():
 
     from contract_eval.models import ExpectedAnswer
 
-    src = Path("data/nda_sample.md").read_text()
-    exp = ExpectedAnswer.model_validate(json.loads(Path("expected/nda.json").read_text()))
+    root = Path(__file__).resolve().parents[1]
+    src = (root / "data" / "nda_sample.md").read_text(encoding="utf-8")
+    exp = ExpectedAnswer.model_validate(
+        json.loads((root / "expected" / "nda.json").read_text(encoding="utf-8"))
+    )
     return src, exp
 
 

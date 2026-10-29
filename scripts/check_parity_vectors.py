@@ -10,7 +10,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from contract_eval.web_export import PARITY_VECTORS_PATH, check_parity_vectors, write_parity_vectors
+from contract_eval.web_export import PARITY_VECTORS_PATH, check_parity_vectors, write_parity_vectors  # noqa: E402 - needs the sys.path insert above
 
 
 def main() -> int:
