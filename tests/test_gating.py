@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 from contract_eval.cli import evaluate
-from contract_eval.models import ExpectedAnswer
 
 def test_evaluate_gate_passes_by_default(tmp_path):
     # Default nda and saas cases should pass because we calibrated the defaults to the stub
@@ -39,7 +38,6 @@ def test_evaluate_gate_fails_on_unmet_custom_thresholds(tmp_path):
     # We can temporarily patch the expected file path or just mock the expected file.
     # Let's write a test that forces a violation.
     # We can create a subclass or patch ExpectedAnswer.model_validate to return our high threshold.
-    import json
     
     # Let's write a custom JSON file to expected/temp_test_case.json
     expected_file = Path("expected/temp_test_case.json")

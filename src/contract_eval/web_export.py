@@ -42,8 +42,10 @@ def apply_scenario(review: ReviewOutput, scenario: str) -> ReviewOutput:
     if scenario not in SCENARIOS:
         raise ValueError(f"Unknown scenario: {scenario}")
     output = review.model_copy(deep=True)
-    if scenario == "no-evidence": output.citations = []
-    if scenario == "missed-risks": output.risk_flags = []
+    if scenario == "no-evidence":
+        output.citations = []
+    if scenario == "missed-risks":
+        output.risk_flags = []
     if scenario == "conflicting-flags":
         first = output.risk_flags[0].model_copy(deep=True)
         first.severity = "low" if first.severity != "low" else "high"

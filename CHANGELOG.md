@@ -32,6 +32,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) and `CITATION.cff`.
 - This changelog.
 - `tests/test_docs.py`, an offline check of relative doc links, metric sections and issue forms.
+- Ruff in the dev group, configured with its long-standing default rules (`E4`, `E7`, `E9`, `F`) for Python 3.11. CI runs `uv run ruff check src tests scripts`. The violations are fixed in the code: unused imports, a mid-module import in `scorer.py`, one-line compound statements and an ambiguous variable name. Behaviour is unchanged.
 - `tests/test_readme.py`: the README stays at 350 words or fewer, uses only absolute links, links only to repository files that exist, and copies its scorecard rows verbatim from `examples/scorecard.md`.
 
 ### Changed
