@@ -65,6 +65,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices` argue from the Disclosing Party's side, which the answer set's `review_context` names, and the case study no longer calls all three gold sets receiving-side reviews. The four rationales were drafted with AI assistance and await the maintainer's adoption. Severities, flags and scores are unchanged. (#41)
 - Documented figures match the harness output: severity accuracy (0.57 to 0.60 across the cases) replaces legacy risk-flag accuracy as the headline risk figure, and the NDA's clause precision is 0.92, not 0.83. (#41)
 - The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
+- The CLI read and wrote some files (scorecards, history, replay and obligation results) in the platform's default encoding, which is not UTF-8 on Windows. Every read and write in `cli.py` is now UTF-8. A scorer test no longer depends on the working directory.
 - `evaluate`, `certify` and `evaluate-obligations` accepted any `--case`, and an unknown one ended in a `FileNotFoundError` traceback. They now accept only a bundled case or `all`, and exit 2 with a usage message that lists them. The help text, which named only `nda`, `saas` and `all`, is built from `ALL_CASES`.
 
 ### Security

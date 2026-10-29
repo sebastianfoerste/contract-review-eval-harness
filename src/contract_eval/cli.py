@@ -92,11 +92,11 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
 
     if format_type == "json":
         path = out_dir / "scorecard.json"
-        path.write_text(json.dumps({"case": case, "scores": run_scores}, indent=2))
+        path.write_text(json.dumps({"case": case, "scores": run_scores}, indent=2), encoding="utf-8")
     else:
         path = out_dir / "scorecard.md"
         if case == "all":
-            path.write_text(render_multi(run_scores))
+            path.write_text(render_multi(run_scores), encoding="utf-8")
         else:
             s = run_scores[case]
             # Reconstruct score structures for existing render method
@@ -107,7 +107,8 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
                 render(
                     case, clause, s["risk_flag_accuracy"], citation,
                     s["hallucination_count"], scores=s,
-                )
+                ),
+                encoding="utf-8",
             )
 
     provenance = run_provenance(
@@ -130,7 +131,7 @@ def evaluate(case: str, live: bool, out_dir: Path, no_gate: bool = False, format
         "case": case,
         "provenance": provenance,
         "scores": run_scores
-    }, indent=2))
+    }, indent=2), encoding="utf-8")
 
     # Gating checks (only enforce if not bypassed)
     if not no_gate:
@@ -163,7 +164,7 @@ def compare_runs(history_dir: Path = Path("history")) -> None:
     latest_file = run_files[-1]
     print(f"Comparing current scores against historical run: {latest_file.name}")
 
-    latest_data = json.loads(latest_file.read_text())
+    latest_data = json.loads(latest_file.read_text(encoding="utf-8"))
     past_case = latest_data["case"]
     past_scores = latest_data["scores"]
 
@@ -600,9 +601,9 @@ def main(argv: list[str] | None = None) -> None:
             if args.out:
                 args.out.mkdir(parents=True, exist_ok=True)
                 (args.out / f"obligation-scorecard-{case}.json").write_text(
-                    json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+                    json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
                 )
-                (args.out / f"obligation-scorecard-{case}.md").write_text(render(result))
+                (args.out / f"obligation-scorecard-{case}.md").write_text(render(result), encoding="utf-8")
                 print(f"wrote {args.out / f'obligation-scorecard-{case}.md'}")
             else:
                 print(render(result))
@@ -629,7 +630,7 @@ def main(argv: list[str] | None = None) -> None:
         if args.out:
             args.out.mkdir(parents=True, exist_ok=True)
             path = args.out / f"replay-{result['case']}.json"
-            path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+            path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             print(f"wrote {path}")
         else:
             print(json.dumps(result, indent=2))
