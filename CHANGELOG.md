@@ -63,6 +63,10 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Documented figures match the harness output: severity accuracy (0.57 to 0.60 across the cases) replaces legacy risk-flag accuracy as the headline risk figure, and the NDA's clause precision is 0.92, not 0.83. (#41)
 - The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
 
+### Security
+
+- The composite action (`action.yml`) and both workflows pin every third-party action to a full commit SHA, with the release in a comment. CI and Pages install a fixed uv version, CI installs from `uv.lock` with `--locked`, and CI's token is read-only by default. `.github/dependabot.yml` proposes weekly updates for the actions and `uv.lock`, and `tests/test_ci_config.py` rejects an unpinned action.
+
 ## [0.7.0-rc1] - 2026-09-03
 
 This release candidate does not mark the benchmark as validated. The gold sets remain single-annotator candidates, policy v3 refuses to certify them, and `expected/*.json` under schema v1 is still authoritative.
