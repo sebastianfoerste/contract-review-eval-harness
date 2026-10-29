@@ -1,5 +1,6 @@
 """Offset-addressed mutations must fail loudly rather than edit the wrong words."""
 
+import importlib.util
 import json
 from pathlib import Path
 
@@ -17,6 +18,25 @@ from contract_eval.campaign_v2 import (
 )
 from contract_eval.cases import ALL_CASES
 from contract_eval.gold_v2 import ExpectedAnswerV2
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_check_script():
+    spec = importlib.util.spec_from_file_location("check_campaign_v2", ROOT / "scripts" / "check_campaign_v2.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+check_campaign = _load_check_script()
+
+
+def _gold_texts():
+    return {
+        case: (check_campaign.DRAFTS / f"{case}.candidate.v2.json").read_text(encoding="utf-8")
+        for case in ALL_CASES
+    }
 
 
 def _load():
@@ -74,6 +94,47 @@ def test_a_changed_source_hash_fails_the_whole_campaign():
 
     with pytest.raises(CampaignError, match="source has changed"):
         verify_against_sources(_campaign(), sources, golds)
+
+
+def test_the_committed_campaign_records_the_committed_gold_hashes():
+    check_campaign.verify_gold_hashes(_campaign(), _gold_texts())
+
+
+def test_the_campaign_check_passes_on_the_committed_campaign():
+    assert check_campaign.main() == 0
+
+
+def test_a_wrong_gold_hash_fails_the_campaign_check(tmp_path, monkeypatch):
+    """The CI step must fail, not pass quietly, when a recorded gold hash is wrong."""
+    raw = json.loads(check_campaign.CAMPAIGN.read_text(encoding="utf-8"))
+    raw["gold_sha256"]["saas"] = "0" * 64
+    campaign = tmp_path / "campaign.v2.candidate.json"
+    campaign.write_text(json.dumps(raw), encoding="utf-8")
+    monkeypatch.setattr(check_campaign, "CAMPAIGN", campaign)
+
+    with pytest.raises(CampaignError, match="saas: gold has changed"):
+        check_campaign.main()
+
+
+def test_an_edited_gold_fails_its_recorded_hash():
+    """Editing a draft without regenerating is how the recorded hashes went stale."""
+    gold_texts = _gold_texts()
+    gold_texts["nda"] = gold_texts["nda"] + "\n"
+
+    with pytest.raises(CampaignError, match="nda: gold has changed"):
+        check_campaign.verify_gold_hashes(_campaign(), gold_texts)
+
+
+def test_every_gold_needs_a_recorded_hash_and_every_hash_a_gold():
+    campaign = _campaign()
+    del campaign.gold_sha256["dpa"]
+    with pytest.raises(CampaignError, match="records no gold hash for \\['dpa'\\]"):
+        check_campaign.verify_gold_hashes(campaign, _gold_texts())
+
+    gold_texts = _gold_texts()
+    del gold_texts["dpa"]
+    with pytest.raises(CampaignError, match="names case 'dpa' with no gold supplied"):
+        check_campaign.verify_gold_hashes(_campaign(), gold_texts)
 
 
 def test_mutations_apply_in_descending_offset_order():
