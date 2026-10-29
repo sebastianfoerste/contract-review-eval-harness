@@ -68,6 +68,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
 - The CLI read and wrote some files (scorecards, history, replay and obligation results) in the platform's default encoding, which is not UTF-8 on Windows. Every read and write in `cli.py` is now UTF-8. A scorer test no longer depends on the working directory.
 - `evaluate`, `certify` and `evaluate-obligations` accepted any `--case`, and an unknown one ended in a `FileNotFoundError` traceback. They now accept only a bundled case or `all`, and exit 2 with a usage message that lists them. The help text, which named only `nda`, `saas` and `all`, is built from `ALL_CASES`.
+- `robustness/campaign.v2.candidate.json` recorded a stale `gold_sha256` for all three drafts. The values dated from the campaign's generation (#24), and the drafts have changed since (#26, #27 and the NDA rationale edits). Each now hashes the committed `annotations/drafts/<case>.candidate.v2.json` as the generator does: SHA-256 of its UTF-8 text. Scenarios, ids and offsets are unchanged, and regenerating them from the current gold reproduces all 75. `scripts/check_campaign_v2.py`, the CI step that says the campaign "matches its sources and gold", compared only the source hashes. It now also fails when a recorded gold hash differs from the committed draft, or when a draft has no recorded hash.
 
 ### Security
 
