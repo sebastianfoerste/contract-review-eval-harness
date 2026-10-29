@@ -47,6 +47,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - The README leads with what the harness does and is rewritten for clarity. (#37, #42)
 - The README is cut to a pitch, a quick start, a scorecard excerpt and links, under 350 words. Its other sections (why this exists, the live-run finding, what it checks, more commands, how this compares, the suite list, limitations and safety) move unchanged to `docs/overview.md`. Its links and image are absolute, so it renders as the PyPI long description.
 - `CONTRIBUTING.md` is rewritten around three paths: add a case, add an adapter, volunteer as an annotator.
+- `CONTRIBUTING.md` explains why `make check` fails on a fresh clone (`web-check` needs the sibling `contract-eval-web` checkout and npm), gives the targets to run without it, and maps each CI step to its local equivalent.
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
 
 ### Removed

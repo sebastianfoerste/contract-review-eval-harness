@@ -22,12 +22,51 @@ By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 ```bash
 make install   # uv sync
 make test      # pytest
-make check     # the tests plus the drift and verification checks CI runs
+make check     # the tests, the drift and verification checks CI runs, and web-check
 ```
 
-Everything in `make check` must pass before a pull request except its last step,
-`web-check`. That step compares the scorer with the maintainer's `contract-eval-web`
-checkout and fails when that sibling directory is absent. CI does not run it.
+`make check` fails on a fresh clone. Its last step, `web-check`
+(`scripts/check_web_sync.py`), compares the web export with the maintainer's
+`contract-eval-web` checkout in `../contract-eval-web` (or `$CONTRACT_EVAL_WEB_DIR`) and
+runs that repository's `npm test`, so it needs the sibling checkout and npm. CI does not
+run it. Everything else in `make check` must pass before a pull request; without the
+sibling, run those targets directly:
+
+```bash
+make test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check \
+  capture-check replay-check live-run-check leaderboard-check schemas-check \
+  certificate-check certificate-verify robustness-check parity-check
+```
+
+### Which targets mirror CI
+
+The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in order:
+
+| CI step | Local equivalent |
+|---|---|
+| Lint | `uv run ruff check src tests scripts` (no Make target) |
+| Unit tests | `make test` |
+| Baseline suite evaluation gate | `uv run python -m contract_eval evaluate --case all` (no Make target) |
+| Comparison regression test | `uv run python -m contract_eval compare`, after an evaluate run (no Make target) |
+| JSON Schema drift | `make schemas-check` |
+| v2 obligation offsets | `make gold-v2-check` |
+| Candidate campaign | `make campaign-v2-check` |
+| Capture states | `make capture-check` |
+| Offline replay | `make replay-check` |
+| Live-run report drift | `make live-run-check` |
+| Leaderboard drift | `make leaderboard-check` |
+| Clause anchors | `make anchor-check` |
+| Committed release certificate | `make certificate-check` |
+| Recomputed release certificate | `make certificate-verify` |
+| Robustness campaign and its artifacts | `make robustness-check` |
+| Web parity vectors | `make parity-check` |
+
+`evidence-check` and `adjudication-check` re-run parts of the suite that `make test`
+already covers. Three CI jobs have no Make target: `python-compat` runs the suite and
+the offline pipeline on Python 3.11 and 3.12; `wheel` installs the built wheel into a
+clean Python 3.11 environment, runs a case outside the checkout and compares the
+certificate byte for byte; `action` runs `action.yml` against the NDA stub and requires
+`REJECT`. `web-check` is the only target in `make check` that CI does not run.
 
 If an output changes, regenerate the committed artifacts in `examples/` and commit them
 with your change: `uv run python -m contract_eval evaluate --case nda --out examples` (add
