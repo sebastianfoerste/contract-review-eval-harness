@@ -89,9 +89,9 @@ def test_pack_ships_the_contracts_verbatim():
 def test_naming_an_annotator_does_not_leak_their_judgment_into_the_pack():
     """Credit is metadata. It must not become a channel for the first annotator's work.
 
-    The pack names Karsten Schmidt as its intended recipient. It must still contain
-    nothing Sebastian Förste concluded, or the blindness the naming sits alongside
-    would be undone by the naming itself.
+    The pack names Annotator B as its intended recipient. It must still contain
+    nothing Annotator A concluded, or the blindness the label sits alongside
+    would be undone by the label itself.
     """
     from contract_eval.annotators import FIRST, SECOND
 
