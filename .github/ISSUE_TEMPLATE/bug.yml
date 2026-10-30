@@ -39,9 +39,8 @@ body:
     attributes:
       label: Harness version
       description: >-
-        There is no --version flag. Give the git commit (`git rev-parse --short HEAD`)
-        or the installed package version
-        (`python -c "import importlib.metadata as m; print(m.version('contract-eval'))"`).
+        The output of `contract-eval --version`, or the git commit
+        (`git rev-parse --short HEAD`) when you run from a checkout.
       placeholder: 50389c8, or 0.7.0rc1
     validations:
       required: true

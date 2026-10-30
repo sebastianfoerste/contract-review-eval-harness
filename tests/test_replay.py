@@ -112,7 +112,6 @@ def test_legacy_captures_reproduce_the_committed_report():
     """The published comparison must be derivable, not transcribed."""
     import json
     import sys
-    from pathlib import Path
 
     sys.path.insert(0, str(Path("scripts").resolve()))
     from generate_live_run_report import SPEC, build  # noqa: E402
@@ -134,8 +133,6 @@ def test_legacy_captures_reproduce_the_committed_report():
 
 
 def test_legacy_captures_are_authentic_and_marked_as_imports():
-    from pathlib import Path
-
     from contract_eval.capture import read_capture
     from contract_eval.replay import verify_capture
 

@@ -9,7 +9,7 @@ directory decides anything yet.
 | --- | --- |
 | `drafts/*.candidate.v2.json` | Candidate. Single annotator, mechanically derived offsets. |
 | `pack/` | Built. Sent to the second annotator on 2026-09-06. |
-| Second annotation | Karsten Schmidt, agreed and named. Pack sent 2026-09-06. Awaiting return. |
+| Second annotation | Annotator B. Pack sent 2026-09-06. Awaiting return. |
 | Adjudication tooling | Implemented and tested. Waiting on a return to process. |
 | Evidence-bound scoring | Implemented. Inactive: policy v3 refuses candidate gold. |
 | Policy v3 / certificate v4 | Defined. Cannot certify until gold is frozen and adjudicated. |
@@ -130,19 +130,20 @@ set from reading as more settled than it is.
 
 | Slot | Annotator | Role |
 | --- | --- | --- |
-| `annotator-a` | Sebastian Förste | Author of the v1 gold sets and the candidate v2 obligations. |
-| `annotator-b` | Karsten Schmidt | Independent second annotator, working blind from the pack. |
+| `annotator-a` | Annotator A | Author of the v1 gold sets and the candidate v2 obligations. |
+| `annotator-b` | Annotator B | Independent second annotator, working blind from the pack. |
 
-Both are named with their agreement. A public repository is a permanent, searchable
-record, so a reviewer is named only once they have said yes.
+Annotators are recorded by role label, not by personal name. A public repository is a
+permanent, searchable record, so no annotator's name belongs in it, and
+`tests/test_annotator_names.py` fails if either name reappears in a tracked file.
 
-Identity and role stay separate. `src/contract_eval/annotators.py` is the single place
-either name appears; directory and file names key off the stable slot instead, so
-adding or replacing a reviewer never renames artifacts or breaks the comparison script.
+Slot and label stay separate. `src/contract_eval/annotators.py` is the single registry
+of both labels; directory and file names key off the stable slot instead, so adding or
+replacing a reviewer never renames artifacts or breaks the comparison script.
 
-Naming the annotators is not a substitute for blindness. Karsten works from the bundle
-alone, and the limitation recorded below still applies to any statistic drawn from the
-comparison.
+Recording who wrote what is not a substitute for blindness. Annotator B works from the
+bundle alone, and the limitation recorded below still applies to any statistic drawn
+from the comparison.
 
 ## When Annotator B returns
 
@@ -154,6 +155,11 @@ The processing side is built and tested; only the annotation itself is missing.
 That validates every returned offset against the contract, freezes the return's hash
 before comparing so the comparison cannot later be re-run against an edited file, and
 writes a ledger per case to `annotations/ledgers/`.
+
+The pack as sent on 2026-09-06 put the annotator's name in each template's
+`annotator_id`; the repository copy has since been regenerated with the role label.
+Intake accepts only `annotator-b` or `Annotator B` in that field, so a return that
+still carries the name is refused until the field is changed.
 
 Obligations are matched by span overlap rather than by identifier, because two people
 working blind will not choose the same names and matching on names would manufacture

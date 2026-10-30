@@ -9,7 +9,7 @@ fell to 0.00 while the review itself was accurate.
 
 import json
 
-from contract_eval.models import Abstention, Citation, Clause, ReviewOutput, RiskFlag
+from contract_eval.models import ReviewOutput
 
 
 def _schema() -> dict:

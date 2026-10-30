@@ -1,7 +1,5 @@
 """Every terminal state must leave evidence, and only `completed` may be scored."""
 
-from pathlib import Path
-
 import pytest
 
 from contract_eval.adapters import get_adapter
