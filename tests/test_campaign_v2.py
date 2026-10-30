@@ -15,11 +15,13 @@ from contract_eval.campaign_v2 import (
     transform_spans,
     validate_scenario_boundaries,
     verify_against_sources,
+    verify_gold_hashes,
 )
 from contract_eval.cases import ALL_CASES
 from contract_eval.gold_v2 import ExpectedAnswerV2
 
 ROOT = Path(__file__).resolve().parents[1]
+DRAFTS = ROOT / "annotations" / "drafts"
 
 
 def _load_check_script():
@@ -34,7 +36,7 @@ check_campaign = _load_check_script()
 
 def _gold_texts():
     return {
-        case: (check_campaign.DRAFTS / f"{case}.candidate.v2.json").read_text(encoding="utf-8")
+        case: (DRAFTS / f"{case}.candidate.v2.json").read_text(encoding="utf-8")
         for case in ALL_CASES
     }
 
@@ -97,7 +99,7 @@ def test_a_changed_source_hash_fails_the_whole_campaign():
 
 
 def test_the_committed_campaign_records_the_committed_gold_hashes():
-    check_campaign.verify_gold_hashes(_campaign(), _gold_texts())
+    verify_gold_hashes(_campaign(), _gold_texts())
 
 
 def test_the_campaign_check_passes_on_the_committed_campaign():
@@ -122,19 +124,19 @@ def test_an_edited_gold_fails_its_recorded_hash():
     gold_texts["nda"] = gold_texts["nda"] + "\n"
 
     with pytest.raises(CampaignError, match="nda: gold has changed"):
-        check_campaign.verify_gold_hashes(_campaign(), gold_texts)
+        verify_gold_hashes(_campaign(), gold_texts)
 
 
 def test_every_gold_needs_a_recorded_hash_and_every_hash_a_gold():
     campaign = _campaign()
     del campaign.gold_sha256["dpa"]
     with pytest.raises(CampaignError, match="records no gold hash for \\['dpa'\\]"):
-        check_campaign.verify_gold_hashes(campaign, _gold_texts())
+        verify_gold_hashes(campaign, _gold_texts())
 
     gold_texts = _gold_texts()
     del gold_texts["dpa"]
     with pytest.raises(CampaignError, match="names case 'dpa' with no gold supplied"):
-        check_campaign.verify_gold_hashes(_campaign(), gold_texts)
+        verify_gold_hashes(_campaign(), gold_texts)
 
 
 def test_mutations_apply_in_descending_offset_order():

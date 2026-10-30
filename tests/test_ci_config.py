@@ -51,6 +51,12 @@ def test_ci_installs_from_the_lockfile() -> None:
     assert all("--locked" in line for line in syncs), syncs
 
 
+def test_ci_checks_the_lockfile_before_installing() -> None:
+    text = _read(ROOT / ".github" / "workflows" / "ci.yml")
+    assert "run: uv lock --check" in text
+    assert text.index("uv lock --check") < text.index("uv sync"), "check the lock before syncing"
+
+
 def test_workflows_default_to_a_read_only_token() -> None:
     for path in WORKFLOWS:
         assert re.search(r"^permissions:\n  contents: read\n", _read(path), re.MULTILINE), path.name

@@ -44,6 +44,7 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 
 | CI step | Local equivalent |
 |---|---|
+| Lockfile up to date | `uv lock --check` (no Make target) |
 | Lint | `uv run ruff check src tests scripts` (no Make target) |
 | Unit tests | `make test` |
 | Baseline suite evaluation gate | `uv run python -m contract_eval evaluate --case all` (no Make target) |
