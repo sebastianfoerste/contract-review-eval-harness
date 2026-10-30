@@ -10,6 +10,9 @@ and the action's author field name the maintainer rather than an annotation, so 
 three files may carry that name, exactly as often as they do now. The maintainer's
 account handle in URLs, the package metadata and the contact address is one joined word
 and is deliberately not matched.
+
+Until the next revision of the matter answers, the two answer files of
+`matters/northwind-saas/` also name Annotator A; see ALLOWED.
 """
 
 import functools
@@ -46,6 +49,12 @@ ALLOWED = {
     ("LICENSE", "Annotator A"): 2,
     ("CITATION.cff", "Annotator A"): 2,
     ("action.yml", "Annotator A"): 2,
+    # Not notices: the matter answers still name their annotator. The held-out check
+    # hashes each answers file whole, so editing round 1's ends its held-out status;
+    # the role label replaces the name in the next revision of the answers. The
+    # counts then stop matching, and these entries go with the name.
+    ("matters/northwind-saas/expected/round1.json", "Annotator A"): 2,
+    ("matters/northwind-saas/expected/round2.json", "Annotator A"): 2,
 }
 
 _JSON_ESCAPE = re.compile(r"\\u([0-9a-fA-F]{4})")
