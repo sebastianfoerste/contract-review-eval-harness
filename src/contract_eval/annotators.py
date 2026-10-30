@@ -1,12 +1,12 @@
-"""Who wrote which annotation.
+"""Who wrote which annotation, by role.
 
-Identity and role are separate. The role slot is stable plumbing: directory and file
+Slot and label are separate. The role slot is stable plumbing: directory and file
 names key off it, so replacing or adding a reviewer never renames artifacts or breaks
-the comparison script. The identity is the person, recorded in `annotator_id` so a
-reader of any gold set can see whose judgment it carries.
+the comparison script. The label is what `annotator_id` records, so a reader of any
+gold set can see which role's judgment it carries.
 
-Both annotators are named with their agreement. A public repository is a permanent,
-searchable record, so a reviewer is named only once they have said yes.
+Annotators are recorded by role label, not by personal name. A public repository is a
+permanent, searchable record, so no annotator's name belongs in it.
 """
 
 from __future__ import annotations
@@ -22,13 +22,13 @@ class Annotator(NamedTuple):
 
 FIRST = Annotator(
     slot="annotator-a",
-    name="Sebastian Förste",
+    name="Annotator A",
     role="Author of the original v1 gold sets and the candidate v2 obligations.",
 )
 
 SECOND = Annotator(
     slot="annotator-b",
-    name="Karsten Schmidt",
+    name="Annotator B",
     role="Independent second annotator, working blind from the annotation pack.",
 )
 

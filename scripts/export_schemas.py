@@ -11,7 +11,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from contract_eval.schemas import schema_drift, write_schemas
+from contract_eval.schemas import schema_drift, write_schemas  # noqa: E402 - needs the sys.path insert above
 
 
 def main() -> int:

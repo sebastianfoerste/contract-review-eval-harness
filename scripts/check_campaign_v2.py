@@ -11,26 +11,25 @@ from contract_eval.campaign_v2 import (  # noqa: E402
     CampaignV2,
     coverage_report,
     verify_against_sources,
+    verify_gold_hashes,
 )
 from contract_eval.cases import ALL_CASES  # noqa: E402
 from contract_eval.gold_v2 import ExpectedAnswerV2  # noqa: E402
 
 CAMPAIGN = ROOT / "robustness" / "campaign.v2.candidate.json"
+DRAFTS = ROOT / "annotations" / "drafts"
 
 
 def main() -> int:
     campaign = CampaignV2.model_validate(json.loads(CAMPAIGN.read_text(encoding="utf-8")))
-    sources, golds = {}, {}
+    sources, gold_texts, golds = {}, {}, {}
     for case in ALL_CASES:
         sources[case] = (ROOT / "data" / f"{case}_sample.md").read_text(encoding="utf-8")
-        golds[case] = ExpectedAnswerV2.model_validate(
-            json.loads(
-                (ROOT / "annotations" / "drafts" / f"{case}.candidate.v2.json")
-                .read_text(encoding="utf-8")
-            )
-        )
+        gold_texts[case] = (DRAFTS / f"{case}.candidate.v2.json").read_text(encoding="utf-8")
+        golds[case] = ExpectedAnswerV2.model_validate(json.loads(gold_texts[case]))
 
     verify_against_sources(campaign, sources, golds)
+    verify_gold_hashes(campaign, gold_texts)
     report = coverage_report(campaign, golds)
 
     if not report["complete"]:

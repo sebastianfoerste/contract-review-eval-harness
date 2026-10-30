@@ -1,5 +1,6 @@
 """Pure scoring functions. Each measures one dimension of contract-review quality."""
 
+import string
 from dataclasses import dataclass, field
 
 from contract_eval.models import Citation
@@ -109,8 +110,6 @@ def risk_metrics(expected: dict[str, str], predicted: dict[str, str]) -> RiskSco
         severity_confusion=confusion,
     )
 
-
-import string
 
 _PUNCTUATION = frozenset(string.punctuation + "“”‘’–—")
 

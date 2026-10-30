@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 from contract_eval.cli import evaluate
-from contract_eval.models import ExpectedAnswer
 
 def test_evaluate_gate_passes_by_default(tmp_path):
     # Default nda and saas cases should pass because we calibrated the defaults to the stub

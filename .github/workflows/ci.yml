@@ -6,24 +6,35 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: read
+
+# Third-party actions are pinned to a commit SHA (Dependabot keeps them current). uv
+# itself is pinned by the setup-uv `version` input, which Dependabot does not bump.
 jobs:
   test-and-evaluate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          version: "latest"
+          version: "0.13.5"
           enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.13
 
+      - name: Reject a lockfile that is out of date with pyproject.toml
+        run: uv lock --check
+
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
+
+      - name: Lint
+        run: uv run ruff check src tests scripts
 
       - name: Run unit tests
         run: uv run pytest -v
@@ -99,12 +110,12 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          version: "latest"
+          version: "0.13.5"
           enable-cache: true
 
       - name: Set up Python
@@ -131,12 +142,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          version: "latest"
+          version: "0.13.5"
           enable-cache: true
 
       - name: Build the sdist and wheel
@@ -170,7 +181,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Score the NDA stub through the action
         id: stub

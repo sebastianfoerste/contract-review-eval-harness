@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from contract_eval.web_export import check_web_snapshot
+from contract_eval.web_export import check_web_snapshot  # noqa: E402 - needs the sys.path insert above
 
 
 def main() -> int:
