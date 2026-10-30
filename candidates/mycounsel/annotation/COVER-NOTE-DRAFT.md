@@ -1,4 +1,4 @@
-# Cover note for the annotator (draft for Sebastian's review, not sent)
+# Cover note for the annotator (draft for the maintainer's review, not sent)
 
 Subject: Blind annotation of a synthetic ICT services agreement, about two hours
 
@@ -45,25 +45,4 @@ so.
 
 Thank you, and do call if anything in the guideline is unclear.
 
-Sebastian
-
----
-
-Notes for Sebastian before sending:
-
-- Complete the legal review of the playbooks and the source register first. The
-  guideline, the register and the manifest are hashed into every template; an
-  edit after sending makes the returned annotations unusable.
-- Attach `candidates/mycounsel/annotation-bundle/mycounsel-annotation-pack.zip`.
-  After any change to the guideline, the playbooks, the documents or the source
-  register, rebuild in this order: `python candidates/mycounsel/build_fixtures.py`
-  (playbooks and documents are written there), `make candidate-pack`,
-  `make candidate-bundle`. The last command prints the archive's SHA-256.
-- Annotators write a label, not a name (your decision of 13 October 2026).
-  Agree the label with the annotator and replace "[label]" above. Use a label
-  of your own for your six templates. Check the `annotator` field of every
-  returned file before it is committed.
-- Record the annotator's name, the date sent, the archive hash and the remit in a
-  dated note. That note is what `reviewerEvidence` later points to.
-- Fill your own six templates before you open the annotator's return, in a copy
-  outside `annotation-pack/`.
+[signature]
