@@ -73,7 +73,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 
 ### Security
 
-- The composite action (`action.yml`) and both workflows pin every third-party action to a full commit SHA, with the release in a comment. CI and Pages install a fixed uv version, CI installs from `uv.lock` with `--locked`, and CI's token is read-only by default. `.github/dependabot.yml` proposes weekly updates for the actions and `uv.lock`, and `tests/test_ci_config.py` rejects an unpinned action.
+- The composite action (`action.yml`) and both workflows pin every third-party action to a full commit SHA, with the release in a comment. CI and Pages install a fixed uv version, CI installs from `uv.lock` with `--locked`, and CI's token is read-only by default. CI also runs `uv lock --check` before installing, so a lockfile out of date with `pyproject.toml` fails a named step. `.github/dependabot.yml` proposes weekly updates for the actions and `uv.lock`, and `tests/test_ci_config.py` rejects an unpinned action.
 
 ## [0.7.0-rc1] - 2026-09-03
 
