@@ -49,6 +49,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `CONTRIBUTING.md` is rewritten around three paths: add a case, add an adapter, volunteer as an annotator.
 - `CONTRIBUTING.md` explains why `make check` fails on a fresh clone (`web-check` needs the sibling `contract-eval-web` checkout and npm), gives the targets to run without it, and maps each CI step to its local equivalent.
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
+- The campaign v2 gold-hash check moves from `scripts/check_campaign_v2.py` to `contract_eval.campaign_v2.verify_gold_hashes`, beside `verify_against_sources`. The script stays the CI and Make entry point, and its behaviour is unchanged.
 
 ### Removed
 

@@ -8,38 +8,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from contract_eval.campaign_v2 import (  # noqa: E402
-    CampaignError,
     CampaignV2,
     coverage_report,
     verify_against_sources,
+    verify_gold_hashes,
 )
-from contract_eval.capture import text_sha256  # noqa: E402
 from contract_eval.cases import ALL_CASES  # noqa: E402
 from contract_eval.gold_v2 import ExpectedAnswerV2  # noqa: E402
 
 CAMPAIGN = ROOT / "robustness" / "campaign.v2.candidate.json"
 DRAFTS = ROOT / "annotations" / "drafts"
-
-
-def verify_gold_hashes(campaign: CampaignV2, gold_texts: dict[str, str]) -> None:
-    """Fail when a recorded gold hash no longer matches the committed draft.
-
-    The generator records text_sha256 of each draft's UTF-8 text. verify_against_sources
-    only sees the parsed gold, which cannot reproduce that hash, so the comparison is
-    made here, where the drafts are read.
-    """
-    unrecorded = sorted(set(gold_texts) - set(campaign.gold_sha256))
-    if unrecorded:
-        raise CampaignError(f"campaign records no gold hash for {unrecorded}")
-    for case, recorded in sorted(campaign.gold_sha256.items()):
-        if case not in gold_texts:
-            raise CampaignError(f"campaign names case {case!r} with no gold supplied")
-        actual = text_sha256(gold_texts[case])
-        if actual != recorded:
-            raise CampaignError(
-                f"{case}: gold has changed since the campaign was written\n"
-                f"  recorded {recorded}\n  actual   {actual}"
-            )
 
 
 def main() -> int:
