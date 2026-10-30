@@ -1,0 +1,138 @@
+{
+  "schema": "contract-eval.grounding-vectors.v1",
+  "description": "Shared quotation-grounding vectors for Python grounded_span and TypeScript locate. contract-review-eval-harness keeps this file at tests/fixtures/grounding-vectors.json and contract-eval-web at tests/grounding-vectors.json; the two copies stay byte-identical. span is the [start, end) range of the quote in the normalised source, or null when the quote is not grounded. Grounding is a plain substring search of the normalised source (docs/metrics.md in the harness), so the mid-word vectors record current behaviour, not an endorsement of it: a quote that starts or ends inside a word is grounded, and the first match wins even inside a longer word. Changing that is a scoring change for both implementations at once.",
+  "vectors": [
+    {
+      "id": "exact-span",
+      "source": "The term of this Agreement shall commence on the Effective Date.",
+      "quote": "commence on the Effective Date",
+      "span": [
+        33,
+        63
+      ]
+    },
+    {
+      "id": "case-and-punctuation",
+      "source": "The term of this Agreement shall commence on the Effective Date.",
+      "quote": "Commence On The effective date",
+      "span": [
+        33,
+        63
+      ]
+    },
+    {
+      "id": "dashes-are-separators",
+      "source": "The parties agree—subject to Section 4—to confidentiality.",
+      "quote": "agree subject to Section 4 to confidentiality",
+      "span": [
+        12,
+        57
+      ]
+    },
+    {
+      "id": "line-wrapping",
+      "source": "The Processor shall notify the Controller within\nfourteen (14) days.",
+      "quote": "within fourteen (14) days",
+      "span": [
+        42,
+        65
+      ]
+    },
+    {
+      "id": "substituted-word",
+      "source": "This Agreement contains the entire agreement of the parties regarding this matter.",
+      "quote": "contains the entire agreement of the parties about this matter",
+      "span": null
+    },
+    {
+      "id": "reordered-words",
+      "source": "This Agreement contains the entire agreement of the parties regarding this matter.",
+      "quote": "the parties regarding this matter contains the entire agreement",
+      "span": null
+    },
+    {
+      "id": "fabricated-word",
+      "source": "One two three",
+      "quote": "four",
+      "span": null
+    },
+    {
+      "id": "empty-after-normalisation",
+      "source": "One two three",
+      "quote": "!!!",
+      "span": null
+    },
+    {
+      "id": "leading-words",
+      "source": "One, TWO three",
+      "quote": "one two",
+      "span": [
+        0,
+        7
+      ]
+    },
+    {
+      "id": "whole-source",
+      "source": "Governing law.",
+      "quote": "governing law",
+      "span": [
+        0,
+        13
+      ]
+    },
+    {
+      "id": "hyphen-is-a-separator",
+      "source": "This non-disclosure agreement binds both parties.",
+      "quote": "disclosure agreement",
+      "span": [
+        9,
+        29
+      ]
+    },
+    {
+      "id": "mid-word-quote",
+      "source": "This contract is binding.",
+      "quote": "act",
+      "span": [
+        10,
+        13
+      ]
+    },
+    {
+      "id": "mid-word-before-whole-word",
+      "source": "The contract is an act of the parties.",
+      "quote": "act",
+      "span": [
+        9,
+        12
+      ]
+    },
+    {
+      "id": "quote-starts-mid-word",
+      "source": "This contract is binding.",
+      "quote": "ract is binding",
+      "span": [
+        9,
+        24
+      ]
+    },
+    {
+      "id": "quote-ends-mid-word",
+      "source": "This contract is binding.",
+      "quote": "this contr",
+      "span": [
+        0,
+        10
+      ]
+    },
+    {
+      "id": "number-inside-a-number",
+      "source": "Notice must be given within 14 days.",
+      "quote": "4 days",
+      "span": [
+        29,
+        35
+      ]
+    }
+  ]
+}

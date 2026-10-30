@@ -8,7 +8,19 @@ These tests previously asserted the opposite: an 85% unordered token-overlap rul
 accepted a quote with a word swapped out.
 """
 
+import json
+from pathlib import Path
+
+import pytest
+
 from contract_eval.scorer import _is_grounded, grounded_span
+
+# The same file is tests/grounding-vectors.json in contract-eval-web, whose TypeScript
+# `locate` must return the same span for every vector. Its mid-word vectors pin the
+# current substring behaviour, so neither implementation can change it alone.
+SHARED_VECTORS = json.loads(
+    (Path(__file__).parent / "fixtures" / "grounding-vectors.json").read_text(encoding="utf-8")
+)["vectors"]
 
 
 def test_exact_span_is_grounded():
@@ -55,3 +67,9 @@ def test_span_locates_the_match():
     assert "the receiving party shall keep all confidential information secret"[start:end] == (
         "keep all confidential information"
     )
+
+
+@pytest.mark.parametrize("vector", SHARED_VECTORS, ids=[v["id"] for v in SHARED_VECTORS])
+def test_shared_grounding_vector(vector):
+    expected = tuple(vector["span"]) if vector["span"] is not None else None
+    assert grounded_span(vector["source"], vector["quote"]) == expected
