@@ -22,6 +22,7 @@ answer set, and a scorecard is emitted. Synthetic contracts only; deterministic 
 - Python 3.11+ (CI runs 3.11, 3.12 and 3.13), type hints throughout, Pydantic for data models.
 - Default path is offline and deterministic: no network, no API key. `--live` is strictly opt-in and must never break default paths (import the SDK lazily).
 - Synthetic data only. Never add a real agreement or client data.
+- Annotators appear only as role labels (`Annotator A`, `Annotator B` in `contract_eval.annotators`), never by personal name. `tests/test_annotator_names.py` scans tracked files for both names in hashed form.
 - The scorer is the core logic — keep functions pure and tested. The stub fixture deliberately contains one over-flag and one fabricated citation so the scorecard always demonstrates an imperfect score being caught.
 - The companion web explorer (`contract-eval-web`) consumes exported synthetic cases and parity vectors. Never drift contract data or scoring semantics without running `make web-check` or `make web-export`.
 - `examples/web-parity-vectors.json` pins the scorer output in CI, where the web repository is absent. Regenerate it with `make parity-vectors` only for an intended scoring change, then run `make web-export`.
