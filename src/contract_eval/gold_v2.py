@@ -12,11 +12,11 @@ an umlaut or a typographic dash would otherwise silently shift every later span.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-GOLD_SCHEMA_V2 = "contract-review-eval.expected-answer.v2"
+GOLD_SCHEMA_V2: Final = "contract-review-eval.expected-answer.v2"
 
 Severity = Literal["low", "medium", "high"]
 SourceCategory = Literal["law", "regulatory_guidance", "market_practice", "legal_judgment"]

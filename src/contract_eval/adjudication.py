@@ -158,7 +158,7 @@ def compare(a: ExpectedAnswerV2, b: ExpectedAnswerV2) -> AgreementReport:
                 f"only annotator {flagged} flagged this obligation as a risk",
             ))
             continue
-        if risk_a is None:
+        if risk_a is None or risk_b is None:
             exact_risk_matches += 1
             continue
 

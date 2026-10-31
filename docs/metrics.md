@@ -60,6 +60,33 @@ close that gap. Short citations counts grounded quotes under a three-word floor,
 risk flags without evidence asks whether a grounded quote sits inside each flagged
 clause.
 
+### Short and partial quotes
+
+Grounding is a substring test, so it accepts any quote whose normalised characters
+occur somewhere in the contract. A one-word quote such as `the`, or a fragment inside a
+word such as `confiden`, counts as grounded. Span coverage would show that such quotes
+engage with no clause, but it is a diagnostic and does not gate release. Under policy
+v2, a review of the bundled NDA that names every gold clause and risk correctly and
+gives every citation the quote `the` scored citation grounding 1.0, hallucination
+count 0 and span coverage 0.0, and was decided `PILOT_ELIGIBLE`. Policy v2.1 decides
+the same review `REJECT`: every citation is counted as short, so the `citation.length`
+blocker fires, and every flagged clause is listed as a risk flag without evidence. To
+reproduce:
+
+```bash
+uv run python -c "
+import json
+from contract_eval.api import evaluate_review
+g = json.load(open('expected/nda.json'))
+r = {'clauses': [{'clause_type': c, 'text': 'x'} for c in g['clause_types']],
+     'risk_flags': [{'clause_type': k, 'severity': v, 'rationale': 'x'} for k, v in g['risk_flags'].items()],
+     'citations': [{'quote': 'the', 'clause_type': c} for c in g['clause_types']]}
+res = evaluate_review(r, 'nda')
+print(res.verdict, res.scores['citation_grounding'], res.scores['span_coverage'])"
+```
+
+It prints `REJECT 1.0 0.0`.
+
 ## Clause precision
 
 Share of the predicted clause types that the gold set declares.

@@ -105,7 +105,10 @@ def gold_is_certifiable(gold: ExpectedAnswerV2) -> bool:
 
 def _satisfied(requirement: RequirementV3, value: Any) -> bool:
     if requirement.comparator == "gte":
-        return float(value) >= float(requirement.threshold)
+        threshold = requirement.threshold
+        if threshold is None:
+            raise ValueError(f"{requirement.requirement_id}: gte requires a threshold")
+        return float(value) >= float(threshold)
     if requirement.comparator == "empty":
         return not value
     raise ValueError(f"unknown comparator: {requirement.comparator}")
@@ -140,7 +143,8 @@ def evaluate_v3(
         "conflicting_risk_findings": report.conflicting_risk_findings,
     }
 
-    blockers, review_items = [], []
+    blockers: list[str] = []
+    review_items: list[str] = []
     for requirement in REQUIREMENTS:
         if _satisfied(requirement, metrics[requirement.metric]):
             continue

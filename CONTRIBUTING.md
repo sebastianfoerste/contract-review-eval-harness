@@ -64,7 +64,7 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 
 `evidence-check` and `adjudication-check` re-run parts of the suite that `make test`
 already covers. Three CI jobs have no Make target: `python-compat` runs the suite and
-the offline pipeline on Python 3.11 and 3.12; `wheel` installs the built wheel into a
+the offline pipeline on Python 3.11, 3.12, 3.14 and 3.15; `wheel` installs the built wheel into a
 clean Python 3.11 environment, runs a case outside the checkout and compares the
 certificate byte for byte; `action` runs `action.yml` against the NDA stub and requires
 `REJECT`. `web-check` is the only target in `make check` that CI does not run.

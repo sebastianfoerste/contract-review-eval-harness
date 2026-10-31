@@ -1,7 +1,7 @@
 """Pure scoring functions. Each measures one dimension of contract-review quality."""
 
 import string
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 from contract_eval.models import Citation
@@ -55,7 +55,7 @@ def clause_scores(expected: list[str], predicted: list[str]) -> ClauseScore:
     return ClauseScore(precision, recall, f1)
 
 
-def risk_flag_accuracy(expected: dict[str, str], predicted: dict[str, str]) -> float:
+def risk_flag_accuracy(expected: Mapping[str, str], predicted: Mapping[str, str]) -> float:
     """Share of expected flags predicted at the expected severity.
 
     Blind to false positives by construction: a review that adds twenty spurious
@@ -68,7 +68,7 @@ def risk_flag_accuracy(expected: dict[str, str], predicted: dict[str, str]) -> f
     return matched / len(expected)
 
 
-def risk_metrics(expected: dict[str, str], predicted: dict[str, str]) -> RiskScore:
+def risk_metrics(expected: Mapping[str, str], predicted: Mapping[str, str]) -> RiskScore:
     """Score risk identification and severity separately.
 
     Identification is precision/recall/F1 over which clauses were flagged at all,
@@ -247,7 +247,8 @@ def span_coverage(
     unlocated = len(citations) - len(cited_spans)
 
     regions, unlocatable = _clause_regions(norm_source, clause_anchors)
-    covered, uncovered = [], list(unlocatable)
+    covered: list[str] = []
+    uncovered: list[str] = list(unlocatable)
     for start, region_end, clause_type in regions:
         hit = _overlaps((start, region_end), cited_spans)
         (covered if hit else uncovered).append(clause_type)

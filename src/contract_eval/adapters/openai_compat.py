@@ -116,13 +116,17 @@ class OpenAICompatibleAdapter:
             with _OPENER.open(http_request, timeout=self.timeout_seconds) as reply:
                 data = json.loads(reply.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
-            if 300 <= exc.code < 400:
-                raise RuntimeError(
-                    f"{self.base_url}/chat/completions redirected (HTTP {exc.code}) to "
-                    f"{exc.headers.get('Location')}; redirects are not followed, so the "
-                    "API key stays with the configured host. Pass the final endpoint as --base-url."
-                ) from exc
-            detail = exc.read().decode("utf-8", errors="replace")[:_ERROR_EXCERPT]
+            # The error carries the response body as an open file. Close it on every
+            # path: Python 3.14 and later warn when it is cleaned up implicitly, and
+            # the suite runs with warnings as errors.
+            with exc:
+                if 300 <= exc.code < 400:
+                    raise RuntimeError(
+                        f"{self.base_url}/chat/completions redirected (HTTP {exc.code}) to "
+                        f"{exc.headers.get('Location')}; redirects are not followed, so the "
+                        "API key stays with the configured host. Pass the final endpoint as --base-url."
+                    ) from exc
+                detail = exc.read().decode("utf-8", errors="replace")[:_ERROR_EXCERPT]
             raise RuntimeError(
                 f"{self.base_url}/chat/completions returned HTTP {exc.code}: {detail}"
             ) from exc

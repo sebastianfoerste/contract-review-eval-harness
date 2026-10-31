@@ -105,7 +105,11 @@ def score_obligations(
 
     assignments = [assign_citation(c.quote, index, obligations) for c in citations]
 
-    covered_ids = {a.obligation_id for a in assignments if a.status == "assigned"}
+    covered_ids = {
+        a.obligation_id
+        for a in assignments
+        if a.status == "assigned" and a.obligation_id is not None
+    }
     covered = sorted(covered_ids)
     uncovered = sorted(o.obligation_id for o in obligations if o.obligation_id not in covered_ids)
 

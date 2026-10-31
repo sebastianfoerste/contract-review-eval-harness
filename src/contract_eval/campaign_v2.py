@@ -24,14 +24,14 @@ something nobody designed.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from contract_eval.capture import text_sha256
 from contract_eval.gold_v2 import ExpectedAnswerV2, Obligation
 
-CAMPAIGN_SCHEMA_V2 = "contract-review-eval.robustness-campaign.v2"
+CAMPAIGN_SCHEMA_V2: Final = "contract-review-eval.robustness-campaign.v2"
 
 ScenarioKind = Literal[
     "obligation_removed",
