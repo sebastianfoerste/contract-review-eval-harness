@@ -1,7 +1,7 @@
 {
   "schema": "contract-review-eval.release-certificate.v3",
   "policy": {
-    "policy_id": "contract-review-eval.strict-legal-release-policy.v2",
+    "policy_id": "contract-review-eval.strict-legal-release-policy.v2.1",
     "requirements": [
       {
         "requirement_id": "citation.grounding",
@@ -20,6 +20,15 @@
         "failure_class": "blocker",
         "failure_code": "unsupported_citation_detected",
         "description": "No citation may be unsupported by the source document."
+      },
+      {
+        "requirement_id": "citation.length",
+        "metric": "citation_short_count",
+        "comparator": "zero",
+        "threshold": null,
+        "failure_class": "blocker",
+        "failure_code": "degenerate_citation_detected",
+        "description": "Every citation must quote at least three words of the source; a one- or two-word match is not a quotation."
       },
       {
         "requirement_id": "clause.precision",
@@ -83,11 +92,21 @@
         "failure_class": "review_item",
         "failure_code": "conflicting_risk_flags",
         "description": "One clause may not carry contradictory severities."
+      },
+      {
+        "requirement_id": "risk.evidence",
+        "metric": "risk_flags_without_evidence",
+        "comparator": "empty",
+        "threshold": null,
+        "failure_class": "review_item",
+        "failure_code": "risk_flag_without_evidence",
+        "description": "Every flagged clause must have a grounded citation inside that clause's region of the source."
       }
     ],
     "hard_blockers": [
       "citation_grounding_below_100_percent",
-      "unsupported_citation_detected"
+      "unsupported_citation_detected",
+      "degenerate_citation_detected"
     ],
     "diagnostics_only": [
       "clause_f1",
@@ -120,18 +139,24 @@
       ],
       "review_items": [
         "unexpected_clause_extracted",
-        "risk_severity_mismatch"
+        "risk_severity_mismatch",
+        "risk_flag_without_evidence"
       ],
       "scores": {
         "citation_grounding": 0.875,
         "hallucination_count": 1,
+        "citation_short_count": 0,
         "clause_precision": 0.9090909090909091,
         "clause_recall": 1.0,
         "risk_precision": 1.0,
         "risk_recall": 1.0,
         "risk_severity_accuracy": 0.6,
         "risk_duplicate_flags": [],
-        "risk_conflicting_flags": []
+        "risk_conflicting_flags": [],
+        "risk_flags_without_evidence": [
+          "audit_rights",
+          "international_transfers"
+        ]
       },
       "diagnostics": {
         "clause_f1": 0.9523809523809523,
@@ -185,13 +210,15 @@
       "scores": {
         "citation_grounding": 0.8888888888888888,
         "hallucination_count": 1,
+        "citation_short_count": 0,
         "clause_precision": 0.9166666666666666,
         "clause_recall": 1.0,
         "risk_precision": 0.8333333333333334,
         "risk_recall": 0.8333333333333334,
         "risk_severity_accuracy": 0.6,
         "risk_duplicate_flags": [],
-        "risk_conflicting_flags": []
+        "risk_conflicting_flags": [],
+        "risk_flags_without_evidence": []
       },
       "diagnostics": {
         "clause_f1": 0.9565217391304348,
@@ -244,18 +271,24 @@
       "review_items": [
         "unexpected_clause_extracted",
         "expected_risk_missed",
-        "risk_severity_mismatch"
+        "risk_severity_mismatch",
+        "risk_flag_without_evidence"
       ],
       "scores": {
         "citation_grounding": 0.8888888888888888,
         "hallucination_count": 1,
+        "citation_short_count": 0,
         "clause_precision": 0.9166666666666666,
         "clause_recall": 1.0,
         "risk_precision": 1.0,
         "risk_recall": 0.875,
         "risk_severity_accuracy": 0.5714285714285714,
         "risk_duplicate_flags": [],
-        "risk_conflicting_flags": []
+        "risk_conflicting_flags": [],
+        "risk_flags_without_evidence": [
+          "data_export_on_termination",
+          "indemnity"
+        ]
       },
       "diagnostics": {
         "clause_f1": 0.9565217391304348,
@@ -299,5 +332,5 @@
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "4cb5b34ef3ce1371d8d64237fe29ddd219319019d88459afcb789bce85e22e22"
+  "integrity_sha256": "3f8a8c5e1422ae6f4cd09e1feab5527bb218bdbb2285a4672b697be977cc4442"
 }

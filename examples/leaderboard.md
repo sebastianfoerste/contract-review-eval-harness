@@ -2,9 +2,9 @@
 
 **Generated from committed review outputs. Do not edit by hand.**
 
-Regenerate with `make leaderboard`. Leaderboard digest: `be501ee986f3b891daa415fc1ad01562f6957f074a165b402d5d1d204c5e7e78`.
+Regenerate with `make leaderboard`. Leaderboard digest: `3067a0c38e07900b57c19af649e578da53f3fe68cfadbc879d9abd14f44bd8dc`.
 
-- Release policy: `contract-review-eval.strict-legal-release-policy.v2`
+- Release policy: `contract-review-eval.strict-legal-release-policy.v2.1`
 - Declared clause aliases: on
 - Date is when the output was produced. Harness is the scorer version that
   computed the row, the same for every row; it is not the version that produced the output.
@@ -27,6 +27,6 @@ Regenerate with `make leaderboard`. Leaderboard digest: `be501ee986f3b891daa415f
 | claude-opus-5 | 2026-09-01 | dpa | HUMAN_REVIEW_REQUIRED | 0 | 4 |
 | claude-opus-5 | 2026-09-01 | nda | HUMAN_REVIEW_REQUIRED | 0 | 4 |
 | claude-opus-5 | 2026-09-01 | saas | HUMAN_REVIEW_REQUIRED | 0 | 5 |
-| stub adapter (deterministic baseline) | n/a | dpa | REJECT | 2 | 2 |
+| stub adapter (deterministic baseline) | n/a | dpa | REJECT | 2 | 3 |
 | stub adapter (deterministic baseline) | n/a | nda | REJECT | 2 | 4 |
-| stub adapter (deterministic baseline) | n/a | saas | REJECT | 2 | 3 |
+| stub adapter (deterministic baseline) | n/a | saas | REJECT | 2 | 4 |
