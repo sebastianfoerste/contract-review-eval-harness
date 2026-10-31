@@ -35,6 +35,8 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `contract-eval --version` prints the installed package version.
 - Ruff in the dev group, configured with its long-standing default rules (`E4`, `E7`, `E9`, `F`) for Python 3.11. CI runs `uv run ruff check src tests scripts`. The violations are fixed in the code: unused imports, a mid-module import in `scorer.py`, one-line compound statements and an ambiguous variable name. Behaviour is unchanged.
 - `tests/test_readme.py`: the README stays at 350 words or fewer, uses only absolute links, links only to repository files that exist, and copies its scorecard rows verbatim from `examples/scorecard.md`.
+- `docs/legal-currency.md`, a dated ledger of every legal proposition the harness states: the provision, where it is used, what the repository says, the position in force, the official source and the date it was verified, with a watch list for the Digital Omnibus change to Art. 33 GDPR, the EU-US Data Privacy Framework appeal, EDPB Opinion 22/2024 and the Data Act's switching chapter. `tests/test_legal_currency.py` extracts every statutory citation from the gold sets, drafts, pack, fixtures, campaigns, contracts and guides and fails when one has no row. No gold answer changes.
+- A promptfoo Python assertion, `examples/promptfoo/contract_eval_assert.py`, that scores a model's review through `contract_eval.api.evaluate_review`, with a config to copy and an offline test.
 
 ### Changed
 
@@ -51,6 +53,10 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
 - The campaign v2 gold-hash check moves from `scripts/check_campaign_v2.py` to `contract_eval.campaign_v2.verify_gold_hashes`, beside `verify_against_sources`. The script stays the CI and Make entry point, and its behaviour is unchanged.
 - Annotators are recorded by role label (`Annotator A`, `Annotator B`) instead of by personal name: in `contract_eval.annotators`, the candidate drafts, the annotation pack and its manifest, the candidate answer sets and `annotations/README.md`. The pack and the campaign v2 gold hashes are regenerated. Obligations, offsets, severities and scores are unchanged. `tests/test_annotator_names.py` fails if either name reappears in a tracked file.
+- `SECURITY.md` describes what ships and where it runs (the package, the GitHub Action in other repositories' CI, the playground, the adapters), the supported versions and how to report an issue while private vulnerability reporting is not enabled. `PRIVACY.md` adds what each adapter sends and where, including the `.env` fallback of the live adapter and the full environment the command adapter passes on.
+- `docs/ci.md` and `examples/ci/contract-eval.yml` pin the Action to a full commit SHA, because no release tag contains `action.yml` yet.
+- `docs/metrics.md` records a known limitation of citation grounding: a one-word or mid-word quote counts as grounded, and span coverage does not gate release.
+- `docs/overview.md` distinguishes the package from the 2025 "ContractEval" benchmark paper, adds the October 2025 Vals legal-research edition and DeepEval's non-LLM hallucination mode, and links the legal currency ledger from the limitations.
 
 ### Removed
 

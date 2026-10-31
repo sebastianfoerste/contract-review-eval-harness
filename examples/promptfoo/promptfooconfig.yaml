@@ -1,0 +1,26 @@
+# Score a model's review of the bundled NDA with contract-eval from promptfoo.
+# promptfoo is not a dependency of this repository; install it separately, then run
+# from this directory:  npx promptfoo@latest eval
+# file:// paths resolve from this config file's directory.
+description: contract-eval release gate on the bundled NDA
+
+prompts:
+  - |-
+    You are a contract review assistant. Review the contract below and reply with a
+    single JSON object and nothing else: clauses, risk_flags and citations as in
+    schemas/review-output.schema.json. Copy every citation quote verbatim from the
+    contract.
+
+    CONTRACT:
+    {{contract}}
+
+providers:
+  - openai:gpt-6-luna   # placeholder from the promptfoo docs; use the provider your tool runs through
+
+tests:
+  - vars:
+      case: nda
+      contract: file://../../data/nda_sample.md
+    assert:
+      - type: python
+        value: file://contract_eval_assert.py

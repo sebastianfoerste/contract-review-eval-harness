@@ -101,9 +101,13 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 | Project | What it is | How answers are graded | Test data |
 |---|---|---|---|
 | [Vals Legal AI Report](https://www.vals.ai/industry-reports/vlair-2-27-25) (Vals AI) | A published report comparing legal AI tools with a lawyer baseline | An LLM graded the answers | Mostly private; a selection of question-answer pairs is published |
-| [DeepEval](https://deepeval.com/docs/metrics-hallucination) | A generic evaluation framework for LLM applications | Its `HallucinationMetric` uses an LLM as the judge | Your own |
+| [DeepEval](https://deepeval.com/docs/metrics-hallucination) | A generic evaluation framework for LLM applications | Its `HallucinationMetric` uses an LLM as the judge by default; its docs also offer a `system_one` eval mode in which no LLM is called | Your own |
 | [LegalBench](https://github.com/HazyResearch/legalbench) and [CUAD](https://github.com/The-Atticus-Project/cuad) | Datasets for testing model capability | Against the dataset's labels | Public |
 | This harness | A release gate for a contract-review product | Deterministic code, no LLM grader: citations must be exact spans of the contract (any miss is an automatic `REJECT`), and over-flagging lowers risk precision | Open synthetic answer sets, plus your own private ones |
+
+The Vals row describes the February 2025 report, which covers seven tasks, among them redlining and document Q&A, and so comes closest to contract review. A newer [legal-research edition](https://www.vals.ai/industry-reports/vlair-10-14-25), updated 14 October 2025, covers legal research only: four products against a lawyer baseline, with the answers graded blind by lawyers and law librarians rather than by an automated system.
+
+Not to be confused with this package: [ContractEval](https://arxiv.org/abs/2508.03080) (arXiv 2508.03080, August 2025) is an unrelated benchmark paper that assesses 4 proprietary and 15 open-source LLMs on clause-level legal risk identification in commercial contracts using CUAD. Its [full text](https://arxiv.org/html/2508.03080) scores correctness with F1 and F2, output effectiveness with the average Jaccard similarity on positive cases, and a "laziness" rate, the share of cases where the model answers "no related clause" although a relevant clause exists; the abstract reports that open-source models do this more often. It measures model capability on a public dataset; it is not a release gate.
 
 LegalBench and CUAD measure what a model can do. They are not a release gate for a review product. This harness also writes a [release certificate](certificate-and-robustness.md) that records the decision and the inputs it was made on.
 
@@ -128,5 +132,6 @@ Open tools by [@sebastianfoerste](https://github.com/sebastianfoerste) that trea
 - **Bounded scope.** Three contract types (NDA, SaaS, DPA), thirty-two clause types and eighteen perturbations. Not a general contract-understanding benchmark.
 - **Review-gated, not legal advice.** Every flagged risk and citation must be confirmed by a qualified lawyer. Pilot eligibility never authorizes autonomous contract reliance.
 - Live-model output is non-deterministic; a committed live run is a dated snapshot, not a stable benchmark.
+- [Legal currency ledger](legal-currency.md): every legal proposition the gold sets and documentation state, with its source and the date it was last verified.
 
 Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](../SECURITY.md), [PRIVACY.md](../PRIVACY.md), [CONTRIBUTING.md](../CONTRIBUTING.md), [LICENSE](../LICENSE).
