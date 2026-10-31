@@ -33,9 +33,10 @@ run it. Everything else in `make check` must pass before a pull request; without
 sibling, run those targets directly:
 
 ```bash
-make test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check \
-  capture-check replay-check live-run-check leaderboard-check schemas-check \
-  certificate-check certificate-verify robustness-check parity-check
+make test regression-check anchor-check gold-v2-check evidence-check adjudication-check \
+  campaign-v2-check capture-check replay-check live-run-check leaderboard-check \
+  schemas-check certificate-check certificate-verify robustness-check parity-check \
+  candidate-pack-check candidate-experiment-check
 ```
 
 ### Which targets mirror CI
@@ -47,8 +48,8 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 | Lockfile up to date | `uv lock --check` (no Make target) |
 | Lint | `uv run ruff check src tests scripts` (no Make target) |
 | Unit tests | `make test` |
-| Baseline suite evaluation gate | `uv run python -m contract_eval evaluate --case all` (no Make target) |
-| Comparison regression test | `uv run python -m contract_eval compare`, after an evaluate run (no Make target) |
+| Baseline suite evaluation gate | `make regression-check` (its `evaluate` step) |
+| Comparison against the committed baseline | `make regression-check` |
 | JSON Schema drift | `make schemas-check` |
 | v2 obligation offsets | `make gold-v2-check` |
 | Candidate campaign | `make campaign-v2-check` |
@@ -61,6 +62,8 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 | Recomputed release certificate | `make certificate-verify` |
 | Robustness campaign and its artifacts | `make robustness-check` |
 | Web parity vectors | `make parity-check` |
+| Candidate annotation pack | `make candidate-pack-check` |
+| Candidate experiment reports | `make candidate-experiment-check` |
 
 `evidence-check` and `adjudication-check` re-run parts of the suite that `make test`
 already covers. Three CI jobs have no Make target: `python-compat` runs the suite and
