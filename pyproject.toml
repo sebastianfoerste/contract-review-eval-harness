@@ -14,8 +14,11 @@ dependencies = [
 
 [project.optional-dependencies]
 # Optional: only needed for the --live adapter. The default offline path needs none of this.
+# 0.77.0 is the first release whose non-beta `messages.parse` takes `output_format` and
+# `output_config`, which the adapter passes. tests/test_live_sdk_contract.py holds the
+# floor: it fails if the installed SDK's `parse` no longer accepts what the adapter sends.
 live = [
-    "anthropic>=0.40.0",
+    "anthropic>=0.77.0",
 ]
 
 [project.scripts]

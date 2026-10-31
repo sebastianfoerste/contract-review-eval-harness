@@ -77,7 +77,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anthropic", marker = "extra == 'live'", specifier = ">=0.40.0" },
+    { name = "anthropic", marker = "extra == 'live'", specifier = ">=0.77.0" },
     { name = "pydantic", specifier = ">=2.13.4" },
 ]
 provides-extras = ["live"]
