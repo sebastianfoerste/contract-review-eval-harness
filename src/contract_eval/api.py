@@ -33,7 +33,9 @@ from contract_eval.scorer import (
     clause_scores,
     count_hallucinations,
     risk_flag_accuracy,
+    risk_flags_without_evidence,
     risk_metrics,
+    short_quotes,
     span_coverage,
 )
 
@@ -121,7 +123,12 @@ def score_review(
     risk = risk_metrics(expected.risk_flags, predicted_flags)
     citation = citation_grounding(source, output.citations)
     hallucinations = count_hallucinations(source, output.citations)
+    short_citations = short_quotes(source, output.citations)
     coverage = span_coverage(source, expected.clause_anchors, output.citations)
+    # Canonicalised flags, so a declared synonym is looked up under the gold name.
+    unevidenced_flags = risk_flags_without_evidence(
+        source, expected.clause_anchors, predicted_flags, output.citations
+    )
 
     # Base thresholds matching the stub adapter baseline
     thresholds = {
@@ -147,12 +154,14 @@ def score_review(
         "risk_severity_confusion": risk.severity_confusion,
         "risk_duplicate_flags": duplicate_flags,
         "risk_conflicting_flags": conflicting_flags,
+        "risk_flags_without_evidence": unevidenced_flags,
         "span_coverage": coverage.coverage,
         "span_uncovered_clauses": coverage.uncovered,
         "citation_grounded": citation.grounded,
         "citation_total": citation.total,
         "citation_grounding": citation.grounding_rate,
         "hallucination_count": hallucinations,
+        "citation_short_count": short_citations,
         "thresholds": thresholds,
     }
 

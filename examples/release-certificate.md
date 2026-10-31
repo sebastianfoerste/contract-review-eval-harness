@@ -2,22 +2,22 @@
 
 **Suite decision: REJECT**
 
-- Policy: `contract-review-eval.strict-legal-release-policy.v2`
+- Policy: `contract-review-eval.strict-legal-release-policy.v2.1`
 - Cases: 3
 - Rejected: 3
 - Unsupported citations: 3
-- Integrity SHA-256: `4cb5b34ef3ce1371d8d64237fe29ddd219319019d88459afcb789bce85e22e22`
+- Integrity SHA-256: `3f8a8c5e1422ae6f4cd09e1feab5527bb218bdbb2285a4672b697be977cc4442`
 
 ## Case decisions
 
 Every column below is a decision input. A case is eligible only when all of
 them pass; diagnostics are reported separately and never decide anything.
 
-| Case | Decision | citation.grounding | citation.unsupported | clause.precision | clause.recall | risk.precision | risk.recall | risk.severity | risk.duplicates | risk.conflicts |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| dpa | REJECT | 0.88 | 1 | 0.91 | 1.00 | 1.00 | 1.00 | 0.60 | 0 | 0 |
-| nda | REJECT | 0.89 | 1 | 0.92 | 1.00 | 0.83 | 0.83 | 0.60 | 0 | 0 |
-| saas | REJECT | 0.89 | 1 | 0.92 | 1.00 | 1.00 | 0.88 | 0.57 | 0 | 0 |
+| Case | Decision | citation.grounding | citation.unsupported | citation.length | clause.precision | clause.recall | risk.precision | risk.recall | risk.severity | risk.duplicates | risk.conflicts | risk.evidence |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| dpa | REJECT | 0.88 | 1 | 0 | 0.91 | 1.00 | 1.00 | 1.00 | 0.60 | 0 | 0 | 2 |
+| nda | REJECT | 0.89 | 1 | 0 | 0.92 | 1.00 | 0.83 | 0.83 | 0.60 | 0 | 0 | 0 |
+| saas | REJECT | 0.89 | 1 | 0 | 0.92 | 1.00 | 1.00 | 0.88 | 0.57 | 0 | 0 | 2 |
 
 ## Diagnostics (not decision inputs)
 
@@ -29,9 +29,9 @@ them pass; diagnostics are reported separately and never decide anything.
 
 ## Failure register
 
-- `dpa`: citation_grounding_below_100_percent, unsupported_citation_detected, unexpected_clause_extracted, risk_severity_mismatch
+- `dpa`: citation_grounding_below_100_percent, unsupported_citation_detected, unexpected_clause_extracted, risk_severity_mismatch, risk_flag_without_evidence
 - `nda`: citation_grounding_below_100_percent, unsupported_citation_detected, unexpected_clause_extracted, risk_false_positive, expected_risk_missed, risk_severity_mismatch
-- `saas`: citation_grounding_below_100_percent, unsupported_citation_detected, unexpected_clause_extracted, expected_risk_missed, risk_severity_mismatch
+- `saas`: citation_grounding_below_100_percent, unsupported_citation_detected, unexpected_clause_extracted, expected_risk_missed, risk_severity_mismatch, risk_flag_without_evidence
 
 ## Review gate
 

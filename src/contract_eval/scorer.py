@@ -1,7 +1,7 @@
 """Pure scoring functions. Each measures one dimension of contract-review quality."""
 
 import string
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 from contract_eval.models import Citation
@@ -160,6 +160,74 @@ def count_hallucinations(source_text: str, citations: list[Citation]) -> int:
     return sum(1 for c in citations if not _is_grounded(source_text, c.quote))
 
 
+# Grounding is a substring match, so a one-word quote such as `the` is grounded in
+# any contract, and the review items that depend on where a quote sits are then
+# satisfied by text that quotes nothing in particular. Three words is the lowest
+# floor that still clears every committed output: the shortest live quote is
+# "available on request" (3 words, DPA) and the shortest stub quote is
+# "99 5 monthly uptime" (4 words). A floor of four would turn the live DPA capture
+# from HUMAN_REVIEW_REQUIRED into REJECT; a floor of three changes no committed
+# decision.
+MIN_QUOTE_WORDS = 3
+
+
+def quote_word_count(quote: str) -> int:
+    """The words of a quote as the floor counts them: whitespace-separated tokens of
+    the normalised quote, the same text grounding matched. Punctuation splits a
+    token, so `99.5%` is two words and `clause 5.2` is three."""
+    return len(normalize_text(quote).split())
+
+
+def short_quotes(
+    source_text: str,
+    citations: list[Citation],
+    minimum_words: int = MIN_QUOTE_WORDS,
+) -> int:
+    """How many grounded citations quote fewer than `minimum_words` words.
+
+    Words are counted by `quote_word_count`. An ungrounded citation is already a
+    hallucination and is not counted again here.
+    """
+    return sum(
+        1
+        for c in citations
+        if grounded_span(source_text, c.quote) is not None
+        and quote_word_count(c.quote) < minimum_words
+    )
+
+
+def _clause_regions(
+    norm_source: str,
+    clause_anchors: dict[str, str],
+) -> tuple[list[tuple[int, int, str]], list[str]]:
+    """Each located clause's region of the normalised source, plus the unlocatable ones.
+
+    A region runs from its own anchor to the start of the next located anchor in
+    document order, or to the end of the source for the last one. Regions are
+    returned in document order as `(start, end, clause_type)`.
+    """
+    located: list[tuple[int, str]] = []
+    unlocatable: list[str] = []
+    for clause_type, anchor in clause_anchors.items():
+        start = norm_source.find(normalize_text(anchor))
+        if start == -1:
+            unlocatable.append(clause_type)
+        else:
+            located.append((start, clause_type))
+    located.sort()
+
+    boundaries = [start for start, _ in located] + [len(norm_source)]
+    regions = [
+        (start, boundaries[index + 1], clause_type)
+        for index, (start, clause_type) in enumerate(located)
+    ]
+    return regions, unlocatable
+
+
+def _overlaps(region: tuple[int, int], spans: list[tuple[int, int]]) -> bool:
+    start, end = region
+    return any(c_start < end and c_end > start for c_start, c_end in spans)
+
 
 def span_coverage(
     source_text: str,
@@ -185,22 +253,11 @@ def span_coverage(
     cited_spans = [s for s in (grounded_span(source_text, c.quote) for c in citations) if s]
     unlocated = len(citations) - len(cited_spans)
 
-    located: list[tuple[int, str]] = []
-    unlocatable: list[str] = []
-    for clause_type, anchor in clause_anchors.items():
-        start = norm_source.find(normalize_text(anchor))
-        if start == -1:
-            unlocatable.append(clause_type)
-        else:
-            located.append((start, clause_type))
-    located.sort()
-
-    boundaries = [start for start, _ in located] + [len(norm_source)]
+    regions, unlocatable = _clause_regions(norm_source, clause_anchors)
     covered: list[str] = []
     uncovered: list[str] = list(unlocatable)
-    for index, (start, clause_type) in enumerate(located):
-        region_end = boundaries[index + 1]
-        hit = any(c_start < region_end and c_end > start for c_start, c_end in cited_spans)
+    for start, region_end, clause_type in regions:
+        hit = _overlaps((start, region_end), cited_spans)
         (covered if hit else uncovered).append(clause_type)
 
     total = len(clause_anchors)
@@ -209,6 +266,35 @@ def span_coverage(
         uncovered=sorted(uncovered),
         coverage=len(covered) / total if total else 0.0,
         unlocated_citations=unlocated,
+    )
+
+
+def risk_flags_without_evidence(
+    source_text: str,
+    clause_anchors: dict[str, str],
+    flagged_clauses: Iterable[str],
+    citations: list[Citation],
+) -> list[str]:
+    """The flagged clauses with no grounded citation inside their region of the source.
+
+    Risk precision and recall compare labels; this asks whether the review quoted
+    from the clause it flagged. A clause is reported when it is among
+    `flagged_clauses`, has an anchor in `clause_anchors` that is found in the source,
+    and no grounded citation overlaps its region, with regions defined exactly as in
+    `span_coverage`. A flagged clause with no anchor is not reported: it is either a
+    false positive, which risk precision already penalises, or a gold clause the
+    answer set has not anchored, which the harness cannot locate.
+
+    Sorted canonical clause names, so the result is deterministic.
+    """
+    norm_source = normalize_text(source_text)
+    cited_spans = [s for s in (grounded_span(source_text, c.quote) for c in citations) if s]
+    regions, _ = _clause_regions(norm_source, clause_anchors)
+    flagged = set(flagged_clauses)
+    return sorted(
+        clause_type
+        for start, end, clause_type in regions
+        if clause_type in flagged and not _overlaps((start, end), cited_spans)
     )
 
 

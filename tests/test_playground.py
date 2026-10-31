@@ -73,10 +73,32 @@ def test_findings_agree_with_the_decision(case, example):
     blockers = [row for row in rows if row["status"] == "blocker"]
     review_keys = {row["key"] for row in rows if row["status"] == "review"}
 
-    assert len(blockers) == result["scores"]["hallucination_count"]
+    # One blocker row per ungrounded citation and one per grounded quote under the floor.
+    assert len(blockers) == result["scores"]["hallucination_count"] + result["scores"]["citation_short_count"]
     assert bool(blockers) == bool(result["blockers"])
     assert review_keys == set(result["review_items"])
     assert review_keys <= set(payload["requirements"])
+
+
+def test_a_short_quote_is_a_blocker_finding_and_an_unquoted_flag_a_review_finding():
+    review = json.loads(json.dumps(SAMPLES["cases"]["nda"]["reviews"]["answer_key"]))
+    # Every flag keeps its anchor quote except the first, which is cut to one word.
+    flagged = review["risk_flags"][0]["clause_type"]
+    for citation in review["citations"]:
+        if citation["clause_type"] == flagged:
+            citation["quote"] = citation["quote"].split()[0]
+    payload = _score(review, "nda")
+    result, rows = payload["result"], payload["findings"]
+
+    assert result["decision"] == "REJECT"
+    assert result["blockers"] == ["degenerate_citation_detected"]
+    assert "risk_flag_without_evidence" in result["review_items"]
+    short = [row for row in rows if row["key"] == "degenerate_citation_detected"]
+    assert [row["status"] for row in short] == ["blocker"]
+    assert short[0]["span"] is not None
+    unquoted = [row for row in rows if row["key"] == "risk_flag_without_evidence"]
+    assert [row["label"] for row in unquoted] == [flagged]
+    assert payload["note"].startswith("Every citation is an exact span of the contract, but")
 
 
 @pytest.mark.parametrize("case", ALL_CASES)
@@ -123,3 +145,29 @@ def test_site_build_without_a_wheel_leaves_the_playground_out(tmp_path):
     site.build(tmp_path)
     assert not (tmp_path / "playground").exists()
     assert "playground/" not in (tmp_path / "index.html").read_text(encoding="utf-8")
+
+
+def test_the_page_renders_the_scorecard_rows_in_the_scorecard_order():
+    """`scoreRows` in app.mjs is the Python scorecard table, label for label."""
+    import re
+
+    from contract_eval.scorecard import render_score
+
+    app = (ROOT / "playground" / "app.mjs").read_text(encoding="utf-8")
+    body = app[app.index("function scoreRows(s) {"):]
+    body = body[: body.index("\n}\n")]
+    page_labels = re.findall(r'^\s*\["([^"]+)",', body, flags=re.MULTILINE)
+
+    result = _score(SAMPLES["cases"]["nda"]["reviews"]["stub"], "nda")["result"]
+    markdown = render_score(result)
+    table = markdown[markdown.index("## Scores") :]
+    next_heading = table.find("\n## ", 1)
+    table = table if next_heading == -1 else table[:next_heading]
+    python_labels = [
+        line.split("|")[1].strip()
+        for line in table.splitlines()
+        if line.startswith("| ") and not line.startswith("| Dimension")
+    ]
+
+    assert page_labels == python_labels
+    assert "Short citations" in page_labels and "Risk flags without evidence" in page_labels

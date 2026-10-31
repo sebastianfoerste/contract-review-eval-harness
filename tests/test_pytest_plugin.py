@@ -38,7 +38,7 @@ def test_a_rejected_review_fails_with_the_blockers(pytester):
 
     result.assert_outcomes(failed=1)
     result.stdout.fnmatch_lines([
-        "*contract-eval: nda review is REJECT under contract-review-eval.strict-legal-release-policy.v2",
+        "*contract-eval: nda review is REJECT under contract-review-eval.strict-legal-release-policy.v2.1",
         "*blockers: citation_grounding_below_100_percent, unsupported_citation_detected",
     ])
     # The summary still lists the scored review after the failure.

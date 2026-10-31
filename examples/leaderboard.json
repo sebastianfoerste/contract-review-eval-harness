@@ -1,6 +1,6 @@
 {
   "schema": "contract-review-eval.leaderboard.v1",
-  "policy": "contract-review-eval.strict-legal-release-policy.v2",
+  "policy": "contract-review-eval.strict-legal-release-policy.v2.1",
   "alias_mode": "on",
   "rows": [
     {
@@ -140,7 +140,8 @@
           ],
           "review_items": [
             "unexpected_clause_extracted",
-            "risk_severity_mismatch"
+            "risk_severity_mismatch",
+            "risk_flag_without_evidence"
           ],
           "review_sha256": "ac5b7e2cddc161d3e8cb8b22f0a6cade7f915e6b35924b2580d4c74950181271",
           "origin": {
@@ -193,7 +194,8 @@
           "review_items": [
             "unexpected_clause_extracted",
             "expected_risk_missed",
-            "risk_severity_mismatch"
+            "risk_severity_mismatch",
+            "risk_flag_without_evidence"
           ],
           "review_sha256": "28205874a23fca4bf53281712a0410c65a043786f0677fbf7f7f3bd7ce92c0c2",
           "origin": {
@@ -212,5 +214,5 @@
       ]
     }
   ],
-  "leaderboard_sha256": "be501ee986f3b891daa415fc1ad01562f6957f074a165b402d5d1d204c5e7e78"
+  "leaderboard_sha256": "3067a0c38e07900b57c19af649e578da53f3fe68cfadbc879d9abd14f44bd8dc"
 }

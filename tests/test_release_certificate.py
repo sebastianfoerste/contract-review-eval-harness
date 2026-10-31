@@ -63,8 +63,10 @@ def test_perfect_scores_are_only_pilot_eligible():
                 "risk_missed": [],
                 "risk_duplicate_flags": [],
                 "risk_conflicting_flags": [],
+                "risk_flags_without_evidence": [],
                 "citation_grounding": 1.0,
                 "hallucination_count": 0,
+                "citation_short_count": 0,
             }
         )
 
@@ -126,11 +128,13 @@ def _clean_scores():
         "risk_severity_confusion": {},
         "risk_duplicate_flags": [],
         "risk_conflicting_flags": [],
+        "risk_flags_without_evidence": [],
         "span_coverage": 1.0,
         "citation_grounded": 5,
         "citation_total": 5,
         "citation_grounding": 1.0,
         "hallucination_count": 0,
+        "citation_short_count": 0,
         "thresholds": {},
     }
 
@@ -172,6 +176,81 @@ def test_unsupported_citation_is_a_hard_blocker():
 
     result = build_release_certificate({"nda": scores})["cases"][0]
     assert result["decision"] == "REJECT"
+
+
+def test_short_citation_is_a_hard_blocker():
+    from contract_eval.release_certificate import build_release_certificate
+
+    scores = _clean_scores()
+    scores["citation_short_count"] = 1
+
+    result = build_release_certificate({"nda": scores})["cases"][0]
+    assert result["decision"] == "REJECT"
+    assert result["blockers"] == ["degenerate_citation_detected"]
+
+
+def test_flag_without_evidence_prevents_pilot_eligibility():
+    from contract_eval.release_certificate import build_release_certificate
+
+    scores = _clean_scores()
+    scores["risk_flags_without_evidence"] = ["indemnity"]
+
+    result = build_release_certificate({"nda": scores})["cases"][0]
+    assert result["decision"] == "HUMAN_REVIEW_REQUIRED"
+    assert result["review_items"] == ["risk_flag_without_evidence"]
+
+
+def test_policy_v2_1_is_v2_plus_the_two_new_requirements():
+    from contract_eval.release_certificate import (
+        POLICY_ID,
+        REQUIREMENTS,
+        V2_POLICY_ID,
+        V2_REQUIREMENTS,
+        build_release_certificate,
+    )
+
+    assert POLICY_ID == "contract-review-eval.strict-legal-release-policy.v2.1"
+    assert V2_POLICY_ID == "contract-review-eval.strict-legal-release-policy.v2"
+    assert [r.requirement_id for r in REQUIREMENTS] == [
+        "citation.grounding",
+        "citation.unsupported",
+        "citation.length",
+        "clause.precision",
+        "clause.recall",
+        "risk.precision",
+        "risk.recall",
+        "risk.severity",
+        "risk.duplicates",
+        "risk.conflicts",
+        "risk.evidence",
+    ]
+    assert [r.requirement_id for r in V2_REQUIREMENTS] == [
+        r.requirement_id for r in REQUIREMENTS if r.requirement_id not in ("citation.length", "risk.evidence")
+    ]
+    assert build_release_certificate({"nda": _clean_scores()})["policy"]["policy_id"] == POLICY_ID
+
+
+def test_frozen_v2_builder_decides_under_v2_and_publishes_v2():
+    """A v2 certificate is re-decided under the policy it was issued under."""
+    from pathlib import Path
+
+    from contract_eval.release_certificate import (
+        V2_POLICY_ID,
+        _build_v2_certificate,
+        build_release_certificate,
+    )
+
+    scores = _clean_scores()
+    scores["citation_short_count"] = 2
+    scores["risk_flags_without_evidence"] = ["term"]
+
+    current = build_release_certificate({"nda": scores})["cases"][0]
+    assert current["decision"] == "REJECT"
+
+    frozen = _build_v2_certificate({"nda": scores}, root=Path("."))
+    assert frozen["policy"]["policy_id"] == V2_POLICY_ID
+    assert frozen["cases"][0]["decision"] == "PILOT_ELIGIBLE"
+    assert frozen["cases"][0]["blockers"] == [] and frozen["cases"][0]["review_items"] == []
 
 
 def test_unknown_certificate_schema_fails_with_an_actionable_error():
@@ -407,3 +486,84 @@ def test_current_v3_certificate_reproduces_and_verifies():
     verification = verify_release_certificate(committed, scores)
     assert verification["status"] == "VALID"
     assert verification["verification_scope"] == "full"
+
+
+def test_v3_certificate_issued_under_policy_v2_verifies_under_the_v2_registry():
+    """Schema v3 was issued under policy v2 from v0.5.2 to v0.7.0-rc1.
+
+    The fixture is the certificate committed immediately before policy v2.1, so its
+    inputs are the working tree's. It must reproduce under the frozen v2 registry
+    rather than be re-decided under v2.1, which would report a policy mismatch and
+    two missing decision inputs for a document that was correct when it was issued.
+    """
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import evaluate_case
+    from contract_eval.release_certificate import (
+        POLICY_ID,
+        V2_POLICY_ID,
+        verify_release_certificate,
+    )
+
+    certificate = json.loads(
+        Path("tests/fixtures/frozen-release-certificate-v3-policy-v2.json").read_text()
+    )
+    assert certificate["policy"]["policy_id"] == V2_POLICY_ID
+    assert "citation_short_count" not in certificate["cases"][0]["scores"]
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
+
+    verification = verify_release_certificate(certificate, scores)
+    assert verification["status"] == "VALID", verification["errors"]
+    assert verification["verification_scope"] == "full"
+    assert verification["policy"] == V2_POLICY_ID
+    assert "frozen v2 registry" in verification["note"]
+
+    # The dispatch reads the published policy, so the same document claiming the
+    # current policy is rebuilt under v2.1 and fails on every input v2.1 added.
+    claimed = json.loads(json.dumps(certificate))
+    claimed["policy"]["policy_id"] = POLICY_ID
+    rejected = verify_release_certificate(claimed, scores)
+    assert rejected["status"] == "INVALID"
+    assert rejected["policy"] == POLICY_ID
+    assert "policy_mismatch" in rejected["errors"]
+    assert "nda:score_reproduction_mismatch" in rejected["errors"]
+    assert "note" not in rejected
+
+
+def test_v3_certificate_under_an_unknown_policy_fails_closed():
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import evaluate_case
+    from contract_eval.release_certificate import POLICY_ID, verify_release_certificate
+
+    certificate = json.loads(
+        Path("tests/fixtures/frozen-release-certificate-v3-policy-v2.json").read_text()
+    )
+    certificate["policy"]["policy_id"] = "contract-review-eval.strict-legal-release-policy.v9"
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
+
+    verification = verify_release_certificate(certificate, scores)
+    assert verification["status"] == "INVALID"
+    assert verification["policy"] == POLICY_ID
+    assert {"certificate_integrity_mismatch", "policy_mismatch"} <= set(verification["errors"])
+
+
+def test_current_certificate_verification_names_the_current_policy():
+    import json
+    from pathlib import Path
+
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import evaluate_case
+    from contract_eval.release_certificate import POLICY_ID, verify_release_certificate
+
+    committed = json.loads(Path("examples/release-certificate.json").read_text())
+    scores = {case: evaluate_case(case, live=False) for case in ALL_CASES}
+
+    verification = verify_release_certificate(committed, scores)
+    assert verification["status"] == "VALID"
+    assert verification["policy"] == POLICY_ID
+    assert "note" not in verification

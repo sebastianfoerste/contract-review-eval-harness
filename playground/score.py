@@ -18,7 +18,13 @@ from contract_eval.cli import ScoreInputError, score
 from contract_eval.models import ReviewOutput
 from contract_eval.release_certificate import REQUIREMENTS
 from contract_eval.scorecard import _decision_note, render_score
-from contract_eval.scorer import build_normalized_index, grounded_span, normalize_text
+from contract_eval.scorer import (
+    MIN_QUOTE_WORDS,
+    build_normalized_index,
+    grounded_span,
+    normalize_text,
+    quote_word_count,
+)
 
 WORKDIR = Path("/tmp/contract-eval-playground")
 DEFAULT_NAME = "review.json"
@@ -60,6 +66,13 @@ def findings(review: ReviewOutput, case, result: dict) -> list[dict]:
                 ["Not an exact span of the contract after normalising case, punctuation and whitespace.",
                  "It counts as a hallucination. Any ungrounded citation rejects the review."],
                 meta, "unsupported_citation_detected",
+            ))
+        elif quote_word_count(citation.quote) < MIN_QUOTE_WORDS:
+            rows.append(_finding(
+                "citation", "blocker", f"“{citation.quote}”",
+                [f"Found in the contract, but it quotes fewer than {MIN_QUOTE_WORDS} words.",
+                 "A one- or two-word match is not a quotation. Any short citation rejects the review."],
+                meta, "degenerate_citation_detected", raw_span(source, citation.quote),
             ))
         else:
             rows.append(_finding(
@@ -124,6 +137,14 @@ def findings(review: ReviewOutput, case, result: dict) -> list[dict]:
             ["Two or more flags collapse onto this clause" + (" with different severities." if conflicting else "."),
              "The first flag is the one scored."],
             "Risk", "conflicting_risk_flags" if conflicting else "duplicate_risk_flags",
+        ))
+    for clause_type in scores["risk_flags_without_evidence"]:
+        anchor = expected.clause_anchors.get(clause_type)
+        rows.append(_finding(
+            "risk", "review", clause_type,
+            ["The review flags this clause, but no grounded citation lands inside it.",
+             "A flag needs a quote from the clause it concerns."],
+            "Risk", "risk_flag_without_evidence", raw_span(source, anchor) if anchor else None,
         ))
 
     for clause_type in scores["span_uncovered_clauses"]:
