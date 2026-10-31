@@ -8,6 +8,28 @@ authors = [
     { name = "sebastianfoerste", email = "sebastianfoerste@gmail.com" }
 ]
 requires-python = ">=3.11"
+keywords = [
+    "contract-review",
+    "legal-ai",
+    "evaluation-harness",
+    "benchmark",
+    "citation-grounding",
+    "hallucination",
+    "gdpr",
+    "release-gate",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Legal Industry",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
 dependencies = [
     "pydantic>=2.13.4",
 ]
@@ -20,6 +42,13 @@ dependencies = [
 live = [
     "anthropic>=0.77.0",
 ]
+
+[project.urls]
+Homepage = "https://sebastianfoerste.github.io/contract-review-eval-harness/"
+Source = "https://github.com/sebastianfoerste/contract-review-eval-harness"
+Documentation = "https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/overview.md"
+Changelog = "https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/CHANGELOG.md"
+Issues = "https://github.com/sebastianfoerste/contract-review-eval-harness/issues"
 
 [project.scripts]
 contract-eval = "contract_eval.cli:main"
@@ -78,3 +107,7 @@ select = ["E4", "E7", "E9", "F"]
 [tool.pytest.ini_options]
 # examples/ holds a test file for users to copy; tests/test_api.py runs it.
 testpaths = ["tests"]
+# pytest 9 strict mode: an unknown marker, a misspelt option here or an xfail that
+# passes is an error, not a warning. A warning raised by the suite is an error too.
+strict = true
+filterwarnings = ["error"]
