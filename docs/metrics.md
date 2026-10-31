@@ -54,6 +54,31 @@ order and every word do. The search is a plain substring search, so it is not ti
 word boundaries. Other characters, such as `„`, `«`, `»` or `…`, are kept as they are.
 A quote that is empty after normalisation is never grounded.
 
+### Known limitation: short and partial quotes
+
+Grounding is a substring test, so it accepts any quote whose normalised characters
+occur somewhere in the contract. A one-word quote such as `the`, or a fragment inside a
+word such as `confiden`, counts as grounded. Span coverage would show that such quotes
+engage with no clause, but it is a diagnostic and does not gate release. On the bundled
+NDA, a review that names every gold clause and risk correctly and gives every citation
+the quote `the` scores citation grounding 1.0, hallucination count 0 and span coverage
+0.0, and is decided `PILOT_ELIGIBLE`. A stricter rule is proposed separately for the
+owner's decision. To reproduce:
+
+```bash
+uv run python -c "
+import json
+from contract_eval.api import evaluate_review
+g = json.load(open('expected/nda.json'))
+r = {'clauses': [{'clause_type': c, 'text': 'x'} for c in g['clause_types']],
+     'risk_flags': [{'clause_type': k, 'severity': v, 'rationale': 'x'} for k, v in g['risk_flags'].items()],
+     'citations': [{'quote': 'the', 'clause_type': c} for c in g['clause_types']]}
+res = evaluate_review(r, 'nda')
+print(res.verdict, res.scores['citation_grounding'], res.scores['span_coverage'])"
+```
+
+It prints `PILOT_ELIGIBLE 1.0 0.0`.
+
 ## Clause precision
 
 Share of the predicted clause types that the gold set declares.
