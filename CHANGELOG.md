@@ -42,6 +42,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `uv run mypy` in CI, a `[tool.mypy]` section and `src/contract_eval/py.typed`. The 34 errors it reported are fixed by narrowing Optionals, typing the `Literal` schema defaults with `Final`, accepting `Mapping` in the scorer, adding `review_v2` to the `Adapter` protocol and typing the SDK call; scores, artefacts and schemas are unchanged. A capture with no gold snapshot now fails replay with `ReplayError` instead of `AttributeError`, at the same point.
 - CI's `python-compat` job also runs on 3.14 and 3.15, the current bugfix releases.
 - Project URLs, keywords and classifiers (Python 3.11 to 3.15, `Typing :: Typed`) in `pyproject.toml`, so the wheel's METADATA carries them.
+- `annotations/errata/2026-10-31-pack-erratum.md`, the erratum to the primary-law ledger of the annotation pack sent on 2026-09-06: Art. 34 and Art. 36 under Art. 28(3)(f), the Chapter V range to Art. 50, and EDPB Opinion 22/2024 as guidance, each with its Official Journal page or source and the date it was read. It records the same three corrections as `LEDGER_CORRECTIONS` in `scripts/build_annotation_pack.py`; the frozen pack under `annotations/pack/`, its manifest and `tests/test_annotation_pack.py` are unchanged.
 
 ### Changed
 
