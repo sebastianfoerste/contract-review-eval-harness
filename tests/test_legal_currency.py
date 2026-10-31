@@ -81,8 +81,16 @@ def _normalise(kind: str, text: str) -> list[str]:
     return [text]
 
 
+_JSON_ESCAPE = re.compile(r"\\u([0-9a-fA-F]{4})")
+
+
 def extract_citations(text: str) -> list[str]:
-    """Every normalised citation in `text`, in order of appearance, without duplicates."""
+    """Every normalised citation in `text`, in order of appearance, without duplicates.
+
+    JSON escapes are decoded first: a file written with `ensure_ascii` spells the
+    section sign as `\\u00a7`, which would otherwise hide every BGB citation in it.
+    """
+    text = _JSON_ESCAPE.sub(lambda m: chr(int(m.group(1), 16)), text)
     found: list[str] = []
     for pattern in PATTERNS:
         for match in pattern.finditer(text):
@@ -182,6 +190,8 @@ def test_the_guard_bites_on_an_unlisted_citation() -> None:
         "Guidelines 07/2020", "Art. 28(3)(a)", "Art. 28(3)(b)", "Art. 28(3)(c)",
     ]
     assert missing_from_ledger(citations, provisions) == ["Art. 99", "Chapter XIV", "§ 999(1) BGB"]
+    # A JSON file written with ensure_ascii escapes the section sign; it is still found.
+    assert extract_citations('"see \\u00a7 999(1) BGB"') == ["§ 999(1) BGB"]
     # A number must not be matched as a prefix of a longer one.
     assert missing_from_ledger(["Art. 2"], ["GDPR Art. 28(2)"]) == ["Art. 2"]
     assert missing_from_ledger(["§ 130 BGB"], ["§ 130(1) BGB"]) == []
