@@ -37,6 +37,7 @@ SDK is an optional, lazily imported dependency, so the default path never import
 |---|---|
 | `main` | yes |
 | v0.6.0, the latest release at the time of writing | yes |
+| v0.7.0-rc1, a pre-release of 2026-09-03 | fixes land on `main`, not on the release candidate |
 | earlier releases | no |
 
 The GitHub Action exists only on `main` so far: no release tag contains `action.yml`.

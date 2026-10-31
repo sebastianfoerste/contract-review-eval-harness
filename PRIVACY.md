@@ -19,8 +19,10 @@ and the default is `stub`.
   `fixtures/<case>_stub.json` and makes no network call.
 - **`anthropic`** (`--live`): the contract text goes to the Anthropic API inside the
   prompt, through the Anthropic SDK. The key is read from `ANTHROPIC_API_KEY`; if that
-  variable is unset, the adapter reads it from a `.env` file at the repository root
-  when one exists. A run never logs, stores or writes the key into a capture.
+  variable is unset, the adapter reads it from a `.env` file three directories above
+  the installed package when one exists: the repository root in a checkout or an
+  editable install, the environment's `lib/pythonX.Y` directory in a wheel install. A
+  run never logs, stores or writes the key into a capture.
 - **`openai-compatible`**: the contract text goes inside the prompt to
   `<base URL>/chat/completions`. The base URL is `--base-url`, else `OPENAI_BASE_URL`,
   else `https://api.openai.com/v1`. The key is read from the environment variable

@@ -25,6 +25,7 @@ SCANNED_GLOBS = (
     "candidates/expected/*.json",
     "annotations/drafts/*.json",
     "annotations/pack/**/*.md",
+    "annotations/pack/**/*.json",
     "annotations/README.md",
     "candidates/README.md",
     "fixtures/*_stub.json",
@@ -36,16 +37,25 @@ SCANNED_GLOBS = (
     "CHANGELOG.md",
     "README.md",
     "CONTRIBUTING.md",
+    "SECURITY.md",
+    "PRIVACY.md",
+    "AGENTS.md",
     "scripts/build_annotation_pack.py",
+    "scripts/migrate_gold_to_v2.py",
 )
 EXCLUDED = {LEDGER}
 
 # One pattern per citation style found in the repository. Each has a `kind` group so
-# the normaliser knows how to spell it.
+# the normaliser knows how to spell it. An article citation may continue as an
+# enumeration or a range ("Art. 28(2) and 28(3)(d)", "Art. 44 to 49", "Articles 32 to
+# 36"), and every member is extracted. Not recognised, because the repository does
+# not use them: "Art 28" without a stop, "Sec. 311", "para." pinpoints.
+_PINPOINT = r"\d+(?:\s?\(\d+\))*(?:\s?\([a-z]\))?"
+_CONTINUATION = rf"(?:(?:,|\sand|\sto|\sthrough)\s(?:Arts?\.\s?|Articles?\s)?{_PINPOINT})*"
 PATTERNS = (
-    # Art. 28, Art. 28(3), Art. 28(3)(d); also the "and 28(3)(d)" continuation form.
-    re.compile(r"(?P<art>Art\.\s?\d+(?:\(\d+\))*(?:\([a-z]\))?)"),
-    re.compile(r"(?P<article>Article\s\d+)"),
+    # Art. 28, Art. 28(3), Art. 28(3)(d), Art. 28 (3) (d), Arts. 44 to 49.
+    re.compile(rf"(?P<art>Arts?\.\s?{_PINPOINT}{_CONTINUATION})"),
+    re.compile(rf"(?<![A-Za-z])(?P<article>Articles?\s{_PINPOINT}{_CONTINUATION})", re.IGNORECASE),
     re.compile(r"(?P<chapter>Chapter\s[IVX]+)(?![A-Za-z])"),
     # § 130(1), §§ 130, 305 and 307 (an enumeration lists every number).
     re.compile(r"(?P<para>§§?\s?\d+(?:\(\d+\))?(?:(?:,\s?|\s(?:and|und)\s)\d+(?:\(\d+\))?)*)"),
@@ -54,18 +64,18 @@ PATTERNS = (
     re.compile(r"(?P<regulation>Regulation \(EU\) \d{4}/\d+)"),
     re.compile(r"(?P<guidelines>Guidelines \d{2}/\d{4})"),
     re.compile(r"(?P<opinion>Opinion \d{1,2}/\d{4})"),
-    # "lit. g", "lit. a to h": the DPA material's shorthand for Art. 28(3) points.
-    re.compile(r"(?P<lit>lit\.\s?[a-z](?:\sto\s[a-z])?)(?![a-z])"),
+    # "lit. g", "lit. a to h", "lit. a through h": the DPA material's shorthand for
+    # Art. 28(3) points.
+    re.compile(r"(?P<lit>lit\.\s?[a-z]\)?(?:\s(?:to|through)\s[a-z]\)?)?)(?![a-z])"),
 )
 
 
 def _normalise(kind: str, text: str) -> list[str]:
     """Spell a raw citation the way the ledger's first column does."""
     text = " ".join(text.split())
-    if kind == "art":
-        return [text.replace("Art.", "Art. ").replace("  ", " ")]
-    if kind == "article":
-        return ["Art. " + text.split()[1]]
+    if kind in ("art", "article"):
+        pinpoints = re.findall(_PINPOINT, text)
+        return ["Art. " + re.sub(r"\s+\(", "(", pinpoint) for pinpoint in pinpoints]
     if kind == "chapter":
         return [text]
     if kind == "para":
@@ -115,10 +125,13 @@ def ledger_provisions(markdown: str) -> list[str]:
 
 
 def _pattern(citation: str) -> re.Pattern[str]:
-    """`Art. 2` must not match `Art. 28`; a bare `§ 130 BGB` is covered by `§ 130(1) BGB`."""
+    """`Art. 2` must not match `Art. 28`, nor `Chapter V` match `Chapter VI`; a bare
+    `§ 130 BGB` is covered by `§ 130(1) BGB`."""
     bare = re.fullmatch(r"§ (\d+) BGB", citation)
     if bare:
         return re.compile(rf"§ {bare.group(1)}(?:\(\d+\))? BGB")
+    if citation.startswith("Chapter "):
+        return re.compile(re.escape(citation) + r"(?![IVX\d])")
     return re.compile(re.escape(citation) + r"(?!\d)")
 
 
@@ -167,6 +180,55 @@ def test_every_citation_in_harness_text_has_a_ledger_row(path: Path) -> None:
     )
 
 
+USED_IN = re.compile(r"`([\w./-]+\.(?:json|md|py)):(\d+(?:[-,]\d+)*)`(\s*\(context\))?")
+
+
+def _ledger_rows(markdown: str) -> list[tuple[str, str]]:
+    """(provision cell, used-in cell) for every table row of the ledger."""
+    rows = []
+    for line in markdown.splitlines():
+        if not line.startswith("| ") or line.startswith("| Instrument") or set(line) <= set("|-: "):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        rows.append((cells[0].replace("`", ""), cells[1]))
+    return rows
+
+
+def _line_numbers(spec: str) -> list[int]:
+    numbers: list[int] = []
+    for part in spec.split(","):
+        if "-" in part:
+            first, last = (int(n) for n in part.split("-"))
+            numbers.extend(range(first, last + 1))
+        else:
+            numbers.append(int(part))
+    return numbers
+
+
+def test_used_in_references_point_at_the_citation() -> None:
+    """A `file:line` pointer in the ledger names a line that carries the row's citation.
+
+    Lines move when a file is edited above them; this fails as soon as a pointer no
+    longer lands on the citation. A reference marked `(context)` names a line the row
+    bears on without citing the provision, and is only checked to exist.
+    """
+    checked = 0
+    for provision, used_in in _ledger_rows(LEDGER.read_text(encoding="utf-8")):
+        for path, spec, context in USED_IN.findall(used_in):
+            lines = (ROOT / path).read_text(encoding="utf-8").splitlines()
+            numbers = _line_numbers(spec)
+            assert numbers and numbers[-1] <= len(lines), f"{provision}: {path}:{spec} is beyond the file"
+            if context:
+                continue
+            referenced = "\n".join(lines[n - 1] for n in numbers)
+            found = extract_citations(referenced)
+            assert any(_covers(provision, c) for c in found), (
+                f"ledger row {provision!r} points at {path}:{spec}, which cites {found or 'nothing'}"
+            )
+            checked += 1
+    assert checked >= 40, checked
+
+
 def test_the_scan_finds_the_known_gold_citations() -> None:
     """A scanner that silently found nothing would pass forever."""
     dpa = (ROOT / "expected" / "dpa.json").read_text(encoding="utf-8")
@@ -190,6 +252,15 @@ def test_the_guard_bites_on_an_unlisted_citation() -> None:
         "Guidelines 07/2020", "Art. 28(3)(a)", "Art. 28(3)(b)", "Art. 28(3)(c)",
     ]
     assert missing_from_ledger(citations, provisions) == ["Art. 99", "Chapter XIV", "§ 999(1) BGB"]
+    # Enumerations, ranges, spaced pinpoints and the long form keep every member.
+    assert extract_citations("Art. 28(2) and 28(3)(d); Art. 44 to 49; Articles 32 to 36") == [
+        "Art. 28(2)", "Art. 28(3)(d)", "Art. 44", "Art. 49", "Art. 32", "Art. 36",
+    ]
+    assert sorted(extract_citations("Article 28(10) and Art. 28 (3) (d), lit. a through c")) == sorted([
+        "Art. 28(10)", "Art. 28(3)(d)", "Art. 28(3)(a)", "Art. 28(3)(b)", "Art. 28(3)(c)",
+    ])
+    # A chapter must not be covered by a longer chapter number.
+    assert missing_from_ledger(["Chapter V"], ["Data Act Chapter VI"]) == ["Chapter V"]
     # A JSON file written with ensure_ascii escapes the section sign; it is still found.
     assert extract_citations('"see \\u00a7 999(1) BGB"') == ["§ 999(1) BGB"]
     # A number must not be matched as a prefix of a longer one.
