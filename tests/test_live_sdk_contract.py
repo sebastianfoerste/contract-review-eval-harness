@@ -31,7 +31,9 @@ from contract_eval.models import ReviewOutput  # noqa: E402
 from contract_eval.review_v2 import ReviewOutputV2  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-PARSE = anthropic.resources.messages.Messages.parse
+# None on an SDK below the floor, so the floor test reports that rather than the
+# module failing to import.
+PARSE = getattr(anthropic.resources.messages.Messages, "parse", None)
 # Captured before any test replaces `anthropic.Anthropic` with the recorder below.
 REAL_CLIENT = anthropic.Anthropic
 KEYWORDS = ("model", "max_tokens", "thinking", "output_config", "output_format", "messages")
@@ -49,13 +51,22 @@ def _declared_floor() -> str:
     return match.group(1)
 
 
+def _parse():
+    assert PARSE is not None, (
+        f"anthropic {anthropic.__version__} has no non-beta Messages.parse; the live "
+        f"extra needs {_declared_floor()} or later"
+    )
+    return PARSE
+
+
 def test_the_installed_sdk_satisfies_the_declared_floor() -> None:
     assert _version(anthropic.__version__) >= _version(_declared_floor())
+    _parse()
 
 
 def test_parse_takes_no_catch_all_keywords() -> None:
     """A `**kwargs` on `parse` would make the binding test below vacuous."""
-    kinds = {p.kind for p in inspect.signature(PARSE).parameters.values()}
+    kinds = {p.kind for p in inspect.signature(_parse()).parameters.values()}
     assert inspect.Parameter.VAR_KEYWORD not in kinds
 
 
@@ -64,11 +75,11 @@ def test_every_keyword_the_adapter_passes_binds_to_parse(output_format: type) ->
     kwargs = parse_kwargs("claude-test", "CONTRACT: ...", output_format)
     assert set(kwargs) == set(KEYWORDS)
 
-    parameters = inspect.signature(PARSE).parameters
+    parameters = inspect.signature(_parse()).parameters
     missing = sorted(key for key in kwargs if key not in parameters)
     assert not missing, f"the installed anthropic {anthropic.__version__} has no {missing}"
     # `bind` also fails if the SDK has grown a required keyword the adapter omits.
-    inspect.signature(PARSE).bind(object(), **kwargs)
+    inspect.signature(_parse()).bind(object(), **kwargs)
 
 
 def _fake_message(text: str) -> SimpleNamespace:
@@ -123,7 +134,7 @@ def test_capture_sends_exactly_the_helper_kwargs(recording_client: type[_Recordi
     assert recording_client.constructed == [{"max_retries": 0, "timeout": live._TIMEOUT_SECONDS}]
     (call,) = recording_client.calls
     assert call == parse_kwargs("claude-test", live._PROMPT.format(source="CONTRACT TEXT"), ReviewOutput)
-    inspect.signature(PARSE).bind(object(), **call)
+    inspect.signature(_parse()).bind(object(), **call)
 
     assert request.model == "claude-test"
     assert response.returned_model == "claude-test-returned"
