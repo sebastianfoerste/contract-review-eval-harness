@@ -274,7 +274,9 @@ two-word match is grounded almost anywhere and identifies no passage, so it is n
 quotation. The floor is `MIN_QUOTE_WORDS` in `scorer.py`.
 
 - Formula: `|{c in citations : c is grounded and |words(normalise(c.quote))| < 3}|`,
-  where the words are the whitespace-separated tokens of the normalised quote.
+  where the words are the whitespace-separated tokens of the normalised quote
+  (`quote_word_count`). Normalisation turns punctuation into spaces, so `99.5%` counts
+  as two words and `clause 5.2` as three.
 - Denominator: none; it is a count.
 - Edge cases: an ungrounded citation is a hallucination and is not counted here, so no
   citation is counted twice. A fragment such as `confiden` is grounded inside
@@ -303,7 +305,8 @@ Share of the gold risks predicted at the gold severity.
 Policy `contract-review-eval.strict-legal-release-policy.v2.1`. The registry
 `REQUIREMENTS` in `src/contract_eval/release_certificate.py` is the single source of
 truth. Policy v2.1 is policy v2 plus `citation.length` and `risk.evidence`; a
-certificate issued under v2 is still verified under the v2 registry.
+certificate issued under v2, whichever schema it carries, is still verified under the
+v2 registry.
 
 | Requirement | Score | Condition | Class | Failure code |
 |---|---|---|---|---|

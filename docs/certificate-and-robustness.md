@@ -86,8 +86,12 @@ in a separate table and never affect eligibility.
 A green CI run is not an approved benchmark result. Every verification result publishes a
 `verification_scope`: v1 certificates verify for integrity only, v2 certificates reproduce
 under their frozen builder and the v2 registry while their inputs still match and degrade
-to integrity only once an input moves, and v3 certificates reproduce in full. An unknown
-schema fails closed naming the value it saw.
+to integrity only once an input moves, and v3 certificates reproduce in full under the
+policy they publish. Schema v3 was issued under policy v2 from v0.5.2 to v0.7.0-rc1, so a
+v3 certificate that names policy v2 is reproduced under the frozen v2 registry and the
+result says so in a `note`; any other policy id is rebuilt under the current policy and
+fails on `policy_mismatch`. Every result names the policy it applied in `policy`. An
+unknown schema fails closed naming the value it saw.
 
 
 ## What it checks

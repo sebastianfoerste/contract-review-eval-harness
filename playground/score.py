@@ -18,7 +18,13 @@ from contract_eval.cli import ScoreInputError, score
 from contract_eval.models import ReviewOutput
 from contract_eval.release_certificate import REQUIREMENTS
 from contract_eval.scorecard import _decision_note, render_score
-from contract_eval.scorer import MIN_QUOTE_WORDS, build_normalized_index, grounded_span, normalize_text
+from contract_eval.scorer import (
+    MIN_QUOTE_WORDS,
+    build_normalized_index,
+    grounded_span,
+    normalize_text,
+    quote_word_count,
+)
 
 WORKDIR = Path("/tmp/contract-eval-playground")
 DEFAULT_NAME = "review.json"
@@ -61,7 +67,7 @@ def findings(review: ReviewOutput, case, result: dict) -> list[dict]:
                  "It counts as a hallucination. Any ungrounded citation rejects the review."],
                 meta, "unsupported_citation_detected",
             ))
-        elif len(normalize_text(citation.quote).split()) < MIN_QUOTE_WORDS:
+        elif quote_word_count(citation.quote) < MIN_QUOTE_WORDS:
             rows.append(_finding(
                 "citation", "blocker", f"“{citation.quote}”",
                 [f"Found in the contract, but it quotes fewer than {MIN_QUOTE_WORDS} words.",

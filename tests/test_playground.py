@@ -145,3 +145,29 @@ def test_site_build_without_a_wheel_leaves_the_playground_out(tmp_path):
     site.build(tmp_path)
     assert not (tmp_path / "playground").exists()
     assert "playground/" not in (tmp_path / "index.html").read_text(encoding="utf-8")
+
+
+def test_the_page_renders_the_scorecard_rows_in_the_scorecard_order():
+    """`scoreRows` in app.mjs is the Python scorecard table, label for label."""
+    import re
+
+    from contract_eval.scorecard import render_score
+
+    app = (ROOT / "playground" / "app.mjs").read_text(encoding="utf-8")
+    body = app[app.index("function scoreRows(s) {"):]
+    body = body[: body.index("\n}\n")]
+    page_labels = re.findall(r'^\s*\["([^"]+)",', body, flags=re.MULTILINE)
+
+    result = _score(SAMPLES["cases"]["nda"]["reviews"]["stub"], "nda")["result"]
+    markdown = render_score(result)
+    table = markdown[markdown.index("## Scores") :]
+    next_heading = table.find("\n## ", 1)
+    table = table if next_heading == -1 else table[:next_heading]
+    python_labels = [
+        line.split("|")[1].strip()
+        for line in table.splitlines()
+        if line.startswith("| ") and not line.startswith("| Dimension")
+    ]
+
+    assert page_labels == python_labels
+    assert "Short citations" in page_labels and "Risk flags without evidence" in page_labels

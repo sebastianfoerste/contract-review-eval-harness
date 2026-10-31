@@ -171,6 +171,13 @@ def count_hallucinations(source_text: str, citations: list[Citation]) -> int:
 MIN_QUOTE_WORDS = 3
 
 
+def quote_word_count(quote: str) -> int:
+    """The words of a quote as the floor counts them: whitespace-separated tokens of
+    the normalised quote, the same text grounding matched. Punctuation splits a
+    token, so `99.5%` is two words and `clause 5.2` is three."""
+    return len(normalize_text(quote).split())
+
+
 def short_quotes(
     source_text: str,
     citations: list[Citation],
@@ -178,14 +185,14 @@ def short_quotes(
 ) -> int:
     """How many grounded citations quote fewer than `minimum_words` words.
 
-    Words are counted on the normalised quote, the same text grounding matched. An
-    ungrounded citation is already a hallucination and is not counted again here.
+    Words are counted by `quote_word_count`. An ungrounded citation is already a
+    hallucination and is not counted again here.
     """
     return sum(
         1
         for c in citations
         if grounded_span(source_text, c.quote) is not None
-        and len(normalize_text(c.quote).split()) < minimum_words
+        and quote_word_count(c.quote) < minimum_words
     )
 
 
