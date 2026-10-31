@@ -46,8 +46,11 @@ deliberately.
 
 ## Reporting a vulnerability
 
-Private vulnerability reporting is not enabled on this repository yet. Open an issue
-that names the affected component (package, Action, playground or an adapter) and asks
-for a private channel. Do not put exploit details, keys or contract text in the issue.
-The owner will reply with a private channel, and the details go there. A dependency
-advisory with no exploit can be reported as an ordinary issue.
+Report it through the repository's Security tab, "Report a vulnerability":
+<https://github.com/sebastianfoerste/contract-review-eval-harness/security/advisories/new>.
+Private vulnerability reporting is enabled, so the report and any exploit details are
+visible only to you and the owner until a fix is published. Name the affected
+component (package, Action, playground or an adapter) and the version or commit. Leave
+live credentials out even there; a redacted example is enough. Do not open a public
+issue for an exploitable problem. A dependency advisory with no exploit can still be
+reported as an ordinary issue.

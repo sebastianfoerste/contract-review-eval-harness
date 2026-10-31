@@ -58,7 +58,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
 - The campaign v2 gold-hash check moves from `scripts/check_campaign_v2.py` to `contract_eval.campaign_v2.verify_gold_hashes`, beside `verify_against_sources`. The script stays the CI and Make entry point, and its behaviour is unchanged.
 - Annotators are recorded by role label (`Annotator A`, `Annotator B`) instead of by personal name: in `contract_eval.annotators`, the candidate drafts, the annotation pack and its manifest, the candidate answer sets and `annotations/README.md`. The pack and the campaign v2 gold hashes are regenerated. Obligations, offsets, severities and scores are unchanged. `tests/test_annotator_names.py` fails if either name reappears in a tracked file.
-- `SECURITY.md` describes what ships and where it runs (the package, the GitHub Action in other repositories' CI, the playground, the adapters), the supported versions and how to report an issue while private vulnerability reporting is not enabled. `PRIVACY.md` adds what each adapter sends and where, including the `.env` fallback of the live adapter and the full environment the command adapter passes on.
+- `SECURITY.md` describes what ships and where it runs (the package, the GitHub Action in other repositories' CI, the playground, the adapters), the supported versions and how to report a vulnerability. `PRIVACY.md` adds what each adapter sends and where, including the `.env` fallback of the live adapter and the full environment the command adapter passes on.
 - `docs/ci.md` and `examples/ci/contract-eval.yml` pin the Action to a full commit SHA, because no release tag contains `action.yml` yet.
 - `docs/metrics.md` records a known limitation of citation grounding: a one-word or mid-word quote counts as grounded, and span coverage does not gate release. Policy v2.1, above, closes it.
 - `docs/overview.md` distinguishes the package from the 2025 "ContractEval" benchmark paper, adds the October 2025 Vals legal-research edition and DeepEval's non-LLM hallucination mode, and links the legal currency ledger from the limitations.
@@ -66,6 +66,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `uv.lock` moves anyio to 4.15.1 (PYSEC-2026-4023, -4024 and -4025 are fixed in 4.14.2) and jiter to 0.18.0, which ships a cp315 wheel so `--all-extras` installs on Python 3.15.
 - pytest runs in strict mode with warnings as errors (`strict = true`, `filterwarnings = ["error"]`).
 - Every `actions/checkout` step sets `persist-credentials: false`. Dependabot waits seven days before proposing a release (fourteen for a Python major) and groups minor and patch updates per ecosystem.
+- `SECURITY.md` points reporters to the repository's private vulnerability reporting (Security tab, "Report a vulnerability"), which the owner enabled on 2026-10-31. The interim advice to open an issue asking for a private channel is removed; a dependency advisory with no exploit may still be an ordinary issue.
 
 ### Removed
 
