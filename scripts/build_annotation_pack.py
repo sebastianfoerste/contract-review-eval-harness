@@ -214,19 +214,53 @@ view: it deliberately contains no assessment of the agreements in this pack.
 - Art. 28(3)(b): confidentiality of authorised persons.
 - Art. 28(3)(c) and Art. 32: security of processing.
 - Art. 28(3)(e) and Chapter III: assistance with data subject rights.
-- Art. 28(3)(f), Art. 33 and Art. 35: breach notification and impact assessments.
+- Art. 28(3)(f), Art. 33, Art. 34, Art. 35 and Art. 36: assistance with the obligations in Art. 32 to 36 (breach notification to the supervisory authority and communication to the data subject, impact assessments and prior consultation).
 - Art. 28(3)(g): deletion or return at the end of processing.
 - Art. 28(3)(h): information, audits and inspections.
-- Chapter V, Art. 44 to 49: transfers to third countries.
+- Chapter V, Art. 44 to 50: transfers to third countries.
 
 ## Guidance
 
 - EDPB Guidelines 07/2020 on the concepts of controller and processor.
+- EDPB Opinion 22/2024 on certain obligations following from the reliance on processor(s) and sub-processor(s), adopted 7 October 2024.
 
 Record for each risk whether it rests on law, regulatory guidance, market practice, or
 your own legal judgment. Market-practice propositions must stay separately identified
 from statutory conclusions.
 """
+
+
+# The pack sent to Annotator B on 2026-09-06 carried the ledger as it stood then, and
+# that file is frozen under annotations/pack/MANIFEST.json. The ledger above is the
+# corrected text, so the two copies differ on purpose. Each entry is (text as sent,
+# corrected text); applying them in order to the sent file must give exactly what
+# _primary_law_ledger() returns, and tests/test_annotation_pack_ledger.py checks that.
+# Any further correction goes here as well as in the text above, and into an erratum
+# to the annotator; the sent file itself is never edited.
+LEDGER_CORRECTIONS: tuple[tuple[str, str], ...] = (
+    # Art. 28(3)(f) refers to Articles 32 to 36, so Art. 34 (communication of a breach to
+    # the data subject) and Art. 36 (prior consultation) were missing from the entry.
+    (
+        "- Art. 28(3)(f), Art. 33 and Art. 35: breach notification and impact assessments.",
+        "- Art. 28(3)(f), Art. 33, Art. 34, Art. 35 and Art. 36: assistance with the "
+        "obligations in Art. 32 to 36 (breach notification to the supervisory authority and "
+        "communication to the data subject, impact assessments and prior consultation).",
+    ),
+    # Chapter V comprises Articles 44 to 50; Art. 50 (international cooperation) was
+    # outside the stated range.
+    (
+        "- Chapter V, Art. 44 to 49: transfers to third countries.",
+        "- Chapter V, Art. 44 to 50: transfers to third countries.",
+    ),
+    # EDPB Opinion 22/2024 (adopted 7 October 2024) bears directly on sub-processor
+    # authorisation and was not listed as guidance.
+    (
+        "- EDPB Guidelines 07/2020 on the concepts of controller and processor.",
+        "- EDPB Guidelines 07/2020 on the concepts of controller and processor.\n"
+        "- EDPB Opinion 22/2024 on certain obligations following from the reliance on "
+        "processor(s) and sub-processor(s), adopted 7 October 2024.",
+    ),
+)
 
 
 if __name__ == "__main__":
