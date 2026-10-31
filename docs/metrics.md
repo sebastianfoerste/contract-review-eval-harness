@@ -54,6 +54,12 @@ order and every word do. The search is a plain substring search, so it is not ti
 word boundaries. Other characters, such as `„`, `«`, `»` or `…`, are kept as they are.
 A quote that is empty after normalisation is never grounded.
 
+Because the search is a substring search, a short quote is grounded almost anywhere:
+`the` matches any contract and `confiden` matches inside `confidential`. Two rows
+close that gap. Short citations counts grounded quotes under a three-word floor, and
+risk flags without evidence asks whether a grounded quote sits inside each flagged
+clause.
+
 ## Clause precision
 
 Share of the predicted clause types that the gold set declares.
@@ -161,6 +167,30 @@ synonyms are different clauses and do not count as duplicates.
   item `duplicate_risk_flags`. Requirement `risk.conflicts`, the list must be empty,
   otherwise review item `conflicting_risk_flags`. Either gives `HUMAN_REVIEW_REQUIRED`.
 
+## Risk flags without evidence
+
+The flagged clauses with no grounded citation inside them. Risk precision and recall
+compare labels; this asks whether the review quoted from the clause it flagged. The
+scorecard shows the count; the JSON output lists the names in
+`risk_flags_without_evidence`.
+
+- A clause is listed when it is among the canonicalised predicted flags (see alias
+  mapping), has an anchor in `clause_anchors` that is found in the contract, and no
+  grounded citation overlaps its region. The region is the one span coverage uses:
+  from the clause's anchor to the start of the next located anchor in document order,
+  or to the end of the contract for the last one.
+- Formula: `sorted({k in predicted : k has a located anchor and no grounded citation
+  overlaps its region})`.
+- Denominator: none; it is a list.
+- Edge cases: a flagged clause with no anchor, or whose anchor is not found, is not
+  listed. A flag the gold set does not declare has no anchor and is already a risk
+  false positive. Ungrounded citations are no evidence. A grounded quote counts as
+  evidence whatever its length, so a one-word quote inside the clause satisfies this
+  row; that quote is caught by short citations instead. A review with no flags gives
+  an empty list. The citation's own `clause_type` plays no part.
+- Release policy: requirement `risk.evidence`, the list must be empty. Otherwise review
+  item `risk_flag_without_evidence`, so `HUMAN_REVIEW_REQUIRED`.
+
 ## Span coverage
 
 Share of the gold clauses with at least one grounded citation inside them. It ignores the
@@ -191,7 +221,8 @@ Share of the review's citations whose quote is an exact span of the normalised c
 - Denominator: every citation in the review, including duplicates.
 - Edge cases: a review with no citations gives 0.0. A quote that is empty after
   normalisation is not grounded. Grounding checks only that the quote occurs somewhere
-  in the contract, not that it sits in the clause named by the citation.
+  in the contract, not that it sits in the clause named by the citation, and not that
+  it is long enough to identify a passage; see short citations.
 - Release policy: requirement `citation.grounding`, value must be at least 1.0. Below
   that, blocker `citation_grounding_below_100_percent`, so `REJECT`. A review with no
   citations is therefore rejected.
@@ -209,6 +240,25 @@ as citation grounding. It equals `all citations - grounded citations`.
   bundled stub, with one fabricated quote, passes the regression gate and is still
   rejected by the release policy.
 
+## Short citations
+
+The number of grounded citations whose quote has fewer than three words. A one- or
+two-word match is grounded almost anywhere and identifies no passage, so it is not a
+quotation. The floor is `MIN_QUOTE_WORDS` in `scorer.py`.
+
+- Formula: `|{c in citations : c is grounded and |words(normalise(c.quote))| < 3}|`,
+  where the words are the whitespace-separated tokens of the normalised quote.
+- Denominator: none; it is a count.
+- Edge cases: an ungrounded citation is a hallucination and is not counted here, so no
+  citation is counted twice. A fragment such as `confiden` is grounded inside
+  `confidential` and counts as one word. A review with no citations gives 0. Three
+  words is the lowest floor that clears every committed output: the shortest live
+  quote has three words and the shortest stub quote has four, so the floor changes no
+  committed decision, and a floor of four would reject the live DPA output.
+- Release policy: requirement `citation.length`, value must be zero. Otherwise blocker
+  `degenerate_citation_detected`, so `REJECT`.
+- Regression gate: not part of it.
+
 ## Risk-flag accuracy (legacy)
 
 Share of the gold risks predicted at the gold severity.
@@ -223,13 +273,16 @@ Share of the gold risks predicted at the gold severity.
 
 ## Release policy
 
-Policy `contract-review-eval.strict-legal-release-policy.v2`. The registry `REQUIREMENTS`
-in `src/contract_eval/release_certificate.py` is the single source of truth.
+Policy `contract-review-eval.strict-legal-release-policy.v2.1`. The registry
+`REQUIREMENTS` in `src/contract_eval/release_certificate.py` is the single source of
+truth. Policy v2.1 is policy v2 plus `citation.length` and `risk.evidence`; a
+certificate issued under v2 is still verified under the v2 registry.
 
 | Requirement | Score | Condition | Class | Failure code |
 |---|---|---|---|---|
 | `citation.grounding` | `citation_grounding` | at least 1.0 | blocker | `citation_grounding_below_100_percent` |
 | `citation.unsupported` | `hallucination_count` | zero | blocker | `unsupported_citation_detected` |
+| `citation.length` | `citation_short_count` | zero | blocker | `degenerate_citation_detected` |
 | `clause.precision` | `clause_precision` | at least 1.0 | review item | `unexpected_clause_extracted` |
 | `clause.recall` | `clause_recall` | at least 1.0 | review item | `expected_clause_missed` |
 | `risk.precision` | `risk_precision` | at least 1.0 | review item | `risk_false_positive` |
@@ -237,6 +290,7 @@ in `src/contract_eval/release_certificate.py` is the single source of truth.
 | `risk.severity` | `risk_severity_accuracy` | at least 1.0 | review item | `risk_severity_mismatch` |
 | `risk.duplicates` | `risk_duplicate_flags` | empty | review item | `duplicate_risk_flags` |
 | `risk.conflicts` | `risk_conflicting_flags` | empty | review item | `conflicting_risk_flags` |
+| `risk.evidence` | `risk_flags_without_evidence` | empty | review item | `risk_flag_without_evidence` |
 
 `case_decision` decides one case:
 

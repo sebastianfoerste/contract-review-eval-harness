@@ -73,10 +73,32 @@ def test_findings_agree_with_the_decision(case, example):
     blockers = [row for row in rows if row["status"] == "blocker"]
     review_keys = {row["key"] for row in rows if row["status"] == "review"}
 
-    assert len(blockers) == result["scores"]["hallucination_count"]
+    # One blocker row per ungrounded citation and one per grounded quote under the floor.
+    assert len(blockers) == result["scores"]["hallucination_count"] + result["scores"]["citation_short_count"]
     assert bool(blockers) == bool(result["blockers"])
     assert review_keys == set(result["review_items"])
     assert review_keys <= set(payload["requirements"])
+
+
+def test_a_short_quote_is_a_blocker_finding_and_an_unquoted_flag_a_review_finding():
+    review = json.loads(json.dumps(SAMPLES["cases"]["nda"]["reviews"]["answer_key"]))
+    # Every flag keeps its anchor quote except the first, which is cut to one word.
+    flagged = review["risk_flags"][0]["clause_type"]
+    for citation in review["citations"]:
+        if citation["clause_type"] == flagged:
+            citation["quote"] = citation["quote"].split()[0]
+    payload = _score(review, "nda")
+    result, rows = payload["result"], payload["findings"]
+
+    assert result["decision"] == "REJECT"
+    assert result["blockers"] == ["degenerate_citation_detected"]
+    assert "risk_flag_without_evidence" in result["review_items"]
+    short = [row for row in rows if row["key"] == "degenerate_citation_detected"]
+    assert [row["status"] for row in short] == ["blocker"]
+    assert short[0]["span"] is not None
+    unquoted = [row for row in rows if row["key"] == "risk_flag_without_evidence"]
+    assert [row["label"] for row in unquoted] == [flagged]
+    assert payload["note"].startswith("Every citation is an exact span of the contract, but")
 
 
 @pytest.mark.parametrize("case", ALL_CASES)

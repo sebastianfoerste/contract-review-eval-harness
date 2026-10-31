@@ -193,3 +193,106 @@ def test_risk_metric_empty_set_semantics_are_defined():
     nothing_predicted = risk_metrics({"a": "high"}, {})
     assert (nothing_predicted.precision, nothing_predicted.recall) == (1.0, 0.0)
     assert nothing_predicted.f1 == 0.0
+
+
+def test_short_quotes_counts_grounded_quotes_under_the_floor():
+    """A one- or two-word match is grounded almost anywhere and identifies nothing."""
+    from contract_eval.models import Citation
+    from contract_eval.scorer import MIN_QUOTE_WORDS, count_hallucinations, short_quotes
+
+    source = "The Receiving Party shall keep all Confidential Information secret."
+    citations = [
+        Citation(quote="the", clause_type="a"),  # grounded, one word
+        Citation(quote="keep all", clause_type="b"),  # grounded, two words
+        Citation(quote="keep all Confidential", clause_type="c"),  # grounded, at the floor
+        Citation(quote="auto-renews every 99 years", clause_type="d"),  # not grounded
+    ]
+
+    assert MIN_QUOTE_WORDS == 3
+    assert short_quotes(source, citations) == 2
+    # An ungrounded citation is a hallucination, never a short quote as well.
+    assert count_hallucinations(source, citations) == 1
+    assert short_quotes(source, citations, minimum_words=4) == 3
+    assert short_quotes(source, []) == 0
+
+
+def test_short_quotes_counts_a_fragment_of_a_word_as_one_word():
+    """Grounding is a substring search, so `confiden` matches inside `confidential`."""
+    from contract_eval.models import Citation
+    from contract_eval.scorer import grounded_span, short_quotes
+
+    source = "The Receiving Party shall keep all Confidential Information secret."
+    fragment = [Citation(quote="confiden", clause_type="a")]
+
+    assert grounded_span(source, "confiden") is not None
+    assert short_quotes(source, fragment) == 1
+
+
+def test_risk_flags_without_evidence_needs_a_grounded_quote_inside_the_flagged_clause():
+    from contract_eval.models import Citation
+    from contract_eval.scorer import risk_flags_without_evidence
+
+    src, exp = _nda()
+    anchors = exp.clause_anchors
+    flagged = ["term", "governing_law"]
+    inside_term = [Citation(quote=anchors["term"], clause_type="anything")]
+
+    assert risk_flags_without_evidence(src, anchors, flagged, inside_term) == ["governing_law"]
+    assert risk_flags_without_evidence(src, anchors, flagged, []) == ["governing_law", "term"]
+    # An ungrounded quote is no evidence.
+    fabricated = [Citation(quote="a clause that does not appear anywhere", clause_type="term")]
+    assert risk_flags_without_evidence(src, anchors, flagged, fabricated) == ["governing_law", "term"]
+    # Nothing flagged, nothing to report.
+    assert risk_flags_without_evidence(src, anchors, [], []) == []
+
+
+def test_risk_flags_without_evidence_ignores_a_flag_with_no_anchor():
+    """A false positive has no anchor to check; risk precision already penalises it."""
+    from contract_eval.scorer import risk_flags_without_evidence
+
+    src, exp = _nda()
+    assert risk_flags_without_evidence(src, exp.clause_anchors, ["spurious"], []) == []
+    unlocatable = {**exp.clause_anchors, "ghost": "an anchor that is not in the contract"}
+    assert risk_flags_without_evidence(src, unlocatable, ["ghost"], []) == []
+
+
+def test_risk_flags_without_evidence_uses_the_span_coverage_regions():
+    """Both read the same regions, so flagging every clause reports exactly the uncovered ones."""
+    from contract_eval.models import Citation
+    from contract_eval.scorer import risk_flags_without_evidence, span_coverage
+
+    src, exp = _nda()
+    anchors = exp.clause_anchors
+    citations = [
+        Citation(quote=anchors["term"], clause_type="term"),
+        Citation(quote="shall remain in effect in perpetuity", clause_type="term"),
+    ]
+
+    coverage = span_coverage(src, anchors, citations)
+    assert risk_flags_without_evidence(src, anchors, list(anchors), citations) == coverage.uncovered
+    assert coverage.covered == ["term"]
+
+
+def test_span_coverage_regions_run_from_each_anchor_to_the_next():
+    """Pinned on a hand-checkable document, so the shared region helper cannot drift."""
+    from contract_eval.models import Citation
+    from contract_eval.scorer import span_coverage
+
+    source = "Preamble words. Alpha clause text here. Beta clause text here. Gamma clause text here."
+    anchors = {"gamma": "Gamma clause", "alpha": "Alpha clause", "beta": "Beta clause"}
+
+    preamble = span_coverage(source, anchors, [Citation(quote="Preamble words", clause_type="x")])
+    assert preamble.covered == [] and preamble.coverage == 0.0
+
+    # "text here" first occurs inside alpha's region, which ends where beta's anchor starts.
+    alpha = span_coverage(source, anchors, [Citation(quote="text here", clause_type="x")])
+    assert alpha.covered == ["alpha"] and alpha.uncovered == ["beta", "gamma"]
+    assert alpha.coverage == 1 / 3
+
+    # A quote straddling the alpha/beta boundary is credited to both, and to nothing else.
+    straddle = span_coverage(source, anchors, [Citation(quote="here. Beta", clause_type="x")])
+    assert straddle.covered == ["alpha", "beta"]
+
+    # The last region runs to the end of the document.
+    last = span_coverage(source, anchors, [Citation(quote="Gamma clause text here", clause_type="x")])
+    assert last.covered == ["gamma"]

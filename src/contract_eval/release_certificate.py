@@ -12,8 +12,14 @@ from contract_eval import paths
 SCHEMA = "contract-review-eval.release-certificate.v3"
 V2_SCHEMA = "contract-review-eval.release-certificate.v2"
 V1_SCHEMA = "contract-review-eval.release-certificate.v1"
-# Schema v3 corrects the artifact shape. The policy it publishes is unchanged.
-POLICY_ID = "contract-review-eval.strict-legal-release-policy.v2"
+# Schema v3 corrected the artifact shape without changing the policy. Policy v2.1
+# keeps the v2 schema and adds two requirements: a quotation floor on citations and
+# a grounded citation inside every flagged clause. Both close the same gap: grounding
+# is a substring match, so a one-word quote was grounded anywhere and the review
+# items that depend on where a quote sits were satisfied by it.
+POLICY_ID = "contract-review-eval.strict-legal-release-policy.v2.1"
+# Historical v2-schema certificates were issued under v2 and are reproduced under it.
+V2_POLICY_ID = "contract-review-eval.strict-legal-release-policy.v2"
 LEGACY_POLICY_ID = "contract-review-eval.strict-legal-release-policy.v1"
 VERIFICATION_SCHEMA = "contract-review-eval.release-certificate-verification.v1"
 
@@ -51,6 +57,12 @@ REQUIREMENTS: tuple[Requirement, ...] = (
         "No citation may be unsupported by the source document.",
     ),
     Requirement(
+        "citation.length", "citation_short_count", "zero", None, "blocker",
+        "degenerate_citation_detected",
+        "Every citation must quote at least three words of the source; a one- or "
+        "two-word match is not a quotation.",
+    ),
+    Requirement(
         "clause.precision", "clause_precision", "gte", 1.0, "review_item",
         "unexpected_clause_extracted",
         "No clause may be reported that the gold set does not declare.",
@@ -85,6 +97,21 @@ REQUIREMENTS: tuple[Requirement, ...] = (
         "conflicting_risk_flags",
         "One clause may not carry contradictory severities.",
     ),
+    Requirement(
+        "risk.evidence", "risk_flags_without_evidence", "empty", None, "review_item",
+        "risk_flag_without_evidence",
+        "Every flagged clause must have a grounded citation inside that clause's "
+        "region of the source.",
+    ),
+)
+
+# The registry policy v2 enforced, frozen so a v2 certificate is re-decided under the
+# policy it was issued under rather than under v2.1. Policy v2.1 is this registry
+# plus `citation.length` and `risk.evidence`.
+V2_REQUIREMENTS: tuple[Requirement, ...] = tuple(
+    requirement
+    for requirement in REQUIREMENTS
+    if requirement.requirement_id not in ("citation.length", "risk.evidence")
 )
 
 # Published beside the decision inputs, clearly separated. These inform a reader and
@@ -116,11 +143,14 @@ def _satisfied(requirement: Requirement, value: Any) -> bool:
     raise ValueError(f"unknown comparator: {requirement.comparator}")
 
 
-def evaluate_requirements(scores: dict[str, Any]) -> tuple[list[str], list[str]]:
+def evaluate_requirements(
+    scores: dict[str, Any],
+    requirements: tuple[Requirement, ...] = REQUIREMENTS,
+) -> tuple[list[str], list[str]]:
     """Return (blockers, review_items) for one case, driven by the registry."""
     blockers: list[str] = []
     review_items: list[str] = []
-    for requirement in REQUIREMENTS:
+    for requirement in requirements:
         if requirement.metric not in scores:
             raise KeyError(
                 f"score {requirement.metric!r} is required by {requirement.requirement_id!r} "
@@ -439,7 +469,8 @@ def _build_v2_certificate(
     This is deliberately a copy rather than a call into the current builder. The
     current builder publishes the v3 artifact shape; reproducing a v2 certificate
     with it would report a mismatch on every case for a document that was correct
-    when it was issued.
+    when it was issued. The decision is taken under `V2_REQUIREMENTS`, the registry
+    policy v2 enforced, for the same reason.
     """
     if not case_scores:
         raise ValueError("release certificate requires at least one evaluated case")
@@ -447,7 +478,7 @@ def _build_v2_certificate(
     case_results = []
     for case in sorted(case_scores):
         scores = case_scores[case]
-        blockers, review_items = evaluate_requirements(scores)
+        blockers, review_items = evaluate_requirements(scores, V2_REQUIREMENTS)
         if blockers:
             decision = "REJECT"
         elif review_items:
@@ -496,7 +527,7 @@ def _build_v2_certificate(
     payload = {
         "schema": V2_SCHEMA,
         "policy": {
-            "policy_id": POLICY_ID,
+            "policy_id": V2_POLICY_ID,
             "requirements": {
                 "citation_grounding_minimum": 1.0,
                 "hallucination_count_maximum": 0,

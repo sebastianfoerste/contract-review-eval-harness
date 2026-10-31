@@ -8,6 +8,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 
 ### Added
 
+- Release policy `strict-legal-release-policy.v2.1` adds two requirements. `citation.length` is a blocker: every citation must quote at least three words of the source, because grounding is a substring match and a quote such as `the` was grounded in any contract. `risk.evidence` is a review item: every flagged clause needs a grounded citation inside its region of the source. The scorer gains `short_quotes` and `risk_flags_without_evidence`, `score_review` gains `citation_short_count` and `risk_flags_without_evidence`, and the scorecard gains the rows "Short citations" and "Risk flags without evidence". No committed decision changes; the SaaS and DPA stubs gain the new review item. Certificates issued under v2 are still verified under the frozen v2 registry.
 - The wheel ships byte-identical copies of `data/`, `expected/`, `fixtures/`, the v1 robustness campaign and the annotation drafts. `contract_eval.paths` looks in the working directory first, then an editable checkout, then the bundled copy. An install with no checkout reproduces the committed certificate byte for byte.
 - CI adds a Python 3.11/3.12 job and a wheel job that installs the built wheel into a clean environment and runs a case outside the checkout.
 - Python API in `contract_eval.api`. `score_review` and its alias helpers move there, joined by `load_case`, `evaluate_review`, the `Verdict` enum and a sealed result payload. The package exports them.

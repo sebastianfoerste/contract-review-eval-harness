@@ -23,6 +23,7 @@ def _risk_rows(s: dict[str, Any]) -> str:
         f"| Risk false positives | {len(s['risk_false_positives'])} | clauses flagged that the gold set does not treat as risks |\n"
         f"| Risk missed | {len(s['risk_missed'])} | gold risks the review did not flag |\n"
         f"| Duplicate / conflicting flags | {len(s['risk_duplicate_flags'])} / {len(s['risk_conflicting_flags'])} | predictions collapsing onto one clause |\n"
+        f"| Risk flags without evidence | {len(s['risk_flags_without_evidence'])} | flagged clauses with no grounded citation inside them |\n"
         f"| Span coverage | {s['span_coverage']:.2f} | gold clauses with a grounded citation inside them |\n"
     )
 
@@ -33,7 +34,15 @@ def _table(
     citation: CitationScore,
     hallucinations: int,
     risk_rows: str,
+    short_citations: int | None = None,
 ) -> str:
+    # The short-citation row needs the full metric dict, like the risk rows, so a
+    # caller without `scores` gets the table without it.
+    short_row = (
+        f"| Short citations | {short_citations} | grounded quotes shorter than three words |\n"
+        if short_citations is not None
+        else ""
+    )
     return f"""| Dimension | Score | Notes |
 |---|---:|---|
 | Clause precision | {clause.precision:.2f} | predicted clause types that were expected |
@@ -41,7 +50,7 @@ def _table(
 | Clause F1 | {clause.f1:.2f} | harmonic mean of precision and recall |
 {risk_rows}| Citation grounding | {citation.grounding_rate:.2f} | {citation.grounded}/{citation.total} quotes matched as an exact span of the normalised source |
 | Hallucination count | {hallucinations} | cited quotes not grounded in the source |
-| Risk-flag accuracy (legacy) | {risk_accuracy:.2f} | blind to false positives; excluded from release decisions |
+{short_row}| Risk-flag accuracy (legacy) | {risk_accuracy:.2f} | blind to false positives; excluded from release decisions |
 """
 
 
@@ -61,6 +70,7 @@ def render(
     """
     s = scores or {}
     risk_rows = _risk_rows(s) if s else ""
+    short_citations = s.get("citation_short_count") if s else None
 
     return f"""# Contract Review Eval Scorecard: {case}
 
@@ -70,7 +80,7 @@ Adapter output for the `{case}` case, scored against `expected/{case}.json`.
 
 ## Scores
 
-{_table(clause, risk_accuracy, citation, hallucinations, risk_rows)}
+{_table(clause, risk_accuracy, citation, hallucinations, risk_rows, short_citations)}
 ## Two separate gates
 
 The evaluation threshold gate (`demo-regression-policy.v2`) detects regression against
@@ -89,12 +99,18 @@ benchmark result.
 - Missed risk: risk recall below 1.00.
 - Wrong severity: severity accuracy below 1.00.
 - Self-contradiction: conflicting flags above 0.
+- Flag without evidence: risk flags without evidence above 0.
 - Fabricated citation: hallucination count above 0.
+- Degenerate citation: short citations above 0.
 """
 
 
 _DECISION_NOTES = {
     "REJECT": "At least one citation is not an exact span of the contract, which is a hard blocker.",
+    "REJECT_SHORT": (
+        "Every citation is an exact span of the contract, but at least one quotes fewer "
+        "than three words, which is a hard blocker."
+    ),
     "HUMAN_REVIEW_REQUIRED": "No blocker, but at least one requirement is unmet, so a qualified reviewer decides.",
     "PILOT_ELIGIBLE": (
         "Every requirement is met. That supports a supervised pilot at most; it never "
@@ -111,6 +127,14 @@ def _decision_note(result: dict[str, Any]) -> str:
             "The review cites nothing, so none of its findings is grounded in the "
             "contract, which is a hard blocker."
         )
+    # A review rejected only for a short quote has no ungrounded citation; saying one
+    # failed to match would misdescribe it too.
+    if (
+        result["decision"] == "REJECT"
+        and result["scores"]["hallucination_count"] == 0
+        and result["scores"].get("citation_short_count", 0) > 0
+    ):
+        return _DECISION_NOTES["REJECT_SHORT"]
     return _DECISION_NOTES[result["decision"]]
 
 
@@ -139,7 +163,10 @@ def render_score(result: dict[str, Any]) -> str:
     aliases = "applied" if result["alias_mode"] == "on" else "not applied"
     clause = ClauseScore(s["clause_precision"], s["clause_recall"], s["clause_f1"])
     citation = CitationScore(s["citation_grounded"], s["citation_total"], s["citation_grounding"])
-    table = _table(clause, s["risk_flag_accuracy"], citation, s["hallucination_count"], _risk_rows(s))
+    table = _table(
+        clause, s["risk_flag_accuracy"], citation, s["hallucination_count"], _risk_rows(s),
+        s["citation_short_count"],
+    )
     return f"""# Contract Review Eval Scorecard: {result['case']}
 
 ## System under review
