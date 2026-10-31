@@ -35,6 +35,10 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `contract-eval --version` prints the installed package version.
 - Ruff in the dev group, configured with its long-standing default rules (`E4`, `E7`, `E9`, `F`) for Python 3.11. CI runs `uv run ruff check src tests scripts`. The violations are fixed in the code: unused imports, a mid-module import in `scorer.py`, one-line compound statements and an ambiguous variable name. Behaviour is unchanged.
 - `tests/test_readme.py`: the README stays at 350 words or fewer, uses only absolute links, links only to repository files that exist, and copies its scorecard rows verbatim from `examples/scorecard.md`.
+- `tests/test_live_sdk_contract.py`: the live adapter builds its `messages.parse` call through one helper, `parse_kwargs`, and the test binds what it returns to the installed Anthropic SDK's `parse` signature and records what `capture()` and `review_v2()` really send. The same file passes at the declared floor.
+- `uv run mypy` in CI, a `[tool.mypy]` section and `src/contract_eval/py.typed`. The 34 errors it reported are fixed by narrowing Optionals, typing the `Literal` schema defaults with `Final`, accepting `Mapping` in the scorer, adding `review_v2` to the `Adapter` protocol and typing the SDK call; scores, artefacts and schemas are unchanged.
+- CI's `python-compat` job also runs on 3.14 and 3.15, the current bugfix releases.
+- Project URLs, keywords and classifiers (Python 3.11 to 3.15, `Typing :: Typed`) in `pyproject.toml`, so the wheel's METADATA carries them.
 
 ### Changed
 
@@ -51,6 +55,10 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `make demo` also prints the scorecard it writes. `docs/demo.png` is a real rendering of that output and replaces a mock image. (#41)
 - The campaign v2 gold-hash check moves from `scripts/check_campaign_v2.py` to `contract_eval.campaign_v2.verify_gold_hashes`, beside `verify_against_sources`. The script stays the CI and Make entry point, and its behaviour is unchanged.
 - Annotators are recorded by role label (`Annotator A`, `Annotator B`) instead of by personal name: in `contract_eval.annotators`, the candidate drafts, the annotation pack and its manifest, the candidate answer sets and `annotations/README.md`. The pack and the campaign v2 gold hashes are regenerated. Obligations, offsets, severities and scores are unchanged. `tests/test_annotator_names.py` fails if either name reappears in a tracked file.
+- The `live` extra requires `anthropic>=0.77.0`, the first release whose non-beta `messages.parse` takes `output_format` and `output_config`; `>=0.40.0` let an install satisfy the requirement and fail with an `AttributeError`. The missing-SDK message is the same on both live paths and names `pip install "contract-eval[live]"` as well as `uv sync --extra live`.
+- `uv.lock` moves anyio to 4.15.1 (PYSEC-2026-4023, -4024 and -4025 are fixed in 4.14.2) and jiter to 0.18.0, which ships a cp315 wheel so `--all-extras` installs on Python 3.15.
+- pytest runs in strict mode with warnings as errors (`strict = true`, `filterwarnings = ["error"]`).
+- Every `actions/checkout` step sets `persist-credentials: false`. Dependabot waits seven days before proposing a release (fourteen for a Python major) and groups minor and patch updates per ecosystem.
 
 ### Removed
 
