@@ -1,6 +1,7 @@
 """Pure scoring functions. Each measures one dimension of contract-review quality."""
 
 import string
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from contract_eval.models import Citation
@@ -54,7 +55,7 @@ def clause_scores(expected: list[str], predicted: list[str]) -> ClauseScore:
     return ClauseScore(precision, recall, f1)
 
 
-def risk_flag_accuracy(expected: dict[str, str], predicted: dict[str, str]) -> float:
+def risk_flag_accuracy(expected: Mapping[str, str], predicted: Mapping[str, str]) -> float:
     """Share of expected flags predicted at the expected severity.
 
     Blind to false positives by construction: a review that adds twenty spurious
@@ -67,7 +68,7 @@ def risk_flag_accuracy(expected: dict[str, str], predicted: dict[str, str]) -> f
     return matched / len(expected)
 
 
-def risk_metrics(expected: dict[str, str], predicted: dict[str, str]) -> RiskScore:
+def risk_metrics(expected: Mapping[str, str], predicted: Mapping[str, str]) -> RiskScore:
     """Score risk identification and severity separately.
 
     Identification is precision/recall/F1 over which clauses were flagged at all,
@@ -195,7 +196,8 @@ def span_coverage(
     located.sort()
 
     boundaries = [start for start, _ in located] + [len(norm_source)]
-    covered, uncovered = [], list(unlocatable)
+    covered: list[str] = []
+    uncovered: list[str] = list(unlocatable)
     for index, (start, clause_type) in enumerate(located):
         region_end = boundaries[index + 1]
         hit = any(c_start < region_end and c_end > start for c_start, c_end in cited_spans)

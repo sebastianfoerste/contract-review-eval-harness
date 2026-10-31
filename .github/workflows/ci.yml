@@ -38,6 +38,9 @@ jobs:
       - name: Lint
         run: uv run ruff check src tests scripts
 
+      - name: Type-check the package
+        run: uv run mypy
+
       - name: Run unit tests
         run: uv run pytest -v
 

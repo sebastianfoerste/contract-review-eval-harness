@@ -105,10 +105,15 @@ DIAGNOSTIC_METRICS: tuple[str, ...] = (
 
 
 def _satisfied(requirement: Requirement, value: Any) -> bool:
+    threshold = requirement.threshold
     if requirement.comparator == "gte":
-        return float(value) >= float(requirement.threshold)
+        if threshold is None:
+            raise ValueError(f"{requirement.requirement_id}: gte requires a threshold")
+        return float(value) >= float(threshold)
     if requirement.comparator == "lte":
-        return float(value) <= float(requirement.threshold)
+        if threshold is None:
+            raise ValueError(f"{requirement.requirement_id}: lte requires a threshold")
+        return float(value) <= float(threshold)
     if requirement.comparator == "zero":
         return float(value) == 0.0
     if requirement.comparator == "empty":
@@ -444,7 +449,7 @@ def _build_v2_certificate(
     if not case_scores:
         raise ValueError("release certificate requires at least one evaluated case")
 
-    case_results = []
+    case_results: list[dict[str, Any]] = []
     for case in sorted(case_scores):
         scores = case_scores[case]
         blockers, review_items = evaluate_requirements(scores)
