@@ -22,7 +22,7 @@
   },
   "baseline_release_certificate": {
     "suite_decision": "REJECT",
-    "integrity_sha256": "3f8a8c5e1422ae6f4cd09e1feab5527bb218bdbb2285a4672b697be977cc4442"
+    "integrity_sha256": "e5c90710486484861b654e1153bb5ac6383f4cc73eaa1d15a595e1f330395868"
   },
   "metrics": {
     "scenarios": 18,
@@ -61,8 +61,8 @@
       "bytes": 2206
     },
     "expected/saas.json": {
-      "sha256": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e",
-      "bytes": 4811
+      "sha256": "cb413e530531a93ad611dc323ecc6ec78450bee4c577ec84a9bdc23d42c55224",
+      "bytes": 5875
     },
     "fixtures/saas_stub.json": {
       "sha256": "610ead111d79a99c1f78e2d4ccf86442a502f270d1d2dbc5dcb867209e814a21",
@@ -73,15 +73,15 @@
       "bytes": 2813
     },
     "expected/dpa.json": {
-      "sha256": "e7f5ee192939560fa0ed3dd013eb77c438ab9f7fd27659d590471977d37f4a75",
-      "bytes": 4721
+      "sha256": "b6435de32bc0d76ae8be32661266d15332a3321e85f946810a9cee41581ecc05",
+      "bytes": 5032
     },
     "fixtures/dpa_stub.json": {
       "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe",
       "bytes": 3823
     }
   },
-  "input_manifest_sha256": "b8856de850afd1e90a81ff571e1110872cdb0413bc90e176bfe7183d0bb146b0",
+  "input_manifest_sha256": "cace7cc89763b51e8fdc6611ca725373a2f46f687ce45f413329197bf97b4700",
   "scenarios": [
     {
       "scenario_id": "nda-one-way-definition",
@@ -3002,5 +3002,5 @@
   ],
   "review_gate": "This synthetic campaign may support a human-supervised pilot decision. It never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "86c219b274441309bb76f1128597ee9e7c32ad1496287e46677cb56a8ce153a1"
+  "integrity_sha256": "07172de0ef7ea4bc598184bbe784b021c035730ceedf38f39fe8d3d5a0b09b04"
 }

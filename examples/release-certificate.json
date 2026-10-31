@@ -185,14 +185,14 @@
         },
         "expected_answer": {
           "path": "expected/dpa.json",
-          "sha256": "e7f5ee192939560fa0ed3dd013eb77c438ab9f7fd27659d590471977d37f4a75"
+          "sha256": "b6435de32bc0d76ae8be32661266d15332a3321e85f946810a9cee41581ecc05"
         },
         "adapter_output": {
           "path": "fixtures/dpa_stub.json",
           "sha256": "6592d913925873f822de383026aee309f01d020cd40beacbdcafc103bdc735fe"
         }
       },
-      "input_manifest_sha256": "74bfa6b041aa13423985a8f44cddb1333a3d67ec26e65f634b91e4855a032ce4"
+      "input_manifest_sha256": "70173bf9e8d5ba25151b2d77f5473737eaa87ab9d541b4b1c8a9ea7a265c8191"
     },
     {
       "case": "nda",
@@ -320,17 +320,17 @@
         },
         "expected_answer": {
           "path": "expected/saas.json",
-          "sha256": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e"
+          "sha256": "cb413e530531a93ad611dc323ecc6ec78450bee4c577ec84a9bdc23d42c55224"
         },
         "adapter_output": {
           "path": "fixtures/saas_stub.json",
           "sha256": "610ead111d79a99c1f78e2d4ccf86442a502f270d1d2dbc5dcb867209e814a21"
         }
       },
-      "input_manifest_sha256": "8a7d1c8ea83d32f3c58426da23b16cd9fc3b88ff30b1c18455e41dfc24bf753d"
+      "input_manifest_sha256": "80c65292a32508ac4e066b74e27b4b1a42e64e301502d7fc95d92f4862b66186"
     }
   ],
   "review_gate": "The certificate evaluates a synthetic benchmark and never authorizes deployment, contract reliance, or autonomous legal review.",
   "external_actions_allowed": false,
-  "integrity_sha256": "3f8a8c5e1422ae6f4cd09e1feab5527bb218bdbb2285a4672b697be977cc4442"
+  "integrity_sha256": "e5c90710486484861b654e1153bb5ac6383f4cc73eaa1d15a595e1f330395868"
 }
