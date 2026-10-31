@@ -27,15 +27,32 @@ def test_every_adapter_can_produce_an_evidence_linked_review():
         assert any(f.evidence for f in review.clauses), f"{case}: no finding cites anything"
 
 
-def test_the_live_adapter_requests_the_evidence_schema():
-    """A v2 scorer fed by a v1 request would score reviews that cannot bind."""
-    import inspect
+def test_the_live_adapter_requests_the_evidence_schema(monkeypatch):
+    """A v2 scorer fed by a v1 request would score reviews that cannot bind.
+
+    The SDK is an optional extra, so a fake `anthropic` module stands in for it and
+    records what `review_v2` asks `messages.parse` for.
+    """
+    import sys
+    from types import SimpleNamespace
 
     from contract_eval.adapters import live
 
-    source = inspect.getsource(live)
-    assert "output_format=ReviewOutputV2" in source
-    assert "def review_v2" in source
+    calls = []
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            self.messages = SimpleNamespace(parse=lambda **kw: calls.append(kw) or None)
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "anthropic", SimpleNamespace(Anthropic=FakeClient))
+    with pytest.raises(AttributeError):
+        # The fake returns no message; the request is what is checked.
+        live.LiveAdapter(model="m").review_v2("CONTRACT", "nda")
+
+    (call,) = calls
+    assert call["output_format"] is ReviewOutputV2
+    assert call == live.parse_kwargs("m", live._PROMPT_V2.format(source="CONTRACT"), ReviewOutputV2)
 
 
 def test_the_pipeline_runs_end_to_end_for_every_case():

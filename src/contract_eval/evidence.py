@@ -58,7 +58,7 @@ def _bind(evidence_ids, citations, index, obligations) -> tuple[str | None, str 
         if citation is None:
             return None, UNBOUND_UNRESOLVED
         assignment = assign_citation(citation.quote, index, obligations)
-        if assignment.status == "assigned":
+        if assignment.status == "assigned" and assignment.obligation_id is not None:
             resolved.add(assignment.obligation_id)
         elif assignment.status in ("ambiguous_quote", "ambiguous_overlap"):
             return None, UNBOUND_AMBIGUOUS
@@ -105,7 +105,7 @@ def bind_review(
     # First prediction wins, after duplicates and conflicts are surfaced. Deciding by
     # list order without reporting it is how a self-contradicting review scored as
     # agreeing with the gold set.
-    predicted_risk: dict[str, str] = {}
+    predicted_risk: dict[str, str | None] = {}
     seen_order: list[str] = []
     for binding in report.risk_bindings:
         if binding.obligation_id is None:

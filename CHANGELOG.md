@@ -37,6 +37,10 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `tests/test_readme.py`: the README stays at 350 words or fewer, uses only absolute links, links only to repository files that exist, and copies its scorecard rows verbatim from `examples/scorecard.md`.
 - `docs/legal-currency.md`, a dated ledger of every legal proposition the harness states: the provision, where it is used, what the repository says, the position in force, the official source and the date it was verified, with a watch list for the Digital Omnibus change to Art. 33 GDPR, the EU-US Data Privacy Framework appeal, EDPB Opinion 22/2024 and the Data Act's switching chapter. `tests/test_legal_currency.py` extracts every statutory citation from the gold sets, drafts, pack, fixtures, campaigns, contracts and guides and fails when one has no row. No gold answer changes.
 - A promptfoo Python assertion, `examples/promptfoo/contract_eval_assert.py`, that scores a model's review through `contract_eval.api.evaluate_review`, with a config to copy and an offline test.
+- `tests/test_live_sdk_contract.py`: the live adapter builds its `messages.parse` call through one helper, `parse_kwargs`, and the test binds what it returns to the installed Anthropic SDK's `parse` signature and records what `capture()` and `review_v2()` really send. The same file passes at the declared floor.
+- `uv run mypy` in CI, a `[tool.mypy]` section and `src/contract_eval/py.typed`. The 34 errors it reported are fixed by narrowing Optionals, typing the `Literal` schema defaults with `Final`, accepting `Mapping` in the scorer, adding `review_v2` to the `Adapter` protocol and typing the SDK call; scores, artefacts and schemas are unchanged. A capture with no gold snapshot now fails replay with `ReplayError` instead of `AttributeError`, at the same point.
+- CI's `python-compat` job also runs on 3.14 and 3.15, the current bugfix releases.
+- Project URLs, keywords and classifiers (Python 3.11 to 3.15, `Typing :: Typed`) in `pyproject.toml`, so the wheel's METADATA carries them.
 
 ### Changed
 
@@ -57,6 +61,10 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `docs/ci.md` and `examples/ci/contract-eval.yml` pin the Action to a full commit SHA, because no release tag contains `action.yml` yet.
 - `docs/metrics.md` records a known limitation of citation grounding: a one-word or mid-word quote counts as grounded, and span coverage does not gate release.
 - `docs/overview.md` distinguishes the package from the 2025 "ContractEval" benchmark paper, adds the October 2025 Vals legal-research edition and DeepEval's non-LLM hallucination mode, and links the legal currency ledger from the limitations.
+- The `live` extra requires `anthropic>=0.77.0`, the first release whose non-beta `messages.parse` takes `output_format` and `output_config`; `>=0.40.0` let an install satisfy the requirement and fail with an `AttributeError`. The missing-SDK message is the same on both live paths and names `pip install "contract-eval[live]"` as well as `uv sync --extra live`.
+- `uv.lock` moves anyio to 4.15.1 (PYSEC-2026-4023, -4024 and -4025 are fixed in 4.14.2) and jiter to 0.18.0, which ships a cp315 wheel so `--all-extras` installs on Python 3.15.
+- pytest runs in strict mode with warnings as errors (`strict = true`, `filterwarnings = ["error"]`).
+- Every `actions/checkout` step sets `persist-credentials: false`. Dependabot waits seven days before proposing a release (fourteen for a Python major) and groups minor and patch updates per ecosystem.
 
 ### Removed
 

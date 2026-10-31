@@ -12,11 +12,11 @@ unbound finding earns nothing.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-REVIEW_SCHEMA_V2 = "contract-review-eval.review-output.v2"
+REVIEW_SCHEMA_V2: Final = "contract-review-eval.review-output.v2"
 
 Severity = Literal["low", "medium", "high"]
 
