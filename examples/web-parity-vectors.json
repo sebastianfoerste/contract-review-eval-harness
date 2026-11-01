@@ -5,6 +5,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -17,6 +18,7 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "notices"
       ],
@@ -50,6 +52,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -62,6 +65,7 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "notices"
       ],
@@ -95,6 +99,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -107,6 +112,14 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "assignment",
+        "definition",
+        "governing_law",
+        "permitted_disclosure",
+        "residual_knowledge",
+        "term"
+      ],
       "risk_missed": [
         "notices"
       ],
@@ -148,6 +161,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -160,6 +174,14 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "assignment",
+        "definition",
+        "governing_law",
+        "permitted_disclosure",
+        "residual_knowledge",
+        "term"
+      ],
       "risk_missed": [
         "notices"
       ],
@@ -201,6 +223,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -211,6 +234,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "assignment",
         "definition",
@@ -244,6 +268,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -254,6 +279,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "assignment",
         "definition",
@@ -287,6 +313,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -303,6 +330,7 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "notices"
       ],
@@ -336,6 +364,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -352,6 +381,7 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "notices"
       ],
@@ -391,6 +421,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.0,
       "clause_precision": 0.0,
@@ -401,6 +432,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "assignment",
         "definition",
@@ -564,6 +596,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -576,6 +609,7 @@
         "governing_law"
       ],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "notices"
       ],
@@ -608,6 +642,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -618,6 +653,10 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "data_export_on_termination",
+        "indemnity"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -651,6 +690,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -661,6 +701,10 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "data_export_on_termination",
+        "indemnity"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -694,6 +738,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -704,6 +749,15 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "auto_renewal",
+        "data_export_on_termination",
+        "fees",
+        "indemnity",
+        "ip_and_model_training",
+        "limitation_of_liability",
+        "security"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -745,6 +799,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -755,6 +810,15 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "auto_renewal",
+        "data_export_on_termination",
+        "fees",
+        "indemnity",
+        "ip_and_model_training",
+        "limitation_of_liability",
+        "security"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -796,6 +860,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -806,6 +871,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "auto_renewal",
         "data_export_on_termination",
@@ -841,6 +907,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -851,6 +918,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "auto_renewal",
         "data_export_on_termination",
@@ -886,6 +954,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -900,6 +969,10 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "data_export_on_termination",
+        "indemnity"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -933,6 +1006,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -947,6 +1021,10 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "data_export_on_termination",
+        "indemnity"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -986,6 +1064,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.0,
       "clause_precision": 0.0,
@@ -996,6 +1075,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "auto_renewal",
         "data_export_on_termination",
@@ -1166,6 +1246,7 @@
     "expected": {
       "citation_grounded": 8,
       "citation_grounding": 0.8888888888888888,
+      "citation_short_count": 0,
       "citation_total": 9,
       "clause_f1": 0.9565217391304348,
       "clause_precision": 0.9166666666666666,
@@ -1176,6 +1257,10 @@
       "risk_f1": 0.9333333333333333,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.5,
+      "risk_flags_without_evidence": [
+        "data_export_on_termination",
+        "indemnity"
+      ],
       "risk_missed": [
         "subprocessors"
       ],
@@ -1208,6 +1293,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1218,6 +1304,10 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "international_transfers"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,
@@ -1248,6 +1338,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1258,6 +1349,10 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "international_transfers"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,
@@ -1288,6 +1383,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1298,6 +1394,13 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "breach_and_dpia_assistance",
+        "deletion_return",
+        "international_transfers",
+        "subprocessor_authorization"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,
@@ -1335,6 +1438,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1345,6 +1449,13 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "breach_and_dpia_assistance",
+        "deletion_return",
+        "international_transfers",
+        "subprocessor_authorization"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,
@@ -1382,6 +1493,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1392,6 +1504,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "audit_rights",
         "breach_and_dpia_assistance",
@@ -1424,6 +1537,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1434,6 +1548,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "audit_rights",
         "breach_and_dpia_assistance",
@@ -1466,6 +1581,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1480,6 +1596,10 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "international_transfers"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,
@@ -1510,6 +1630,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1524,6 +1645,10 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "international_transfers"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,
@@ -1560,6 +1685,7 @@
     "expected": {
       "citation_grounded": 0,
       "citation_grounding": 0.0,
+      "citation_short_count": 0,
       "citation_total": 0,
       "clause_f1": 0.0,
       "clause_precision": 0.0,
@@ -1570,6 +1696,7 @@
       "risk_f1": 0.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.0,
+      "risk_flags_without_evidence": [],
       "risk_missed": [
         "audit_rights",
         "breach_and_dpia_assistance",
@@ -1718,6 +1845,7 @@
     "expected": {
       "citation_grounded": 7,
       "citation_grounding": 0.875,
+      "citation_short_count": 0,
       "citation_total": 8,
       "clause_f1": 0.9523809523809523,
       "clause_precision": 0.9090909090909091,
@@ -1728,6 +1856,10 @@
       "risk_f1": 1.0,
       "risk_false_positives": [],
       "risk_flag_accuracy": 0.6,
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "international_transfers"
+      ],
       "risk_missed": [],
       "risk_precision": 1.0,
       "risk_recall": 1.0,

@@ -22,5 +22,5 @@ A five-minute path for a reviewer.
 What to check: the metrics are explainable, hallucinations are counted, and nothing here
 claims to replace a lawyer. The scorecard ends with what a human must confirm.
 
-To run against a real model instead of the stub: `uv add anthropic`, set
+To run against a real model instead of the stub: `uv sync --extra live`, set
 `ANTHROPIC_API_KEY`, then add `--live`.

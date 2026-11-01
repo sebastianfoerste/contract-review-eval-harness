@@ -94,7 +94,8 @@ def replay(
         raise ReplayError(
             "capture failed verification: " + ", ".join(verification["errors"])
         )
-    if not verification["scoreable"]:
+    output = capture.output
+    if not verification["scoreable"] or output is None:
         raise ReplayError(
             f"capture state {capture.state!r} carries no scoreable output; "
             "it is an authentic record of an attempt, not a result"
@@ -110,9 +111,14 @@ def replay(
 
     # Score against the embedded snapshots, never the working tree. That is what makes
     # the result a reproduction of the original rather than a fresh evaluation.
-    expected = ExpectedAnswer.model_validate(json.loads(capture.gold.text))
+    gold = capture.gold
+    if gold is None:
+        raise ReplayError(
+            "capture embeds no gold snapshot; there is no answer set to score against"
+        )
+    expected = ExpectedAnswer.model_validate(json.loads(gold.text))
     scores = {
-        mode: score_review(capture.source.text, expected, capture.output, alias_mode=mode)
+        mode: score_review(capture.source.text, expected, output, alias_mode=mode)
         for mode in alias_modes
     }
 
@@ -123,7 +129,7 @@ def replay(
         "capture_sha256": capture.integrity_sha256,
         "parsed_output_sha256": capture.output_sha256,
         "source_sha256": capture.source.sha256,
-        "gold_sha256": capture.gold.sha256,
+        "gold_sha256": gold.sha256,
         "prompt_sha256": capture.request.prompt_sha256 if capture.request else None,
         "requested_model": capture.request.model if capture.request else None,
         "effort": capture.request.effort if capture.request else None,

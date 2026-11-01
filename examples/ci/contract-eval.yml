@@ -18,9 +18,11 @@ jobs:
       - name: Produce the reviews
         run: ./scripts/export-reviews.sh reviews/
 
-      # Once a release ships the action, pin its tag or a full commit SHA instead of main.
+      # No release tag contains action.yml yet, so pin a full commit SHA: a tag or
+      # main can move, a SHA cannot. Update it deliberately when you want a newer
+      # scorer. The unpinned form is sebastianfoerste/contract-review-eval-harness@main.
       - name: Score the reviews
-        uses: sebastianfoerste/contract-review-eval-harness@main
+        uses: sebastianfoerste/contract-review-eval-harness@8d43239e9cc9bc2885c9b6a4f143740810753110 # main as of 2026-10-30
         with:
           reviews: reviews/*.json
           case: nda

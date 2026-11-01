@@ -73,10 +73,12 @@ def render_multi(scores: dict) -> str:
             f"| Risk false positives | {len(s['risk_false_positives'])} | clauses flagged that the gold set does not treat as risks |\n"
             f"| Risk missed | {len(s['risk_missed'])} | gold risks the review did not flag |\n"
             f"| Duplicate / conflicting flags | {len(s['risk_duplicate_flags'])} / {len(s['risk_conflicting_flags'])} | predictions collapsing onto one clause |\n"
+            f"| Risk flags without evidence | {len(s['risk_flags_without_evidence'])} | flagged clauses with no grounded citation inside them |\n"
             f"| Span coverage | {s['span_coverage']:.2f} | gold clauses with a grounded citation inside them |\n"
             f"| Risk-flag accuracy (legacy) | {s['risk_flag_accuracy']:.2f} | blind to false positives; excluded from release decisions |\n"
             f"| Citation grounding | {s['citation_grounding']:.2f} | {s['citation_grounded']}/{s['citation_total']} quotes matched as an exact span of the normalised source |\n"
             f"| Hallucination count | {s['hallucination_count']} | cited quotes not grounded in the source |\n"
+            f"| Short citations | {s['citation_short_count']} | grounded quotes shorter than three words |\n"
         )
     return "\n".join(parts)
 

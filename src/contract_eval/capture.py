@@ -23,13 +23,13 @@ import os
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 from contract_eval.models import ReviewOutput
 
-CAPTURE_SCHEMA = "contract-review-eval.captured-review.v1"
+CAPTURE_SCHEMA: Final = "contract-review-eval.captured-review.v1"
 RUN_MANIFEST_SCHEMA = "contract-review-eval.capture-run-manifest.v1"
 
 CaptureOrigin = Literal["live", "stub", "legacy_file"]

@@ -18,9 +18,11 @@ Adapter output for the `nda` case, scored against `expected/nda.json`.
 | Risk false positives | 1 | clauses flagged that the gold set does not treat as risks |
 | Risk missed | 1 | gold risks the review did not flag |
 | Duplicate / conflicting flags | 0 / 0 | predictions collapsing onto one clause |
+| Risk flags without evidence | 0 | flagged clauses with no grounded citation inside them |
 | Span coverage | 0.73 | gold clauses with a grounded citation inside them |
 | Citation grounding | 0.89 | 8/9 quotes matched as an exact span of the normalised source |
 | Hallucination count | 1 | cited quotes not grounded in the source |
+| Short citations | 0 | grounded quotes shorter than three words |
 | Risk-flag accuracy (legacy) | 0.50 | blind to false positives; excluded from release decisions |
 
 ## Two separate gates
@@ -47,4 +49,6 @@ must be rejected outright.
 - Missed risk: risk recall below 1.00.
 - Wrong severity: severity accuracy below 1.00.
 - Self-contradiction: conflicting flags above 0.
+- Flag without evidence: risk flags without evidence above 0.
 - Fabricated citation: hallucination count above 0.
+- Degenerate citation: short citations above 0.
