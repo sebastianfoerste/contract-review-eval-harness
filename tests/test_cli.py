@@ -1,3 +1,5 @@
+import pytest
+
 from contract_eval.cli import evaluate, evaluate_case
 
 
@@ -72,3 +74,71 @@ def test_maintainer_commands_run_with_and_without_the_dev_prefix(capsys):
     ):
         main(argv)
         assert json.loads(capsys.readouterr().out)["status"] == "VALID"
+
+
+CASE_COMMANDS = [["evaluate"], ["certify"], ["evaluate-obligations"], ["dev", "evaluate-obligations"]]
+
+
+@pytest.mark.parametrize("command", CASE_COMMANDS, ids=" ".join)
+def test_unknown_case_is_a_usage_error_listing_the_valid_cases(command, capsys):
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import main
+
+    with pytest.raises(SystemExit) as exited:
+        main([*command, "--case", "nope"])
+
+    assert exited.value.code == 2
+    err = capsys.readouterr().err
+    assert "argument --case: invalid choice: 'nope'" in err
+    for name in (*ALL_CASES, "all"):
+        assert name in err.split("invalid choice:", 1)[1], f"{name} missing from: {err}"
+
+
+@pytest.mark.parametrize("command", CASE_COMMANDS, ids=" ".join)
+def test_every_bundled_case_is_accepted(command):
+    from contract_eval.cases import ALL_CASES
+    from contract_eval.cli import build_parser
+
+    for name in (*ALL_CASES, "all"):
+        assert build_parser().parse_args([*command, "--case", name]).case == name
+
+
+def test_evaluate_runs_the_dpa_case(tmp_path, capsys):
+    from contract_eval.cli import main
+
+    main(["evaluate", "--case", "dpa", "--out", str(tmp_path)])
+
+    assert "wrote" in capsys.readouterr().out
+    assert "# Contract Review Eval Scorecard: dpa" in (tmp_path / "scorecard.md").read_text(encoding="utf-8")
+
+
+def test_version_prints_the_pyproject_version(capsys):
+    import tomllib
+    from pathlib import Path
+
+    from contract_eval.cli import main
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    version = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["version"]
+
+    with pytest.raises(SystemExit) as exited:
+        main(["--version"])
+
+    assert exited.value.code == 0
+    assert capsys.readouterr().out == f"contract-eval {version}\n"
+
+
+def test_evaluate_reports_errors_on_stderr(monkeypatch, capsys):
+    from contract_eval import cli
+
+    def fail(**_kwargs):
+        raise ValueError("Evaluation did not meet the required quality thresholds.")
+
+    monkeypatch.setattr(cli, "evaluate", fail)
+    with pytest.raises(SystemExit) as exited:
+        cli.main(["evaluate", "--case", "nda"])
+
+    assert exited.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error: Evaluation did not meet the required quality thresholds." in captured.err
+    assert "Error:" not in captured.out

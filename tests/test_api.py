@@ -180,3 +180,102 @@ def test_score_review_is_still_pure():
 
     assert score_review(case.source_text, case.expected, review) == evaluate_case("nda", live=False)
     assert isinstance(case.expected, ExpectedAnswer)
+
+
+RAW_OUTPUT = ROOT / "examples" / "raw-output"
+
+
+def _probe(quote: str) -> dict:
+    """Every gold clause and risk named correctly, every citation the same short quote."""
+    gold = json.loads((ROOT / "expected" / "nda.json").read_text(encoding="utf-8"))
+    return {
+        "clauses": [{"clause_type": c, "text": "x"} for c in gold["clause_types"]],
+        "risk_flags": [
+            {"clause_type": k, "severity": v, "rationale": "x"} for k, v in gold["risk_flags"].items()
+        ],
+        "citations": [{"quote": quote, "clause_type": c} for c in gold["clause_types"]],
+    }
+
+
+def test_a_one_word_quote_is_grounded_but_rejected_as_degenerate():
+    """Grounding is a substring match, so `the` scored 1.0 and was pilot eligible."""
+    result = evaluate_review(_probe("the"), "nda")
+
+    assert result.scores["citation_grounding"] == 1.0
+    assert result.scores["hallucination_count"] == 0
+    assert result.scores["citation_short_count"] == result.scores["citation_total"]
+    assert result.verdict is Verdict.REJECT
+    assert result.blockers == ["degenerate_citation_detected"]
+    assert "risk_flag_without_evidence" in result.review_items
+    assert result.scores["risk_flags_without_evidence"] == sorted(load_case("nda").expected.risk_flags)
+
+
+def test_a_fragment_of_a_word_is_rejected_as_degenerate():
+    result = evaluate_review(_probe("confiden"), "nda")
+
+    assert result.scores["hallucination_count"] == 0
+    assert result.verdict is Verdict.REJECT
+    assert "degenerate_citation_detected" in result.blockers
+
+
+def test_score_review_checks_evidence_on_the_canonical_clause_name(tmp_path):
+    """A flag under a declared synonym is looked up under the gold name's anchor."""
+    contract = tmp_path / "contract.md"
+    contract.write_text(
+        "The agreement is governed by the laws of Ireland. "
+        "The supplier may appoint further subcontractors on notice.\n",
+        encoding="utf-8",
+    )
+    gold = tmp_path / "gold.json"
+    gold.write_text(json.dumps({
+        "clause_types": ["governing_law", "subprocessors"],
+        "risk_flags": {"subprocessors": "high"},
+        "severity_rationale": {"subprocessors": "test fixture, no legal judgment intended"},
+        "clause_aliases": {"sub_processors": "subprocessors"},
+        "clause_anchors": {
+            "governing_law": "governed by the laws of Ireland",
+            "subprocessors": "appoint further subcontractors on notice",
+        },
+    }), encoding="utf-8")
+    review = ReviewOutput(
+        clauses=[Clause(clause_type="governing_law", text="x"), Clause(clause_type="sub_processors", text="x")],
+        risk_flags=[RiskFlag(clause_type="sub_processors", severity="high", rationale="r")],
+        citations=[Citation(quote="governed by the laws of Ireland", clause_type="governing_law")],
+    )
+    case = load_case(contract=contract, gold=gold)
+
+    with_aliases = evaluate_review(review, case)
+    assert with_aliases.scores["risk_flags_without_evidence"] == ["subprocessors"]
+    assert with_aliases.verdict is Verdict.HUMAN_REVIEW_REQUIRED
+    assert "risk_flag_without_evidence" in with_aliases.review_items
+
+    # Without aliases the flag names no anchored clause, so risk precision carries it.
+    without = evaluate_review(review, case, alias_mode="off")
+    assert without.scores["risk_flags_without_evidence"] == []
+    assert "risk_false_positive" in without.review_items
+
+    quoted = review.model_copy(update={"citations": [
+        *review.citations, Citation(quote="appoint further subcontractors", clause_type="sub_processors"),
+    ]})
+    assert evaluate_review(quoted, case).verdict is Verdict.PILOT_ELIGIBLE
+
+
+@pytest.mark.parametrize("case", ["nda", "saas", "dpa"])
+def test_committed_outputs_keep_their_decisions_under_policy_v2_1(case):
+    """The three-word floor clears every committed quote; the stubs gain a review item only."""
+    stub = evaluate_review(ROOT / "fixtures" / f"{case}_stub.json", case)
+    assert stub.verdict is Verdict.REJECT
+    assert stub.scores["citation_short_count"] == 0
+    assert stub.blockers == ["citation_grounding_below_100_percent", "unsupported_citation_detected"]
+    assert stub.scores["risk_flags_without_evidence"] == {
+        "nda": [],
+        "saas": ["data_export_on_termination", "indemnity"],
+        "dpa": ["audit_rights", "international_transfers"],
+    }[case]
+
+    live = evaluate_review(RAW_OUTPUT / f"{case}-claude-opus-5-2026-09-01.json", case)
+    assert live.verdict is Verdict.HUMAN_REVIEW_REQUIRED
+    assert live.blockers == []
+    assert live.scores["citation_short_count"] == 0
+    assert live.scores["risk_flags_without_evidence"] == []
+    assert "risk_flag_without_evidence" not in live.review_items

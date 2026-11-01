@@ -268,9 +268,11 @@ function scoreRows(s) {
     ["Risk false positives", String(s.risk_false_positives.length), "clauses flagged that the answer set does not treat as risks"],
     ["Risk missed", String(s.risk_missed.length), "answer-set risks the review did not flag"],
     ["Duplicate / conflicting flags", `${s.risk_duplicate_flags.length} / ${s.risk_conflicting_flags.length}`, "predictions collapsing onto one clause"],
+    ["Risk flags without evidence", String(s.risk_flags_without_evidence.length), "flagged clauses with no grounded citation inside them"],
     ["Span coverage", ratio(s.span_coverage), "answer-set clauses with a grounded citation inside them"],
     ["Citation grounding", ratio(s.citation_grounding), `${s.citation_grounded}/${s.citation_total} quotes matched as an exact span of the normalised source`],
     ["Hallucination count", String(s.hallucination_count), "cited quotes not grounded in the source"],
+    ["Short citations", String(s.citation_short_count), "grounded quotes shorter than three words"],
     ["Risk-flag accuracy (legacy)", ratio(s.risk_flag_accuracy), "blind to false positives; excluded from release decisions"],
   ];
 }

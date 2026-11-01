@@ -57,13 +57,13 @@ def adapter_identifier(live: bool, model: str | None = None, choice: AdapterChoi
     if name == "stub":
         return "stub"
     if name == "openai-compatible":
-        from contract_eval.adapters.openai_compat import identifier
+        from contract_eval.adapters.openai_compat import identifier as openai_identifier
 
-        return identifier(model, (choice or AdapterChoice()).base_url)
+        return openai_identifier(model, (choice or AdapterChoice()).base_url)
     if name == "command":
-        from contract_eval.adapters.command import identifier
+        from contract_eval.adapters.command import identifier as command_identifier
 
-        return identifier((choice or AdapterChoice()).command)
+        return command_identifier((choice or AdapterChoice()).command)
     from contract_eval.adapters.live import DEFAULT_MODEL
 
     import os

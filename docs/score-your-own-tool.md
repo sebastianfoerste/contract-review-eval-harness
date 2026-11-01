@@ -106,6 +106,39 @@ In a test suite, `assert_review_passes` from the bundled pytest plugin fails the
 with the blockers and review items; see
 [`examples/test_my_reviewer.py`](../examples/test_my_reviewer.py).
 
+## From promptfoo
+
+[`examples/promptfoo/contract_eval_assert.py`](../examples/promptfoo/contract_eval_assert.py)
+is a promptfoo Python assertion. promptfoo calls `get_assert(output, context)` and
+accepts a bool, a float or a dict with `pass`, `score` and `reason`, as its
+[Python assertion docs](https://www.promptfoo.dev/docs/configuration/expected-outputs/python/)
+describe. The function parses the model's JSON reply (a surrounding code fence is
+tolerated), scores it with `evaluate_review` against the case named in `vars.case`
+(default `nda`), and returns `pass` (anything but `REJECT`), `score` (citation
+grounding) and `reason` (the decision with its blockers and review items).
+[`examples/promptfoo/promptfooconfig.yaml`](../examples/promptfoo/promptfooconfig.yaml)
+is a minimal config that reads the bundled NDA into the prompt and applies the
+assertion; its `file://` paths resolve from the config file's directory. promptfoo is
+not a dependency of this repository.
+
+## From Inspect
+
+An [Inspect custom scorer](https://inspect.aisi.org.uk/custom-scorers.html) takes a
+`TaskState` and a `Target` and yields a `Score`. A sketch, not shipped as a file, with
+`CORRECT`, `INCORRECT`, `Score`, `Target`, `accuracy` and `scorer` imported from
+`inspect_ai.scorer` and `TaskState` from `inspect_ai.solver`:
+
+```python
+@scorer(metrics=[accuracy()])
+def contract_eval_gate(case: str = "nda"):
+    async def score(state: TaskState, target: Target) -> Score:
+        result = evaluate_review(json.loads(state.output.completion), case)
+        passed = result.verdict is not Verdict.REJECT
+        return Score(value=CORRECT if passed else INCORRECT, answer=str(result.verdict),
+                     explanation=", ".join(result.blockers + result.review_items))
+    return score
+```
+
 ## Already have a captured review?
 
 A live run captures every adapter attempt in an envelope with integrity hashes.

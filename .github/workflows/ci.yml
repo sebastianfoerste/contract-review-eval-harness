@@ -6,24 +6,40 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: read
+
+# Third-party actions are pinned to a commit SHA (Dependabot keeps them current). uv
+# itself is pinned by the setup-uv `version` input, which Dependabot does not bump.
 jobs:
   test-and-evaluate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          version: "latest"
+          version: "0.13.5"
           enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.13
 
+      - name: Reject a lockfile that is out of date with pyproject.toml
+        run: uv lock --check
+
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --locked --all-extras --dev
+
+      - name: Lint
+        run: uv run ruff check src tests scripts
+
+      - name: Type-check the package
+        run: uv run mypy
 
       - name: Run unit tests
         run: uv run pytest -v
@@ -75,29 +91,32 @@ jobs:
 
   python-compat:
     # The job above runs every check on 3.13. This one holds the declared minimum in
-    # pyproject.toml: the suite and the full offline pipeline on 3.11 and 3.12.
+    # pyproject.toml and the current bugfix releases: the suite and the full offline
+    # pipeline on 3.11, 3.12, 3.14 and 3.15.
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.14", "3.15"]
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          version: "latest"
+          version: "0.13.5"
           enable-cache: true
 
       - name: Set up Python
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --locked --all-extras --dev
 
       - name: Run unit tests
         run: uv run pytest -q
@@ -117,12 +136,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          version: "latest"
+          version: "0.13.5"
           enable-cache: true
 
       - name: Build the sdist and wheel
@@ -156,7 +177,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Score the NDA stub through the action
         id: stub

@@ -12,10 +12,13 @@ from typing import Protocol
 
 from contract_eval.capture import ProviderRequest, ProviderResponse
 from contract_eval.models import ReviewOutput
+from contract_eval.review_v2 import ReviewOutputV2
 
 
 class Adapter(Protocol):
     def review(self, source_text: str, case: str) -> ReviewOutput: ...
+
+    def review_v2(self, source_text: str, case: str) -> ReviewOutputV2: ...
 
     def capture(
         self, source_text: str, case: str

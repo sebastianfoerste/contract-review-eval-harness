@@ -24,14 +24,14 @@ something nobody designed.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from contract_eval.capture import text_sha256
 from contract_eval.gold_v2 import ExpectedAnswerV2, Obligation
 
-CAMPAIGN_SCHEMA_V2 = "contract-review-eval.robustness-campaign.v2"
+CAMPAIGN_SCHEMA_V2: Final = "contract-review-eval.robustness-campaign.v2"
 
 ScenarioKind = Literal[
     "obligation_removed",
@@ -232,6 +232,27 @@ def verify_against_sources(
                 f"{scenario.scenario_id}: references unknown obligations {unknown}"
             )
         validate_scenario_boundaries(list(golds[scenario.case].obligations), scenario)
+
+
+def verify_gold_hashes(campaign: CampaignV2, gold_texts: dict[str, str]) -> None:
+    """Fail when a recorded gold hash no longer matches the committed draft.
+
+    The generator records text_sha256 of each draft's UTF-8 text. verify_against_sources
+    only sees the parsed gold, which cannot reproduce that hash, so this takes the draft
+    text as read from disk.
+    """
+    unrecorded = sorted(set(gold_texts) - set(campaign.gold_sha256))
+    if unrecorded:
+        raise CampaignError(f"campaign records no gold hash for {unrecorded}")
+    for case, recorded in sorted(campaign.gold_sha256.items()):
+        if case not in gold_texts:
+            raise CampaignError(f"campaign names case {case!r} with no gold supplied")
+        actual = text_sha256(gold_texts[case])
+        if actual != recorded:
+            raise CampaignError(
+                f"{case}: gold has changed since the campaign was written\n"
+                f"  recorded {recorded}\n  actual   {actual}"
+            )
 
 
 def coverage_report(
