@@ -50,9 +50,10 @@ ALLOWED = {
     ("CITATION.cff", "Annotator A"): 2,
     ("action.yml", "Annotator A"): 2,
     # Not notices: the matter answers still name their annotator. The held-out check
-    # hashes each answers file whole, so editing round 1's ends its held-out status;
-    # the role label replaces the name in the next revision of the answers. The
-    # counts then stop matching, and these entries go with the name.
+    # hashes each answers file whole, so editing round1.json would make every later
+    # round 1 evaluation-split run print Not held out. Both files take the role label
+    # together in the next revision of the answers; the counts then stop matching,
+    # and these entries go with the name.
     ("matters/northwind-saas/expected/round1.json", "Annotator A"): 2,
     ("matters/northwind-saas/expected/round2.json", "Annotator A"): 2,
 }
