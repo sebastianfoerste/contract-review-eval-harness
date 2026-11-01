@@ -131,8 +131,9 @@ that predates a change to the guideline, a playbook or the register fails.
 `make candidate-bundle` zips a pack that passes the same check and prints the
 archive's SHA-256. The build refuses to replace a pack folder in which a template
 has been filled in: returned and own annotations are kept outside
-`annotation-pack/`. The maintainer completes their own templates in such a copy
-before opening a returned annotation, so the two readings stay independent.
+`annotation-pack/`. The maintainer completes their own templates in a copy outside
+`annotation-pack/` before opening a returned annotation, so the two readings stay
+independent.
 
 A template carries eight binding fields the annotator leaves unchanged: schema,
 variant, playbook and the hashes of the document, the playbook, the corpus

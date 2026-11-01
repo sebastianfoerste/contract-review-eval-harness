@@ -41,7 +41,8 @@ make test regression-check anchor-check gold-v2-check evidence-check adjudicatio
 
 ### Which targets mirror CI
 
-The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in order:
+Besides its setup steps (checkout, uv, Python and `uv sync --locked --all-extras --dev`),
+the `test-and-evaluate` job in `.github/workflows/ci.yml` runs these checks, in order:
 
 | CI step | Local equivalent |
 |---|---|
@@ -60,7 +61,8 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 | Clause anchors | `make anchor-check` |
 | Committed release certificate | `make certificate-check` |
 | Recomputed release certificate | `make certificate-verify` |
-| Robustness campaign and its artifacts | `make robustness-check` |
+| Adversarial robustness campaign | `make robustness-check` (its `verify-robustness` step) |
+| Committed robustness artifacts | `make robustness-check` |
 | Web parity vectors | `make parity-check` |
 | Candidate annotation pack | `make candidate-pack-check` |
 | Candidate experiment reports | `make candidate-experiment-check` |
