@@ -47,7 +47,7 @@ release certificate (hashes of contract, gold set and review; integrity digest)
 3. **Review.** Whatever produced it, the review must match one schema, `ReviewOutput` in `src/contract_eval/models.py`: a list of clauses (type and one-sentence summary), a list of risk flags (clause type, severity `low`/`medium`/`high`, rationale), a list of citations (verbatim quote and the clause it supports) and optional abstentions (a clause the reviewer declines to assess, with a reason).
 4. **Scoring.** `score_review` in `src/contract_eval/api.py` computes every metric. It is a pure function: no file access, no network, no model call.
 5. **Scorecard.** A Markdown and JSON report of every metric.
-6. **Decision.** The release policy reads nine of those metrics and returns a verdict.
+6. **Decision.** The release policy reads eleven of those metrics and returns a verdict.
 7. **Certificate.** `make certificate` evaluates all cases, records SHA-256 hashes of each contract, gold set and review, and binds the suite decision to an integrity digest. `make certificate-verify` re-runs everything and fails if any number or input has moved.
 
 A review produced outside the harness can be scored directly with `contract-eval score my-review.json --case nda`, against a bundled contract or against a user's own contract and gold set. A result on a user's own gold set is marked "comparison only, not certifiable", because the harness has not reviewed that gold set.
@@ -64,7 +64,7 @@ Every gold set states whose review it encodes in a `review_context` block. This 
 
 **Perspective:** Northwind as Disclosing Party, German law, conservative, reviewing before sharing technical information with a prospective supplier.
 
-| § | Clause type | What the clause says | Gold severity | Why (short form of the written rationale) |
+| No. | Clause type | What the clause says | Gold severity | Why (short form of the written rationale) |
 |---|---|---|---|---|
 | 1 | `definition` | All information, marked or not | medium | No public-domain, prior-possession or independent-development carve-outs; invites a dispute over what was protected, and adds to the exposure of the perpetual term |
 | 2 | `confidentiality` | Keep secret, no disclosure without consent | none (clean) | Ordinary operative obligation |
@@ -72,7 +72,7 @@ Every gold set states whose review it encodes in a `review_context` block. This 
 | 4 | `return_destruction` | Return or destroy within 30 days on request | none (clean) | Ordinary |
 | 5 | `governing_law` | German law | none (clean) | Ordinary |
 | 6 | `permitted_disclosure` | Disclosure compelled by law allowed only with the discloser's prior written consent | high | The recipient is caught between the contract and a legal compulsion whenever consent is withheld, and the discloser gets no express right to cooperation in seeking protective relief. Market standard is notice where lawful plus cooperation |
-| 7 | `residual_knowledge` | Unaided memory may be used, including for third parties | high | Defeats § 2: whatever a person remembers can be used for a competitor, so the agreement protects only documents |
+| 7 | `residual_knowledge` | Unaided memory may be used, including for third parties | high | Defeats section 2: whatever a person remembers can be used for a competitor, so the agreement protects only documents |
 | 8 | `no_license` | No licence to the discloser's IP | none (clean) | Ordinary |
 | 9 | `injunctive_relief` | Discloser may seek injunctive relief | none (clean) | Ordinary |
 | 10 | `assignment` | Recipient may assign freely, including to a competitor | high | The counterparty can become the one party the discloser would never have contracted with |
@@ -84,19 +84,19 @@ Eleven clause types, six risk flags, five deliberately clean clauses.
 
 **Perspective:** Northwind as Customer, German law (GDPR for the data protection points), conservative, reviewing vendor paper for a business-critical system.
 
-| § | Clause type | What the clause says | Gold severity | Why |
+| No. | Clause type | What the clause says | Gold severity | Why |
 |---|---|---|---|---|
 | 1 | `service_levels` | Commercially reasonable efforts for 99.5% monthly uptime | none (clean) | Ordinary |
-| 2 | `data_protection` | Processing only on documented instructions | none (clean) | Ordinary, and the benchmark against which §§ 6 and 8 contradict |
+| 2 | `data_protection` | Processing only on documented instructions | none (clean) | Ordinary, and and the yardstick that sections 6 and 8 contradict |
 | 3 | `limitation_of_liability` | Cap at 12 months' fees | medium | Market-standard cap, but no carve-out for data breach, confidentiality or IP indemnity |
 | 4 | `term` | 12-month initial term | none (clean) | Ordinary |
 | 5 | `auto_renewal` | Renews for 12 months unless 90 days' notice | high | The decision point falls at month nine; one missed date commits the customer for another year |
-| 6 | `subprocessors` | Sub-processors appointed with website publication, no notice | high | No opportunity to object; does not meet Art. 28(2) GDPR, which § 2 purports to follow |
+| 6 | `subprocessors` | Sub-processors appointed with website publication, no notice | high | No opportunity to object; does not meet Art. 28(2) GDPR, which section 2 purports to follow. The rationale adds EDPB Opinion 22/2024, para. 27: even a general authorisation should come with a sub-processor list approved at signature and active notice of changes with time to object |
 | 7 | `security` | "Industry standard" measures appropriate to the provider's size | medium | Unmeasurable and unauditable, though an obligation exists |
-| 8 | `ip_and_model_training` | Perpetual, irrevocable licence to train models on Customer Data, including personal data | high | No lawful basis under § 2's documented-instructions limit; would make the provider a controller for that processing |
+| 8 | `ip_and_model_training` | Perpetual, irrevocable licence to train models on Customer Data, including personal data | high | No lawful basis under section 2's documented-instructions limit; would make the provider a controller for that processing |
 | 9 | `indemnity` | Customer indemnifies provider, including for the provider's own IP infringement | high | Reverses the normal allocation; the party that built the service bears none of the risk |
 | 10 | `fees` | Increase at any time on 30 days' notice, no termination right | high | A unilateral right to reprice a locked-in customer |
-| 11 | `data_export_on_termination` | Deletion 7 days after termination, export only on request | medium | Risk of irreversible data loss; 30 days with a standing export right is ordinary |
+| 11 | `data_export_on_termination` | Deletion 7 days after termination, export only on request | medium | Risk of irreversible data loss. The rationale adds the Data Act (Regulation (EU) 2023/2854): for a data processing service, Art. 25(2)(g) requires a data retrieval period of at least 30 calendar days and Art. 25(2)(h) permits erasure only after it, so 30 days is the statutory floor as well as market practice |
 
 Eleven clause types, eight risk flags, three clean clauses.
 
@@ -106,12 +106,12 @@ Eleven clause types, eight risk flags, three clean clauses.
 
 The clause types follow Art. 28(3) lit. a to h GDPR in the regulation's own order, plus Chapter V transfers and governing law. Following the instrument's own enumeration is a deliberate rule of the annotation guideline.
 
-| § | Clause type | Art. 28(3) | Gold severity | Why |
+| No. | Clause type | Art. 28(3) | Gold severity | Why |
 |---|---|---|---|---|
 | 1 | `documented_instructions` | lit. a | none (clean) | Tracks the article |
 | 2 | `confidentiality` | lit. b | none (clean) | Tracks the article |
 | 3 | `security_measures` | lit. c (Art. 32) | none (clean) | Adequate, summary on request |
-| 4 | `subprocessor_authorization` | lit. d, Art. 28(2) | high | Processor appoints at its discretion, informs only after the change and the controller waives any objection, so the required authorisation disappears |
+| 4 | `subprocessor_authorization` | lit. d, Art. 28(2) | high | Processor appoints at its discretion, informs only after the change and the controller waives any objection, so the required authorisation disappears. EDPB Opinion 22/2024, para. 27, is cited for the point that a waiver of the right to object leaves nothing of a general authorisation |
 | 5 | `data_subject_rights_assistance` | lit. e | none (clean) | Tracks the article |
 | 6 | `breach_and_dpia_assistance` | lit. f, Art. 33(2) | medium | 14 days to notify a breach cannot fit inside the controller's own 72-hour deadline; a reviewer who accepted it with reasons would still not be negligent |
 | 7 | `deletion_return` | lit. g | high | Indefinite retention for the processor's own purposes, including model training, makes it a controller without a lawful basis |
@@ -193,11 +193,20 @@ Span coverage asks, independently of the labels the review used, whether the rev
 
 Span coverage measures where a review looked, not whether its conclusion was right. It exists because of a live-run finding (section 9).
 
-### 6.5 Duplicates and conflicts
+### 6.5 Short citations and risk flags without evidence
+
+Exact-span grounding has a gap: a substring search accepts any quote whose characters occur somewhere in the contract. A one-word quote such as "the", or a fragment such as "confiden" inside "confidential", is therefore always grounded. Under the old policy v2, a review of the NDA that named every clause and risk correctly and gave every citation the quote "the" scored grounding 1.0 and was decided `PILOT_ELIGIBLE`. Policy v2.1 (October 2026) closes the gap with two rows.
+
+- **Short citations** count grounded quotes of fewer than three words. A one- or two-word match identifies no passage, so it is no quotation. Any short citation is a blocker, so the "the" review is now `REJECT`. Three words is the lowest floor that clears every committed output: the shortest live-run quote has three words.
+- **Risk flags without evidence** list the flagged clauses that have no grounded quote inside their region (the same region span coverage uses). A review that flags a clause without quoting from it goes to human review.
+
+NDA stub: **0** short citations and **0** flags without evidence. On the other two contracts the second row catches something instructive. The SaaS stub flags `indemnity` and `data_export_on_termination` without quoting either, and the DPA stub flags `audit_rights` and `international_transfers` without quoting either. These are four of the five clauses whose severity the stub also gets wrong, so the missing evidence and the wrong judgment sit on the same clauses.
+
+### 6.6 Duplicates and conflicts
 
 If two of the review's labels collapse onto one clause after alias mapping, the second is a duplicate. If the two flags carry different severities, the review contradicts itself and the clause is a conflict. An earlier version silently kept the last flag; the harness now reports both.
 
-### 6.6 Legacy risk-flag accuracy
+### 6.7 Legacy risk-flag accuracy
 
 The share of gold risks predicted at the right severity: 3 of 6 = **0.50**. It ignores false positives entirely (twenty spurious flags score the same as none), so it is published only as a diagnostic and never decides anything.
 
@@ -205,12 +214,13 @@ The share of gold risks predicted at the right severity: 3 of 6 = **0.50**. It i
 
 ### 7.1 The release policy
 
-`strict-legal-release-policy.v2` lives in one typed registry (`REQUIREMENTS` in `src/contract_eval/release_certificate.py`) that drives the decision, the published policy, the reported scores and the verifier.
+`strict-legal-release-policy.v2.1` lives in one typed registry (`REQUIREMENTS` in `src/contract_eval/release_certificate.py`) that drives the decision, the published policy, the reported scores and the verifier.
 
 | Requirement | Condition | Class |
 |---|---|---|
 | Citation grounding | 100 percent | blocker |
 | Unsupported citations | zero | blocker |
+| Short citations (under three words) | zero | blocker |
 | Clause precision | 1.0 | review item |
 | Clause recall | 1.0 | review item |
 | Risk precision | 1.0 | review item |
@@ -218,8 +228,9 @@ The share of gold risks predicted at the right severity: 3 of 6 = **0.50**. It i
 | Severity accuracy | 1.0 | review item |
 | Duplicate flags | none | review item |
 | Conflicting flags | none | review item |
+| Risk flags without evidence | none | review item |
 
-Any blocker gives `REJECT`. Otherwise any review item gives `HUMAN_REVIEW_REQUIRED`. Only a case that passes all nine is `PILOT_ELIGIBLE`. A suite takes the worst decision among its cases.
+Any blocker gives `REJECT`. Otherwise any review item gives `HUMAN_REVIEW_REQUIRED`. Only a case that passes all eleven is `PILOT_ELIGIBLE`. A suite takes the worst decision among its cases.
 
 The asymmetry is the core legal judgment of the policy. A wrong severity or a missed clause is a quality problem a supervising lawyer can catch and correct. A fabricated quotation destroys the reviewer's ability to trust anything else in the review, because the lawyer can no longer rely on the citations to check the conclusions. Hence a single fabricated quote is fatal.
 
@@ -233,11 +244,11 @@ The asymmetry is the core legal judgment of the policy. A wrong severity or a mi
 
 From [`examples/release-certificate.md`](../examples/release-certificate.md):
 
-| Case | Decision | Grounding | Unsupported | Clause P | Risk P | Risk R | Severity |
-|---|---|---:|---:|---:|---:|---:|---:|
-| dpa | REJECT | 0.88 | 1 | 0.91 | 1.00 | 1.00 | 0.60 |
-| nda | REJECT | 0.89 | 1 | 0.92 | 0.83 | 0.83 | 0.60 |
-| saas | REJECT | 0.89 | 1 | 0.92 | 1.00 | 0.88 | 0.57 |
+| Case | Decision | Grounding | Unsupported | Short | Clause P | Risk P | Risk R | Severity | Flags without evidence |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| dpa | REJECT | 0.88 | 1 | 0 | 0.91 | 1.00 | 1.00 | 0.60 | 2 |
+| nda | REJECT | 0.89 | 1 | 0 | 0.92 | 0.83 | 0.83 | 0.60 | 0 |
+| saas | REJECT | 0.89 | 1 | 0 | 0.92 | 1.00 | 0.88 | 0.57 | 2 |
 
 What the stub gets wrong on the other two contracts:
 
@@ -299,7 +310,7 @@ A second lesson came from an earlier report. The 2026-08-28 table was transcribe
 ## 10. Design principles
 
 1. **Deterministic grading, no LLM judge.** An LLM grader introduces a second model whose errors are unmeasured and whose output varies between runs. Exact-span grounding and set comparisons are transparent: anyone can check a score by hand.
-2. **Exact-span grounding.** A lawyer relies on a citation to verify a conclusion. A paraphrase that looks like a quotation is worse than no citation, because it creates false confidence.
+2. **Exact-span grounding with a floor.** A lawyer relies on a citation to verify a conclusion. A paraphrase that looks like a quotation is worse than no citation, because it creates false confidence. A quote must also have at least three words and a flagged clause must be quoted from, because a one-word "quote" passes any substring test and proves nothing.
 3. **One fabricated citation means REJECT.** Severity errors are correctable under supervision; fabricated evidence undermines the supervision itself.
 4. **Penalise over-flagging.** A review that flags everything shifts the work back to the lawyer and hides the real risks among noise. Risk precision catches it.
 5. **Score severity separately from detection.** Finding a clause and judging how serious it is are different skills. The stub shows the gap: near-perfect coverage, 57 to 60 percent severity.
@@ -313,6 +324,7 @@ A second lesson came from an earlier report. The 2026-08-28 table was transcribe
 13. **Offline by default.** The default path needs no network and no API key; live adapters are opt-in and import their SDKs lazily.
 14. **Human in the loop.** No verdict authorises autonomous reliance. Every flag and citation must be confirmed by a qualified lawyer.
 15. **Honest limitations.** Limits are documented next to the claims they qualify: one annotator, procedural blindness, label dependence, rationales not scored.
+16. **Dated legal sources.** Every statutory citation in the gold sets, contracts and guides has a row in [`docs/legal-currency.md`](legal-currency.md) recording the source checked and the date, and a test fails if a citation has no row. A legal benchmark goes stale when the law moves, and the ledger shows when each point was last confirmed.
 
 ## 11. Gold schema v2 and the second annotator
 
@@ -320,7 +332,8 @@ The current gold sets (schema v1) are one reviewer's judgment. The repository is
 
 - **Atomic obligations.** Schema v2 replaces named clauses with 33 atomic obligations, each anchored to raw character offsets in the contract. Candidates live in [`annotations/drafts/`](../annotations/README.md) and are validated on every run.
 - **Evidence-bound scoring.** `evaluate-obligations` credits a finding only when the citations it names resolve to the obligation's text span. What a review calls a clause can then neither earn nor lose credit.
-- **Blind second annotation.** A second lawyer, Karsten Schmidt, agreed to annotate the three contracts blind. The pack was sent on 2026-09-06 and has not come back. The pack withholds the gold set, rationales, aliases, model output and scores.
+- **Blind second annotation.** A second lawyer (recorded as Annotator B) agreed to annotate the three contracts blind. The pack was sent on 2026-09-06 and has not come back. The pack withholds the gold set, rationales, aliases, model output and scores. Annotators appear in the repository by role label only, because a public repository is a permanent, searchable record; `tests/test_annotator_names.py` fails if either name reappears.
+- **Erratum.** On 2026-10-31 an erratum to the pack's primary-law reference list was recorded in [`annotations/errata/`](../annotations/errata/2026-10-31-pack-erratum.md): Art. 28(3)(f) GDPR also reaches Art. 34 and Art. 36, and Chapter V runs to Art. 50. The sent pack itself stays frozen.
 - **Blindness is procedural.** The repository is public, so a determined reviewer could find the answers. Blindness rests on the reviewer's undertaking, and every agreement statistic will carry that limitation.
 - **Adjudication.** When the return arrives, obligations are matched by span overlap (two people working blind will not choose the same names), and the comparison reports obligation agreement, severity agreement and linearly weighted Cohen's kappa. Each disagreement becomes a ledger row that must be resolved in writing before the gold set can be frozen.
 - **Policy v3 refuses to run.** The stricter v3 policy raises `GoldNotAdjudicated` for any gold set that is not frozen and adjudicated. Running it on single-annotator candidates would produce a stricter-looking instrument whose judgment is still one unreviewed opinion.
@@ -343,9 +356,10 @@ The current gold sets (schema v1) are one reviewer's judgment. The repository is
 | GitHub Action | `action.yml` | Fails another repository's CI job on `REJECT` |
 | Playground | `playground/` | Browser page that runs the real package through Pyodide (Python compiled to WebAssembly); the review never leaves the tab and the result matches the CLI byte for byte |
 | Results site | `scripts/build_site.py` | Static GitHub Pages site with the scorecard, certificate, live run, leaderboard and robustness report |
+| promptfoo example | `examples/promptfoo/` | Runs the release gate as an assertion inside promptfoo, a common LLM testing tool |
 | Evidence Lab | separate repository `contract-eval-web` | A TypeScript port of the scorer for interactive exploration, kept identical by parity vectors pinned in `examples/web-parity-vectors.json` |
 
-Stack: Python 3.11 or later (CI tests 3.11, 3.12 and 3.13), Pydantic, pytest, uv. The only runtime dependency is Pydantic. Licence: MIT. Version 0.7.0rc1.
+Stack: Python 3.11 or later (CI runs 3.11 to 3.15), Pydantic, pytest, mypy, uv. The only runtime dependency is Pydantic; the Anthropic SDK is an optional extra for live runs. Licence: MIT. Version 0.7.0rc1.
 
 ## 13. How it compares with other work
 
@@ -366,7 +380,7 @@ State these before an interviewer finds them.
 - **One annotator.** The gold sets encode one lawyer's judgment until the blind second annotation is adjudicated.
 - **One perspective.** All gold sets review for Northwind under German law with a conservative appetite. A provider-side or commercially minded reviewer would defend different severities on the same clauses.
 - **Rationales are not scored.** A review that reaches the right severity for the wrong reason earns the point. The NDA stub calls the perpetual term "unenforceable in substance", which the gold rationale deliberately does not claim, and still scores.
-- **Grounding is location-blind.** A quote counts as grounded if it appears anywhere in the contract, even if it is attached to the wrong clause.
+- **Grounding is location-blind.** A quote counts as grounded if it appears anywhere in the contract, even if it is attached to the wrong clause. Policy v2.1 narrows the gap from two sides: a flagged clause needs a grounded quote inside it, and a quote needs at least three words. A quote placed in the right clause can still support the wrong conclusion.
 - **Labels still matter for clause scores.** Aliases help but do not transfer between runs; span coverage measures placement, not comprehension.
 - **Live runs are snapshots.** Model output varies between runs, so a committed live run proves what happened on that date with that model and harness version, nothing more.
 - **Strict thresholds.** Requiring 1.0 on every review item means almost any real review lands at `HUMAN_REVIEW_REQUIRED`. That is intentional for a conservative legal policy and would be the first parameter a firm might debate.
@@ -433,6 +447,9 @@ Complete and adjudicate the second annotation; add a provider-side gold set over
 **What does PILOT_ELIGIBLE actually permit?**
 A supervised pilot in which a named lawyer confirms every flag and citation before reliance. It never permits autonomous review.
 
+**Could a review game the grounding test with very short quotes?**
+It could under the old policy: a review quoting only the word "the" scored perfect grounding and passed. Policy v2.1 now blocks any quote under three words and sends to human review any flagged clause that has no grounded quote inside it. A quote placed in the right clause can still support a wrong conclusion, and catching that remains the supervising lawyer's job.
+
 **Why are the thresholds at 100 percent?**
 The policy is deliberately conservative: anything short of perfect goes to a human. A firm could relax review-item thresholds for a lower-risk use case, but the blockers (grounding and fabricated citations) should stay absolute.
 
@@ -440,7 +457,7 @@ The policy is deliberately conservative: anything short of perfect goes to a hum
 The gold sets rest on one person's judgment, and blindness of the second annotation depends on that annotator's undertaking because the repository is public. Both are documented, and the stricter policy is held back until they are resolved.
 
 **What legal knowledge went into the gold sets?**
-Art. 28 GDPR (the eight mandatory elements of a processor contract, Art. 28(2) authorisation of sub-processors), Art. 33 breach timelines, Chapter V transfer mechanisms, § 130(1) BGB on when a declaration takes effect, the German regime for standard business terms, and market practice on residuals, assignment, compelled disclosure, liability caps, renewals, indemnities and model-training licences.
+Art. 28 GDPR (the eight mandatory elements of a processor contract, Art. 28(2) authorisation of sub-processors), EDPB Opinion 22/2024 on processors and sub-processors, Art. 33 breach timelines, Chapter V transfer mechanisms, the Data Act's switching rules (Art. 25 of Regulation (EU) 2023/2854), § 130(1) BGB on when a declaration takes effect, the German regime for standard business terms, and market practice on residuals, assignment, compelled disclosure, liability caps, renewals, indemnities and model-training licences.
 
 ## 16. Glossary
 
