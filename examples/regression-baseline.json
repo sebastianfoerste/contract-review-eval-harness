@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-10-28T10:52:32.401731",
+  "timestamp": "2026-11-01T12:52:25.611986",
   "case": "all",
   "provenance": {
     "schema": "contract-review-eval.run-provenance.v1",
     "adapter": "stub",
-    "output_generated_at": "2026-10-28T10:52:32",
-    "scored_at": "2026-10-28T10:52:32",
+    "output_generated_at": "2026-11-01T12:52:25",
+    "scored_at": "2026-11-01T12:52:25",
     "scorer_version": "0.7.0rc1",
     "gold_set_sha256": {
       "nda": "ed95991a0f96b42d80a218a108feaac04904ed0fef15f6b077febd6dc31ced58",
-      "saas": "00681d1682ac5a079e03aef11c70af7d9ad9ca4eb206f929a68da7b97b13791e",
-      "dpa": "e7f5ee192939560fa0ed3dd013eb77c438ab9f7fd27659d590471977d37f4a75"
+      "saas": "cb413e530531a93ad611dc323ecc6ec78450bee4c577ec84a9bdc23d42c55224",
+      "dpa": "b6435de32bc0d76ae8be32661266d15332a3321e85f946810a9cee41581ecc05"
     },
     "source_contract_sha256": {
       "nda": "915cfb648881a251528062ec95a4131ba8e9e72f30e1f639747293b4df3bdb43",
@@ -42,6 +42,7 @@
       },
       "risk_duplicate_flags": [],
       "risk_conflicting_flags": [],
+      "risk_flags_without_evidence": [],
       "span_coverage": 0.7272727272727273,
       "span_uncovered_clauses": [
         "injunctive_relief",
@@ -52,6 +53,7 @@
       "citation_total": 9,
       "citation_grounding": 0.8888888888888888,
       "hallucination_count": 1,
+      "citation_short_count": 0,
       "thresholds": {
         "f1": 0.85,
         "risk_accuracy": 0.45,
@@ -80,6 +82,10 @@
       },
       "risk_duplicate_flags": [],
       "risk_conflicting_flags": [],
+      "risk_flags_without_evidence": [
+        "data_export_on_termination",
+        "indemnity"
+      ],
       "span_coverage": 0.7272727272727273,
       "span_uncovered_clauses": [
         "data_export_on_termination",
@@ -90,6 +96,7 @@
       "citation_total": 9,
       "citation_grounding": 0.8888888888888888,
       "hallucination_count": 1,
+      "citation_short_count": 0,
       "thresholds": {
         "f1": 0.85,
         "risk_accuracy": 0.45,
@@ -115,6 +122,10 @@
       },
       "risk_duplicate_flags": [],
       "risk_conflicting_flags": [],
+      "risk_flags_without_evidence": [
+        "audit_rights",
+        "international_transfers"
+      ],
       "span_coverage": 0.7,
       "span_uncovered_clauses": [
         "audit_rights",
@@ -125,6 +136,7 @@
       "citation_total": 8,
       "citation_grounding": 0.875,
       "hallucination_count": 1,
+      "citation_short_count": 0,
       "thresholds": {
         "f1": 0.85,
         "risk_accuracy": 0.45,
