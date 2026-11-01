@@ -35,7 +35,7 @@ sibling, run those targets directly:
 ```bash
 make test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check \
   capture-check replay-check live-run-check leaderboard-check schemas-check \
-  certificate-check certificate-verify robustness-check parity-check
+  certificate-check certificate-verify robustness-check parity-check matter-check
 ```
 
 ### Which targets mirror CI
@@ -61,6 +61,8 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 | Recomputed release certificate | `make certificate-verify` |
 | Robustness campaign and its artifacts | `make robustness-check` |
 | Web parity vectors | `make parity-check` |
+| Matter document hashes and answer offsets | `make matter-check` (its two `matter_sync.py` runs) |
+| Matter manifests, answers and fixtures | `make matter-check` |
 
 `evidence-check` and `adjudication-check` re-run parts of the suite that `make test`
 already covers. Three CI jobs have no Make target: `python-compat` runs the suite and
