@@ -17,6 +17,9 @@ Thirty-two clause types across three agreements:
 Each gold set records a `severity_rationale` naming why every flag carries its severity,
 so the calibration can be challenged rather than assumed, and a `clause_aliases` map
 declaring synonyms for the same clause so that vocabulary is not scored as legal error.
+The provisions those rationales cite are listed in the
+[legal currency ledger](legal-currency.md), with the official source each was checked
+against, the date it was last verified and what is pending.
 Both fields are typed and validated: unknown keys are rejected, and every risk flag must
 carry exactly one rationale. Alias validation is structural only and cannot establish
 that an alias is a genuine synonym, which is why they are manually reviewed. Some clauses in each agreement

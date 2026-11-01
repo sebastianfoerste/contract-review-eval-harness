@@ -169,3 +169,21 @@ def test_issue_template_config_is_well_formed() -> None:
 def test_annotator_form_warns_against_real_client_data() -> None:
     text = (ROOT / ".github" / "ISSUE_TEMPLATE" / "annotator.yml").read_text(encoding="utf-8")
     assert "real client data" in text
+
+
+def test_the_multi_case_scorecard_renders_the_same_rows_as_the_single_case_one() -> None:
+    """`evaluate --case all` must not silently drop a row the single-case table shows."""
+    case = load_case("nda")
+    review = get_adapter(live=False).review(case.source_text, "nda")
+    s = score_review(case.source_text, case.expected, review)
+    single = render(
+        "nda",
+        ClauseScore(s["clause_precision"], s["clause_recall"], s["clause_f1"]),
+        s["risk_flag_accuracy"],
+        CitationScore(s["citation_grounded"], s["citation_total"], s["citation_grounding"]),
+        s["hallucination_count"],
+        s,
+    )
+    multi = render_multi({"nda": s})
+    assert _row_labels(multi) == _row_labels(single)
+    assert {"Short citations", "Risk flags without evidence"} <= _row_labels(multi)

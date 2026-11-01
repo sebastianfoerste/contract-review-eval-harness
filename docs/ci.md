@@ -11,11 +11,16 @@ summary, and fails the step on `REJECT`.
 
 ```yaml
 - name: Score the reviews
-  uses: sebastianfoerste/contract-review-eval-harness@main   # pin a tag or SHA once released
+  uses: sebastianfoerste/contract-review-eval-harness@8d43239e9cc9bc2885c9b6a4f143740810753110 # main as of 2026-10-30
   with:
     reviews: reviews/*.json
     case: nda
 ```
+
+No release tag contains `action.yml` yet, so pin a full commit SHA: a tag or `@main`
+can move, a SHA cannot. Update the SHA deliberately when you want a newer scorer.
+`uses: sebastianfoerste/contract-review-eval-harness@main` follows the branch and is
+unpinned; use it only to try the action out.
 
 A complete workflow to copy is in
 [`examples/ci/contract-eval.yml`](../examples/ci/contract-eval.yml).

@@ -1,13 +1,30 @@
 # Weekly update pull requests for the SHA-pinned actions (the workflows and the
 # composite action.yml at the root) and for the Python dependencies in uv.lock.
+#
+# A cooldown holds a new release back for a week before Dependabot proposes it, and a
+# new major of a Python package for two, so a release that is pulled or patched within
+# days never reaches a pull request here. For github-actions only `default-days` is
+# supported. Minor and patch updates arrive grouped, one pull request per ecosystem; a
+# major update still gets its own.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      actions-minor-and-patch:
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      python-minor-and-patch:
+        update-types: ["minor", "patch"]
