@@ -131,7 +131,8 @@ that predates a change to the guideline, a playbook or the register fails.
 `make candidate-bundle` zips a pack that passes the same check and prints the
 archive's SHA-256. The build refuses to replace a pack folder in which a template
 has been filled in: returned and own annotations are kept outside
-`annotation-pack/`.
+`annotation-pack/`. The maintainer completes their own templates in such a copy
+before opening a returned annotation, so the two readings stay independent.
 
 A template carries eight binding fields the annotator leaves unchanged: schema,
 variant, playbook and the hashes of the document, the playbook, the corpus
@@ -196,7 +197,8 @@ entry-level figures do not depend on it.
 Annotators write an agreed label in the `annotator` field, not a name (owner's
 decision of 13 October 2026), because an experiment needs the annotation files
 beside the reference and this repository is public. The dated note that
-identifies the person behind a label is kept outside the repository. An
+identifies the person behind a label also records the date the pack was sent,
+the archive's SHA-256 and the remit, and is kept outside the repository. An
 adjudication record names its adjudicator. No code can tell a label from a name:
 check the field before a returned file is committed.
 
