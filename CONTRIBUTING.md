@@ -62,7 +62,7 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 | Robustness campaign and its artifacts | `make robustness-check` |
 | Web parity vectors | `make parity-check` |
 | Matter document hashes and answer offsets | `make matter-check` (its two `matter_sync.py` runs) |
-| Matter manifests, answers and fixtures | `make matter-check` |
+| Matter manifests, answers and fixtures | `make matter-check` (its `contract_eval matter-check` run) |
 
 `evidence-check` and `adjudication-check` re-run parts of the suite that `make test`
 already covers. Three CI jobs have no Make target: `python-compat` runs the suite and

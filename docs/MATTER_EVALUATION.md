@@ -161,11 +161,12 @@ Rules the validator enforces:
 - Two issues of one task may not have identical evidence, and the evidence of one may
   not be contained in the other's. Give each issue a passage of its own.
 - A passage must be unique in its document once case and punctuation are ignored.
-- Set `status.annotation_status` to `draft` or `candidate`, and `annotator_id` to the
-  author's role label from `contract_eval.annotators` (for example `Annotator A`), never
-  a personal name, when the first issue is added. The first matter's round 1 answers
-  keep a name until their next revision; `tests/test_annotator_names.py` allows it
-  there.
+- Set `status.annotation_status` to `draft` or `candidate` when the first issue is added.
+
+Record `annotator_id` as the author's role label from `contract_eval.annotators` (for
+example `Annotator A`), never a personal name. The validator does not check this;
+`tests/test_annotator_names.py` rejects the annotators' names. The first matter's round 1
+answers keep a name until their next revision, and that test allows it there.
 
 Write the answers before reading any model output for the matter. Answers written
 after looking at what a system found inherit its blind spots.

@@ -51,9 +51,9 @@ ALLOWED = {
     ("action.yml", "Annotator A"): 2,
     # Not a notice: round 1's matter answers still name their annotator. The held-out
     # check hashes each answers file whole, so editing round1.json would make every
-    # later round 1 evaluation-split run print Not held out. The role label replaces
-    # the name in the next revision of round 1's answers; the count then stops
-    # matching, and this entry goes with the name.
+    # later round 1 run that scores the evaluation split print Not held out. The role
+    # label replaces the name in the next revision of round 1's answers; the count then
+    # stops matching, and this entry goes with the name.
     ("matters/northwind-saas/expected/round1.json", "Annotator A"): 2,
 }
 
