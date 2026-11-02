@@ -301,7 +301,7 @@ def plan_experiment(corpus_dir: Path, *, experiment_id: str, design: Design, arm
     for variant in design.variants:
         corpus.document(variant)
     for variant, repaired in design.repairedEntries.items():
-        known = set()
+        known: set[str] = set()
         for book in design.playbooks:
             known.update(e.id for e in Playbook.model_validate_json(
                 (corpus_dir / f"{book}.json").read_text(encoding="utf-8")).entries)
@@ -531,7 +531,7 @@ def _read_attempts(experiment: Experiment, experiment_dir: Path, corpus_dir: Pat
         # the experiment does not declare, would be a result nobody counted, so it is
         # refused, never ignored.
         raise ValueError(f"{strays[0]} is not a preregistered attempt slot")
-    loaded = []
+    loaded: list[tuple[AttemptRef, CandidateRun | None, bytes]] = []
     recordings: dict[str, str] = {}
     requests: dict[str, str] = {}
     for attempt in experiment.attempts:
@@ -587,7 +587,7 @@ def register(experiment: Experiment, experiment_dir: Path, ledger: Ledger | None
     out, and a slot bound while empty could never take its recording.
     """
     corpus_dir, corpus = resolve_corpus(experiment, experiment_dir)
-    named, skip = frozenset(lost), frozenset()
+    named, skip = frozenset(lost), frozenset[str]()
     if experiment.design.mode == "LIVE":
         empty = set(empty_unbound_slots(experiment, experiment_dir))
         unknown = sorted(named - empty)
@@ -644,6 +644,7 @@ def reserve_arm(experiment: Experiment, experiment_dir: Path, ledger: Ledger, *,
     if pending is not None:
         # The ledger is saved before the experiment. If the second save failed, the same
         # command binds the reservation that already exists instead of asking for another.
+        assert pending.price is not None  # Entry.shape_by_kind: a reservation records its price
         other = [name for name, wanted, held in (
             ("provider", provider, pending.price.provider), ("region", region, pending.price.region),
             ("input maximum", max_input_tokens, pending.maxInputTokensPerAttempt),
@@ -704,6 +705,7 @@ def _own_reservation(experiment: Experiment, ledger: Ledger, arm_id: str):
     """The ledger reservation an arm is bound to, checked field by field against the snapshot."""
     arm = experiment.arm(arm_id)
     bound = arm.budgetReservation
+    assert bound is not None  # every caller checks the binding first
     entry = find_entry(ledger, bound.ledgerEntryId)
     if entry is None or entry.kind != "RESERVATION":
         raise ValueError(f"the ledger has no reservation {bound.ledgerEntryId} for arm {arm_id}")
@@ -717,6 +719,7 @@ def _own_reservation(experiment: Experiment, ledger: Ledger, arm_id: str):
         # settlement is recomputed from are rewritten. The entry hash covers them all.
         raise ValueError(f"reservation {entry.id} in the ledger is not the entry arm {arm_id} was bound to: its "
                          "price terms, token maxima, retry multiplier or note were changed afterwards")
+    assert entry.price is not None  # Entry.shape_by_kind: a reservation records its price
     if entry.price.model != arm.model:
         raise ValueError(f"reservation {entry.id} is priced for {entry.price.model}, the arm runs {arm.model}")
     if entry.attempts < len(experiment.slots(arm_id)):
@@ -751,6 +754,7 @@ def _check_ledger(experiment: Experiment, ledger: Ledger, arm_id: str,
     if closure is not None and closure.kind == "VOID" and attempts:
         raise ValueError(f"reservation {reservation.id} was voided although arm {arm_id} has attempts")
     if closure is not None and closure.kind == "SETTLEMENT":
+        assert closure.observedAttempts is not None  # Entry.shape_by_kind: a settlement records it
         if len(attempts) > closure.observedAttempts:
             raise ValueError(f"arm {arm_id} has attempts that were registered after it was settled")
         if len(attempts) < closure.observedAttempts:
@@ -1251,8 +1255,8 @@ def render_markdown(report: dict) -> str:
                   "| Playbook | Variant | Attempts | Comparable | " + " | ".join(name for name, _ in COMPARED) + " |",
                   "| --- | --- | --- | --- | " + " | ".join("---" for _ in COMPARED) + " |"]
         for item in report["comparisons"]:
-            where = (item["playbook"], item["variant"])
-            ran = f"{attempts_of[(item['baseline'], *where)]}, {attempts_of[(item['iteration'], *where)]}"
+            cell_key = (item["playbook"], item["variant"])
+            ran = f"{attempts_of[(item['baseline'], *cell_key)]}, {attempts_of[(item['iteration'], *cell_key)]}"
             if not item["comparable"]:
                 lines.append(f"| {item['playbook']} | {item['variant']} | {ran} | no: {item['reason']} | "
                              + " | ".join("" for _ in COMPARED) + " |")

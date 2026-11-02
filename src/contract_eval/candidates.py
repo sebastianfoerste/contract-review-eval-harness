@@ -355,7 +355,8 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
             finding.quote in anchors[finding.anchorId] and finding.insertionAnchorId is None
         ) if not finding.missingClause else None
         substantive = (
-            quote_valid is True and _substantive_quote(finding.quote, anchors[finding.anchorId])
+            quote_valid is True and finding.anchorId is not None
+            and _substantive_quote(finding.quote, anchors[finding.anchorId])
         ) if not finding.missingClause else None
         entry = entries.get(finding.playbookReference)
         reference_valid = entry is not None and entry.category == finding.category
@@ -401,7 +402,7 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
                 "falseNegatives": len(expected_entries - raised_entries),
             },
         }
-    unavailable = {"severityAccuracy": "Native output has no severity field",
+    unavailable: dict[str, str | None] = {"severityAccuracy": "Native output has no severity field",
                    "wholeDocumentClauseCoverage": "Native output has no complete clause inventory",
                    "amendmentQuality": "Requires separate lawyer review"}
     if artifact.run.usage is None:
@@ -420,7 +421,7 @@ def evaluate_candidates(artifact: CandidateRun, reference: CandidateReference | 
         "trivialQuotationCount": sum(r["quotationValid"] is True and not r["quotationSubstantive"] for r in rows),
         "missingClauseValid": sum(r["missingClauseValid"] is True for r in rows),
         "missingClauseDenominator": sum(r["missingClauseValid"] is not None for r in rows),
-        "playbookReferenceValid": sum(r["playbookReferenceValid"] for r in rows),
+        "playbookReferenceValid": sum(r["playbookReferenceValid"] is True for r in rows),
         # What the application's own validators decide, recomputed here: it passes an
         # output on only when every finding in it is valid, and discards the rest whole.
         "allFindingsValid": artifact.findings is not None and all(r["evidenceValid"] for r in rows),

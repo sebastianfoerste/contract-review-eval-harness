@@ -138,6 +138,9 @@ class Entry(Strict):
             absent = [name for name, value in hold.items() if value is None]
             if absent:
                 raise ValueError("a reservation records " + ", ".join(absent))
+            assert (self.price is not None and self.maxInputTokensPerAttempt is not None
+                    and self.maxOutputTokensPerAttempt is not None and self.retryMultiplier is not None
+                    and self.conversionAllowancePercent is not None)
             if self.price.listCurrency == "EUR" and self.conversionAllowancePercent != 0:
                 raise ValueError("a price listed in EUR carries no conversion allowance")
             if self.price.listCurrency != "EUR" and self.conversionAllowancePercent == 0:
@@ -162,6 +165,7 @@ class Entry(Strict):
         absent = [name for name, value in evidence.items() if value is None]
         if absent:
             raise ValueError("a settlement records " + ", ".join(absent))
+        assert self.attemptsWithoutUsage is not None and self.observedAttempts is not None
         if self.attemptsWithoutUsage > self.observedAttempts:
             raise ValueError("attempts without usage are a share of the observed attempts")
         return self
@@ -205,8 +209,10 @@ class Ledger(Strict):
                 raise ValueError(f"{entry.kind.lower()} {entry.id} does not close an earlier reservation of the same arm")
             if target.id in closed:
                 raise ValueError(f"reservation {target.id} is closed twice")
-            if entry.kind == "SETTLEMENT" and entry.observedAttempts > target.attempts:
-                raise ValueError(f"settlement {entry.id} observes more attempts than its reservation covers")
+            if entry.kind == "SETTLEMENT":
+                assert entry.observedAttempts is not None  # Entry.shape_by_kind requires it on a settlement
+                if entry.observedAttempts > target.attempts:
+                    raise ValueError(f"settlement {entry.id} observes more attempts than its reservation covers")
             closed.add(target.id)
             committed += entry.amountMinorUnits - target.amountMinorUnits
         keys = [price.key() for price in self.prices]
@@ -336,6 +342,9 @@ def settlement_minor_units(reservation: Entry, usages: list[tuple[int, int] | No
         raise ValueError("only a reservation can be settled")
     price = reservation.price
     allowance = reservation.conversionAllowancePercent
+    # Entry.shape_by_kind requires every hold field on a reservation.
+    assert (price is not None and allowance is not None and reservation.maxInputTokensPerAttempt is not None
+            and reservation.maxOutputTokensPerAttempt is not None and reservation.perAttemptMinorUnits is not None)
     reported = [usage for usage in usages if usage is not None and usage[0] > 0]
     unbelieved = [usage for usage in usages if usage is not None and usage[0] <= 0]
     unreported = len(usages) - len(reported) - len(unbelieved)
@@ -358,6 +367,7 @@ def set_price(ledger: Ledger, price: Price) -> None:
     """
     for reservation in open_reservations(ledger):
         held = reservation.price
+        assert held is not None  # Entry.shape_by_kind requires a price on a reservation
         if held.key() == price.key() and (
                 held.inputMinorUnitsPerMillionTokens, held.outputMinorUnitsPerMillionTokens,
                 held.listCurrency) != (
@@ -427,7 +437,9 @@ def void(ledger: Ledger, *, entry_id: str, reservation_id: str, now: datetime, n
 
 
 def status(ledger: Ledger) -> dict:
-    reservations = {e.id: e for e in ledger.entries if e.kind == "RESERVATION"}
+    # Keyed by entry id; the key type admits a settlement's optional reservationId, which
+    # Ledger.history_is_sound has already resolved to an earlier reservation.
+    reservations: dict[str | None, Entry] = {e.id: e for e in ledger.entries if e.kind == "RESERVATION"}
     settlements = [e for e in ledger.entries if e.kind == "SETTLEMENT"]
     overruns = {e.id: e.amountMinorUnits - reservations[e.reservationId].amountMinorUnits
                 for e in settlements if e.amountMinorUnits > reservations[e.reservationId].amountMinorUnits}

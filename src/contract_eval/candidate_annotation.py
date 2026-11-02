@@ -381,12 +381,12 @@ def build_pack(corpus_dir: Path, out: Path, guideline: Path | None = None) -> di
         put(f"playbooks/{name}.md", "\n".join(lines) + "\n")
         put(f"playbooks/{name}.json", raw)
         for document in corpus.documents:
-            template = Annotation.model_validate({
+            blank = Annotation.model_validate({
                 "schema": ANNOTATION_SCHEMA, "variant": document.variant, "playbook": name,
                 "documentSha256": document.sha256, "playbookSha256": book_hash, **bindings,
             })
             put(f"templates/{document.variant}-{name}.annotation.json",
-                json.dumps(template.model_dump(by_alias=True), indent=2, ensure_ascii=False) + "\n")
+                json.dumps(blank.model_dump(by_alias=True), indent=2, ensure_ascii=False) + "\n")
     register = load_source_register(corpus_dir)
     if register is not None:
         copy(corpus_dir / "sources.json", "sources/sources.json")

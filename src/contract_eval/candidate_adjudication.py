@@ -455,7 +455,7 @@ def resolve(a: Annotation, b: Annotation, adjudication: Adjudication, corpus_dir
         raise ValueError("adjudication has no date")
     if adjudication.independentAnnotator is None:
         raise ValueError("adjudication does not say which annotator is independent of the maintainer")
-    if not (adjudication.reviewerEvidence or "").strip():
+    if adjudication.reviewerEvidence is None or not adjudication.reviewerEvidence.strip():
         raise ValueError("adjudication has no reference to the note that identifies the independent annotator")
     if adjudication.adjudicatedOn < max(a.annotatedOn, b.annotatedOn):
         raise ValueError("adjudication is dated before an annotation it resolves")
