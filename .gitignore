@@ -25,7 +25,8 @@ wheels/
 # Environment files
 .env
 
-# Capture artifacts from local runs. Public examples are committed under examples/captures/.
+# Capture artifacts from local runs. Public case examples are committed under
+# examples/captures/, matter captures under matters/<id>/captures/.
 /captures/
 
 # Exported annotation bundle, regenerate with make annotation-bundle

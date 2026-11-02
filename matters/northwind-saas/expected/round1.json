@@ -1,0 +1,406 @@
+{
+  "schema": "contract-review-eval.matter-expected.v1",
+  "matter_id": "northwind-saas",
+  "round_id": "round1",
+  "status": {
+    "annotator_id": "Sebastian Foerste",
+    "annotation_status": "draft",
+    "adjudication_status": "not_started",
+    "legal_position_date": "2026-10-06"
+  },
+  "comment": "Round 1 gold answers for the Northwind Materials SaaS procurement matter.",
+  "issues": [
+    {
+      "issue_id": "r1.model_training_conflict",
+      "task": "conflict",
+      "split": "dev",
+      "title": "Model training licence contradicts oral commitment",
+      "description": "SaaS clause 8 grants an irrevocable licence to train models on Northwind data including personal data, contradicting oral assurances that customer data is never used for training.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "perpetual, irrevocable, worldwide licence to\nuse Customer Data, including Customer Personal Data",
+          "start": 1449,
+          "end": 1545
+        },
+        {
+          "document_id": "negotiation_record",
+          "quote": "customer data is never used to train\nCverbio models",
+          "start": 411,
+          "end": 462
+        }
+      ],
+      "rationale": "The SaaS agreement grants an irrevocable licence to train models on Northwind data including personal data, contradicting the vendor oral representation on the kick-off call that customer data is never used for model training.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.deletion_retention_conflict",
+      "task": "conflict",
+      "split": "eval",
+      "title": "Contradictory data retention and deletion regimes on termination",
+      "description": "SaaS section 11 mandates deletion of all Customer Data within 7 days, whereas DPA section 7 permits indefinite retention for model training.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "delete all Customer Data seven (7) days after termination",
+          "start": 2092,
+          "end": 2149
+        },
+        {
+          "document_id": "dpa",
+          "quote": "retain personal data\nfor its own legitimate business purposes, including product improvement and\nmodel training, for an indefinite period",
+          "start": 2096,
+          "end": 2233
+        }
+      ],
+      "rationale": "The 7-day deletion requirement upon termination in the SaaS agreement directly contradicts the processor right under Section 7 of the DPA to retain personal data indefinitely for its own purposes.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.subprocessor_notice_conflict",
+      "task": "conflict",
+      "split": "eval",
+      "title": "Conflicting sub-processor appointment and notice mechanisms",
+      "description": "SaaS section 6 allows sub-processor appointment via website publication with no notice, while DPA section 4 requires post-change notification and a waiver of objection.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "appoint sub-processors to process Customer Personal Data and\nshall publish an updated list on its website. No notice to the Customer is\nrequired",
+          "start": 1094,
+          "end": 1238
+        },
+        {
+          "document_id": "dpa",
+          "quote": "inform\nthe Controller of any intended changes within a reasonable period after such\nchanges take effect",
+          "start": 1216,
+          "end": 1319
+        }
+      ],
+      "rationale": "The SaaS agreement and DPA specify irreconcilable notification mechanisms: website publication with no notice versus post-change notification.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.breach_notification_conflict",
+      "task": "conflict",
+      "split": "dev",
+      "title": "Breach notification timeline differs between DPA and security questionnaire",
+      "description": "DPA section 6 specifies a 14-day notice period for personal data breaches, whereas the security questionnaire commits to notification within 24 hours.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "dpa",
+          "quote": "notify the Controller of a personal data breach within\nfourteen (14) days of becoming aware of it",
+          "start": 1805,
+          "end": 1902
+        },
+        {
+          "document_id": "security_questionnaire",
+          "quote": "notified of security incidents affecting their data within\n24 hours of confirmation",
+          "start": 843,
+          "end": 926
+        }
+      ],
+      "rationale": "The completed security questionnaire states customers are notified of incidents within 24 hours, whereas Section 6 of the DPA allows 14 days, creating an irreconcilable timeline.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.contracting_entity_conflict",
+      "task": "conflict",
+      "split": "dev",
+      "title": "Split contracting entities across deal documents",
+      "description": "The SaaS agreement is with Cverbio Labs Inc., while the DPA is with Cverbio Analytics Inc., without joint liability or defined operational roles.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "between\nCverbio Labs Inc. (\"Provider\") and Northwind Materials GmbH (\"Customer\")",
+          "start": 114,
+          "end": 194
+        },
+        {
+          "document_id": "dpa",
+          "quote": "between Northwind\nMaterials GmbH (\"Controller\") and Cverbio Analytics Inc. (\"Processor\")",
+          "start": 96,
+          "end": 184
+        }
+      ],
+      "rationale": "The SaaS agreement is made with Cverbio Labs Inc. while the DPA is made with Cverbio Analytics Inc., splitting contractual privity across distinct legal entities without cross-guarantee.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.transfer_mechanism_conflict",
+      "task": "conflict",
+      "split": "eval",
+      "title": "Postponed transfer mechanism contradicts ongoing cross-border access",
+      "description": "DPA section 9 postpones transfer mechanisms until the need arises, but support teams in the US and India access production systems from go-live.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "dpa",
+          "quote": "address any\nrequired transfer mechanism separately if and when the need arises",
+          "start": 2665,
+          "end": 2743
+        },
+        {
+          "document_id": "negotiation_record",
+          "quote": "support and model operations teams are located in the United States and India\nand can access production data for troubleshooting",
+          "start": 1564,
+          "end": 1692
+        }
+      ],
+      "rationale": "The DPA postpones addressing transfer mechanisms until the need arises, but the negotiation record establishes that international remote access from the US and India is already active and intended from go-live.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.model_training_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Model training licence on customer data",
+      "description": "The licence to train machine learning models on Customer Data including personal data exceeds the playbook limit.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "licence to\nuse Customer Data, including Customer Personal Data, to develop and train the\nProvider's machine learning models and to create derivative products",
+          "start": 1483,
+          "end": 1640
+        }
+      ],
+      "expected_action": "reject",
+      "playbook_rule": "PB-02",
+      "rationale": "PB-02 limit explicitly mandates rejecting any licence or retention right that covers personal data.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-02"
+    },
+    {
+      "issue_id": "r1.reverse_indemnity_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Customer indemnity for provider IP infringement",
+      "description": "Customer indemnifies Provider against third-party claims that the service itself infringes IP rights.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "The Customer shall indemnify and hold harmless the Provider against all claims\narising from the use of the service, including claims that the service infringes\nthe intellectual property rights of a third party",
+          "start": 1660,
+          "end": 1869
+        }
+      ],
+      "expected_action": "reject",
+      "playbook_rule": "PB-13",
+      "rationale": "PB-13 limit rejects any indemnity under which Northwind bears claims concerning the vendor's own service or software.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-13"
+    },
+    {
+      "issue_id": "r1.fee_increase_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Unilateral uncapped fee increases",
+      "description": "Provider may increase fees at any time on 30 days notice with no customer termination right.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "The Provider may increase the fees at any time on thirty (30) days written notice.\nThe Customer has no right to terminate on account of a fee increase",
+          "start": 1885,
+          "end": 2035
+        }
+      ],
+      "expected_action": "reject",
+      "playbook_rule": "PB-09",
+      "rationale": "PB-09 limit rejects an uncapped right to increase fees and requires price certainty for the initial term.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-09"
+    },
+    {
+      "issue_id": "r1.subprocessor_waiver_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Discretionary sub-processor appointment and objection waiver",
+      "description": "Processor engages sub-processors at discretion and Controller waives the right to object.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "dpa",
+          "quote": "Controller waives any right to object to the\nappointment of a sub-processor",
+          "start": 1325,
+          "end": 1400
+        }
+      ],
+      "expected_action": "reject",
+      "playbook_rule": "PB-03",
+      "rationale": "PB-03 limit rejects appointment without prior notice and rejects any waiver of the right to object under Art. 28(2) GDPR.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-03"
+    },
+    {
+      "issue_id": "r1.audit_exclusion_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Total exclusion of on-site audits",
+      "description": "On-site inspections and audits are expressly excluded under the DPA.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "dpa",
+          "quote": "On-site inspections and audits by the\nController or an auditor mandated by the Controller are expressly excluded",
+          "start": 2375,
+          "end": 2487
+        }
+      ],
+      "expected_action": "reject",
+      "playbook_rule": "PB-06",
+      "rationale": "PB-06 limit rejects complete exclusion of on-site audits, which is required under Art. 28(3)(h) GDPR and needed for Northwind automotive customer pass-down obligations.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-06"
+    },
+    {
+      "issue_id": "r1.auto_renewal_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Auto-renewal 90-day notice window",
+      "description": "Contract auto-renews for 12 months unless cancelled 90 days prior to expiry.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "renews automatically for successive twelve (12) month terms unless\neither party gives ninety (90) days written notice prior to the end of the\nthen-current term",
+          "start": 893,
+          "end": 1052
+        }
+      ],
+      "expected_action": "negotiate",
+      "playbook_rule": "PB-08",
+      "rationale": "PB-08 fallback accepts automatic renewal with a notice period of 30 days or less. A 90-day window misses the fallback and must be negotiated down.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-08"
+    },
+    {
+      "issue_id": "r1.liability_cap_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Single liability cap at 12 months fees without carve-outs",
+      "description": "Total liability is capped at 100% of annual fees with no carve-outs for data protection or confidentiality.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "saas",
+          "quote": "The Provider's total liability under this Agreement shall not exceed the fees paid\nin the twelve (12) months preceding the claim",
+          "start": 632,
+          "end": 760
+        }
+      ],
+      "expected_action": "negotiate",
+      "playbook_rule": "PB-07",
+      "rationale": "PB-07 preferred position requires a general cap of 200% of annual fees with uncapped liability for data protection and confidentiality. A flat 100% cap without carve-outs is below preferred and fallback.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-07"
+    },
+    {
+      "issue_id": "r1.signed_nda_residuals_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Signed NDA contains residual knowledge clause",
+      "description": "The executed NDA permits use of residual knowledge for third parties.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "nda",
+          "quote": "retained in the unaided memory of its personnel,\nincluding for the benefit of third parties",
+          "start": 1551,
+          "end": 1642
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-14",
+      "rationale": "PB-14 states that a vendor-paper agreement already signed is escalated if it contains a rejected term (residuals permitting use for third parties).",
+      "source_category": "client_playbook",
+      "source_reference": "PB-14"
+    },
+    {
+      "issue_id": "r1.missing_core_documents_escalation",
+      "task": "escalation",
+      "split": "dev",
+      "title": "Missing order form, sub-processors list, and technical measures description",
+      "description": "Key schedules referenced in the transaction (order form, sub-processors, and TOMs) have not been provided to Northwind.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_instructions",
+          "quote": "We have not received the order form, the list of sub-processors or the\ndescription of technical and organisational measures",
+          "start": 2501,
+          "end": 2624
+        }
+      ],
+      "expected_action": "escalate",
+      "rationale": "The order form, sub-processors schedule, and technical and organisational measures description are missing, preventing validation of commercials and GDPR Art. 28/32 compliance.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.unidentified_operating_entity_escalation",
+      "task": "escalation",
+      "split": "dev",
+      "title": "Platform operating entity is unidentified",
+      "description": "Invoices originate from Cverbio Analytics Inc. while SaaS agreement names Cverbio Labs Inc., and the operating entity remains unknown.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_instructions",
+          "quote": "pilot invoices came from\nCverbio Analytics Inc. We do not know which company operates the platform",
+          "start": 2704,
+          "end": 2802
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-01",
+      "rationale": "PB-01 limit mandates escalation while the identity of the entity that operates the service is unknown.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-01"
+    },
+    {
+      "issue_id": "r1.unauthorized_pilot_data_escalation",
+      "task": "escalation",
+      "split": "eval",
+      "title": "Prior upload of customer data during pilot without DPA",
+      "description": "Procurement uploaded customer contact data during an August 2026 pilot under NDA only, with deletion unverified.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "client_instructions",
+          "quote": "uploaded a pilot data set to LabTrace\nbefore any Data Processing Agreement was in place",
+          "start": 2384,
+          "end": 2471
+        }
+      ],
+      "expected_action": "escalate",
+      "rationale": "Uploading customer contact data to a third-party hosted platform without a DPA created potential GDPR compliance exposure during the August 2026 pilot that requires remediation.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.third_country_access_works_council_escalation",
+      "task": "escalation",
+      "split": "eval",
+      "title": "Remote third-country access requires works council notification",
+      "description": "Support operations in the US and India can access production data containing employee records, requiring prior works council notification.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "client_instructions",
+          "quote": "Any arrangement under which\nemployee data can be reached from outside the EEA must be notified to the works\ncouncil before signature",
+          "start": 3034,
+          "end": 3166
+        }
+      ],
+      "expected_action": "escalate",
+      "playbook_rule": "PB-04",
+      "rationale": "PB-04 limit and instruction memo require escalation because access to employee data from outside the EEA must be formally notified to the works council prior to signature.",
+      "source_category": "client_playbook",
+      "source_reference": "PB-04"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "contract-review-eval.matter.v1",
+  "matter_id": "toy",
+  "title": "Toy widget supply (test fixture, no legal content)",
+  "synthetic": true,
+  "context": {
+    "party": "Buyer",
+    "counterparty": "Supplier",
+    "governing_law": "none",
+    "jurisdiction": "none",
+    "objective": "Exercise the matter scorer.",
+    "risk_appetite": "balanced"
+  },
+  "documents": [
+    {
+      "document_id": "supply",
+      "title": "Toy supply agreement",
+      "kind": "contract",
+      "path": "docs/supply.md",
+      "sha256": "5c26fbe562d924e2e965a33257948f1534b8183b3b2bac6e2d22cb2bcb2f8a49",
+      "introduced_in": "round1"
+    },
+    {
+      "document_id": "schedule",
+      "title": "Toy delivery schedule",
+      "kind": "contract",
+      "path": "docs/schedule.md",
+      "sha256": "22000c3f7566bbfdf1565edcbe21f09ead6d9e0d79ae2091d2d2d1628355e3cc",
+      "introduced_in": "round1"
+    },
+    {
+      "document_id": "playbook",
+      "title": "Toy playbook",
+      "kind": "playbook",
+      "path": "docs/playbook.md",
+      "sha256": "ad4c888dd639fa5678ea478731fbc6186e9c85a557be90a813be4690a2c609fb",
+      "introduced_in": "round1"
+    },
+    {
+      "document_id": "update",
+      "title": "Toy client update",
+      "kind": "client_instruction",
+      "path": "docs/update.md",
+      "sha256": "8a6a88a91d46a38df968d13d475254485b9e389e135bc3caea90879046378447",
+      "introduced_in": "round2"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "round1",
+      "title": "First pass",
+      "summary": "Two documents and a playbook.",
+      "expected": "expected/round1.json"
+    },
+    {
+      "round_id": "round2",
+      "title": "Changed fact",
+      "summary": "The client shortens the delivery period it needs.",
+      "expected": "expected/round2.json"
+    }
+  ],
+  "conditions": [
+    {
+      "condition_id": "baseline",
+      "description": "Contracts only.",
+      "visible_kinds": [
+        "contract"
+      ],
+      "prompt": "prompts/baseline.md"
+    },
+    {
+      "condition_id": "matter",
+      "description": "Contracts, playbook and client updates.",
+      "visible_kinds": [
+        "contract",
+        "playbook",
+        "client_instruction"
+      ],
+      "prompt": "prompts/matter.md"
+    }
+  ]
+}

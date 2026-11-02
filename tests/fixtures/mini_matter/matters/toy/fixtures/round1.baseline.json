@@ -1,0 +1,18 @@
+{
+  "schema": "contract-review-eval.matter-review.v1",
+  "conflicts": [
+    {"finding_id": "k1", "summary": "The delivery periods differ.", "materiality": "high", "evidence": ["c1", "c2"]}
+  ],
+  "positions": [
+    {"finding_id": "p1", "summary": "The surcharge is modest.", "action": "accept", "materiality": "high", "evidence": ["c3"]},
+    {"finding_id": "p2", "summary": "Payment terms are long.", "action": "negotiate", "materiality": "medium", "evidence": ["c4"]}
+  ],
+  "escalations": [],
+  "citations": [
+    {"citation_id": "c1", "document_id": "supply", "quote": "deliver the widgets within ten (10) days of each order"},
+    {"citation_id": "c2", "document_id": "schedule", "quote": "delivered within thirty (30) days of each order"},
+    {"citation_id": "c3", "document_id": "schedule", "quote": "fuel surcharge of up to two euros per widget"},
+    {"citation_id": "c4", "document_id": "supply", "quote": "payment is due within sixty days"},
+    {"citation_id": "c5", "document_id": "supply", "quote": "fuel surcharge of up to two euros per widget"}
+  ]
+}

@@ -407,6 +407,12 @@ def _add_dev_commands(sub: argparse._SubParsersAction, *, listed: bool) -> None:
         type=Path,
     )
 
+    # The matter path runs from a checkout and scores no user's tool, so its commands
+    # sit here rather than in the user-facing list.
+    from contract_eval import matter_cli
+
+    matter_cli.add_parsers(add)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -515,7 +521,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     dev = sub.add_parser(
         "dev",
-        help="maintainer commands: verification, reference evidence, obligations",
+        help="maintainer commands: verification, reference evidence, obligations, matters",
         description="Maintainer commands. Each is also accepted without the `dev` prefix.",
     )
     _add_dev_commands(dev.add_subparsers(dest="dev_cmd", required=True, metavar="<command>"), listed=True)
@@ -529,7 +535,13 @@ def main(argv: list[str] | None = None) -> None:
     if args.cmd == "dev":
         args.cmd = args.dev_cmd
 
-    if args.cmd == "evaluate":
+    if args.cmd.startswith("matter-"):
+        from contract_eval import matter_cli
+
+        code = matter_cli.run(args)
+        if code:
+            sys.exit(code)
+    elif args.cmd == "evaluate":
         try:
             path = evaluate(
                 case=args.case,

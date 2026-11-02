@@ -61,6 +61,7 @@ The same stub reaches 0.95 to 0.96 clause F1 on all three bundled contracts, aga
 - Citation grounding as an exact span of the normalised source; unsupported or fabricated citations.
 - Adversarial minimal-pair changes: critical false reassurance, required abstention, instruction injection, semantic invariance, repeated-run consistency.
 - Input drift and suite-level release eligibility (`PILOT_ELIGIBLE`, `HUMAN_REVIEW_REQUIRED`, `REJECT`).
+- Matter review: several documents read for one client, scored on conflicts between them, the position to take on each term, and the questions the file cannot answer. It runs from a checkout, and the first matter's answers are drafts. See [matter evaluation](MATTER_EVALUATION.md).
 
 `make test` is a regression gate, not an approval: a green CI run is not an approved benchmark result. The release certificate is the eligibility decision. See [certificate and robustness](certificate-and-robustness.md).
 
@@ -70,6 +71,7 @@ The same stub reaches 0.95 to 0.96 clause F1 on all three bundled contracts, aga
 uv run python -m contract_eval evaluate --case saas   # nda | saas | dpa | all
 make certificate && make certificate-verify           # release certificate
 make robustness && make robustness-check              # adversarial campaign
+make matter-demo                                      # matter pipeline on a toy matter
 ```
 
 Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; see [live runs](live-runs-and-capture.md)). Other providers run through `--adapter openai-compatible --base-url <url> --model <id>` (OpenAI, Azure, Mistral, vLLM, Ollama), and `--adapter command --command 'python my_wrapper.py'` wraps your own product. Set `CONTRACT_EVAL_USD_PER_MTOK_INPUT` and `_OUTPUT` to record a cost estimate next to the latency in each capture.
@@ -95,6 +97,7 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 - [Live runs, capture and replay](live-runs-and-capture.md)
 - [Gold sets, v1/v2 upgrade, evidence-bound scoring, gold schema v2](gold-sets-and-evidence.md)
 - [Evidence Lab and parity vectors](evidence-lab.md)
+- [Matter evaluation: several documents, rounds and conditions for one client](MATTER_EVALUATION.md)
 
 ## How this compares
 
@@ -127,11 +130,11 @@ Open tools by [@sebastianfoerste](https://github.com/sebastianfoerste) that trea
 
 ## Limitations and safety
 
-- **Synthetic data.** Every contract under `data/` is fabricated for evaluation. No real agreement, client or personal data.
+- **Synthetic data.** Every contract under `data/` and every matter document under `matters/` is fabricated for evaluation. No real agreement, client or personal data.
 - **Single annotator.** The gold sets encode one reviewer's judgment; no second-annotator review or blind adjudication yet. That reviewer is a hard external dependency for gold schema v2.
 - **Bounded scope.** Three contract types (NDA, SaaS, DPA), thirty-two clause types and eighteen perturbations. Not a general contract-understanding benchmark.
 - **Review-gated, not legal advice.** Every flagged risk and citation must be confirmed by a qualified lawyer. Pilot eligibility never authorizes autonomous contract reliance.
 - Live-model output is non-deterministic; a committed live run is a dated snapshot, not a stable benchmark.
 - [Legal currency ledger](legal-currency.md): every legal proposition the gold sets and documentation state, with its source and the date it was last verified.
 
-Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](../SECURITY.md), [PRIVACY.md](../PRIVACY.md), [CONTRIBUTING.md](../CONTRIBUTING.md), [LICENSE](../LICENSE).
+Human-authored legal judgment: AI tools assisted the implementation, but the gold answer sets, risk taxonomy, clause types and grounding rules are human-authored. The six documents written for the first matter were drafted with AI assistance, as [matter evaluation](MATTER_EVALUATION.md) records. Stack: Python, Pydantic, pytest, uv. See [SECURITY.md](../SECURITY.md), [PRIVACY.md](../PRIVACY.md), [CONTRIBUTING.md](../CONTRIBUTING.md), [LICENSE](../LICENSE).
