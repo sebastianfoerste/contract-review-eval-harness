@@ -48,6 +48,7 @@ the `test-and-evaluate` job in `.github/workflows/ci.yml` runs these checks, in 
 |---|---|
 | Lockfile up to date | `uv lock --check` (no Make target) |
 | Lint | `uv run ruff check src tests scripts` (no Make target) |
+| Type check | `uv run mypy` (no Make target) |
 | Unit tests | `make test` |
 | Baseline suite evaluation gate | `make regression-check` (its `evaluate` step) |
 | Comparison against the committed baseline | `make regression-check` |
