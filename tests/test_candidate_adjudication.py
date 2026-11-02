@@ -436,6 +436,13 @@ def test_resolve_refuses_an_unresolvable_issue_even_when_it_is_excluded(place, m
     (lambda raw: raw["decisions"][0].update(paragraph=3), "missing clause has no paragraph"),
     (lambda raw: raw["decisions"].append(dict(raw["decisions"][0])), "duplicate decision"),
     (lambda raw: raw.update(annotationASha256="not-a-hash"), "annotationASha256"),
+], ids=[
+    "date-day-month-year", "date-february-30", "date-without-hyphens", "date-iso-week", "date-trailing-newline",
+    "independent-annotator-unknown-side",
+    "evidence-newline", "evidence-line-separator", "evidence-tab",
+    "evidence-adjudication-hash-label", "evidence-annotation-hash-label-mixed-case",
+    "record-extra-field", "decision-extra-field", "decision-unknown-value", "decision-missing-clause-with-paragraph",
+    "decision-duplicate", "annotation-hash-malformed",
 ])
 def test_record_model_rejects_malformed_records(mutate, message):
     raw = record(first(), second())
