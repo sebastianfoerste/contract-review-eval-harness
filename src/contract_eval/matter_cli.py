@@ -37,6 +37,7 @@ from contract_eval.matter import (
     LoadedMatter,
     MatterIssue,
     MatterReview,
+    Split,
     file_sha256,
     load_matter,
 )
@@ -103,7 +104,7 @@ def evaluate_matter(
     round_id: str,
     *,
     conditions: list[str] | None = None,
-    split: str | None = None,
+    split: Split | None = None,
     live: bool = False,
     model: str | None = None,
     root: Path = Path("."),
@@ -189,6 +190,8 @@ def evaluate_matter(
                 output_sha256=None if meta else review.canonical_sha256(),
             )
         else:
+            # needs_adapter was true, so the adapter exists.
+            assert adapter is not None
             try:
                 review = adapter.review(loaded, round_id, condition_id)
             except MatterFixtureMissing as exc:

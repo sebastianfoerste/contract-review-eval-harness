@@ -28,6 +28,7 @@ from typing import Callable, Iterable
 
 from contract_eval.matter import (
     MatterCitation,
+    MatterFinding,
     MatterGold,
     MatterIssue,
     MatterReview,
@@ -177,8 +178,11 @@ def _documents_hit(
     spans_hit = 0
     documents: set[str] = set()
     for span in issue.evidence:
+        # Only grounded citations reach here, and a grounded citation has a span.
         if any(
-            c.document_id == span.document_id and _points_at(c.span, (span.start, span.end))
+            c.document_id == span.document_id
+            and c.span is not None
+            and _points_at(c.span, (span.start, span.end))
             for c in cited
         ):
             spans_hit += 1
@@ -321,7 +325,7 @@ def score_matter(
     for issue in earlier_issues:
         earlier_by_task[issue.task].append(issue)
 
-    findings = {
+    findings: dict[str, MatterFinding] = {
         **{f.finding_id: f for f in review.conflicts},
         **{f.finding_id: f for f in review.positions},
         **{f.finding_id: f for f in review.escalations},
@@ -384,8 +388,8 @@ def score_matter(
     }
     materialities = {
         i.issue_id: {
-            findings[f].materiality for f in credited[i.issue_id]
-            if hasattr(findings[f], "materiality")
+            finding.materiality for f in credited[i.issue_id]
+            if hasattr(finding := findings[f], "materiality")
         }
         for i in detected if i.task in ("conflict", "position")
     }

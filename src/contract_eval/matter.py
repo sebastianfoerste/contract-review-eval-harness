@@ -21,13 +21,13 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-MATTER_SCHEMA = "contract-review-eval.matter.v1"
-MATTER_GOLD_SCHEMA = "contract-review-eval.matter-expected.v1"
-MATTER_REVIEW_SCHEMA = "contract-review-eval.matter-review.v1"
+MATTER_SCHEMA: Final = "contract-review-eval.matter.v1"
+MATTER_GOLD_SCHEMA: Final = "contract-review-eval.matter-expected.v1"
+MATTER_REVIEW_SCHEMA: Final = "contract-review-eval.matter-review.v1"
 
 MATTERS_DIR = Path("matters")
 
@@ -387,6 +387,9 @@ class EscalationFinding(BaseModel):
     )
 
 
+MatterFinding = ConflictFinding | PositionFinding | EscalationFinding
+
+
 class MatterReview(BaseModel):
     """What an adapter returns for one round of a matter under one condition."""
 
@@ -407,7 +410,9 @@ class MatterReview(BaseModel):
         if repeated:
             raise ValueError(f"duplicate citation ids: {repeated}")
 
-        findings = [*self.conflicts, *self.positions, *self.escalations]
+        findings: list[MatterFinding] = [
+            *self.conflicts, *self.positions, *self.escalations
+        ]
         finding_ids = [f.finding_id for f in findings]
         repeated = sorted({i for i in finding_ids if finding_ids.count(i) > 1})
         if repeated:

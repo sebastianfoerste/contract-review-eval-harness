@@ -21,13 +21,13 @@ import json
 import re
 import statistics
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from contract_eval.matter import MatterReview
+from contract_eval.matter import MatterFinding, MatterReview
 
-SESSION_SCHEMA = "contract-review-eval.reviewer-session.v1"
+SESSION_SCHEMA: Final = "contract-review-eval.reviewer-session.v1"
 
 USEFULNESS_RUBRIC: dict[int, str] = {
     4: "Usable as written. I would send it on with my name under it.",
@@ -94,9 +94,10 @@ class ReviewerSession(BaseModel):
 
 def blank_session(matter_id: str, round_id: str, review: MatterReview) -> dict[str, Any]:
     """A session for a reviewer to fill in. It names the output by hash only."""
-    finding_ids = [
-        f.finding_id for f in (*review.conflicts, *review.positions, *review.escalations)
-    ]
+    findings: tuple[MatterFinding, ...] = (
+        *review.conflicts, *review.positions, *review.escalations
+    )
+    finding_ids = [f.finding_id for f in findings]
     return {
         "schema": SESSION_SCHEMA,
         "matter_id": matter_id,
@@ -120,9 +121,10 @@ def validate_against_review(session: ReviewerSession, review: MatterReview) -> N
     """A session must rate exactly the findings of the output it is bound to."""
     if session.review_sha256 != review.canonical_sha256():
         raise ValueError("session is bound to a different review output")
-    expected = {
-        f.finding_id for f in (*review.conflicts, *review.positions, *review.escalations)
-    }
+    findings: tuple[MatterFinding, ...] = (
+        *review.conflicts, *review.positions, *review.escalations
+    )
+    expected = {f.finding_id for f in findings}
     rated = {d.finding_id for d in session.decisions}
     if rated != expected:
         raise ValueError(

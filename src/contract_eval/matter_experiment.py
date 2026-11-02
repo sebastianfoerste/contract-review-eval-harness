@@ -107,7 +107,10 @@ def eval_guard(
         and e.get("split") in ("eval", "all")
     ]
     prior = [e for e in in_round if e.get("condition_id") == condition_id]
-    others = sorted({e.get("configuration_id") for e in prior} - {configuration, None})
+    others = sorted(
+        {e["configuration_id"] for e in prior if e.get("configuration_id") is not None}
+        - {configuration}
+    )
     answers_changed = gold_sha256 is not None and any(
         e.get("gold_sha256") not in (None, gold_sha256) for e in in_round
     )

@@ -200,6 +200,8 @@ class LiveMatterAdapter:
             record["error_type"] = type(error).__name__
             record["error"] = str(error)
         else:
+            # review() passes raw_text whenever it passes no error.
+            assert raw_text is not None
             record["raw_text_sha256"] = text_sha256(raw_text)
             record["raw_text"] = raw_text
         path = directory / f"{round_id}.{condition_id}.{stamp}.json"
