@@ -45,10 +45,18 @@ jobs:
         run: uv run pytest -v
 
       - name: Run baseline suite evaluation gate
-        run: uv run python -m contract_eval evaluate --case all
+        run: uv run python -m contract_eval evaluate --case all --out "$RUNNER_TEMP/evaluation"
 
-      - name: Run comparison regression test
-        run: uv run python -m contract_eval compare
+      # The baseline is a tracked file outside the ignored history/ directories, so the
+      # run this job writes can never become its own baseline. AGENTS.md says when to
+      # regenerate it.
+      - name: Compare the fresh run against the committed baseline
+        run: |
+          git ls-files --error-unmatch examples/regression-baseline.json
+          shopt -s nullglob
+          runs=("$RUNNER_TEMP"/evaluation/history/run_*.json)
+          test "${#runs[@]}" -eq 1 || { echo "Expected one fresh run, found ${#runs[@]}."; exit 1; }
+          uv run python -m contract_eval compare --baseline examples/regression-baseline.json --candidate "${runs[0]}"
 
       - name: Reject drift between the published JSON Schemas and the models
         run: uv run python scripts/export_schemas.py --check
@@ -88,6 +96,12 @@ jobs:
 
       - name: Reject scorer drift against the committed web parity vectors
         run: uv run python scripts/check_parity_vectors.py
+
+      - name: Verify the candidate annotation pack against its hashes and corpus
+        run: uv run python -m contract_eval.candidate_annotation verify
+
+      - name: Verify every candidate experiment report reproduces
+        run: uv run python scripts/check_candidate_experiments.py
 
   python-compat:
     # The job above runs every check on 3.13. This one holds the declared minimum in

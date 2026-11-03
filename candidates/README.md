@@ -10,6 +10,9 @@ Two synthetic contracts that are not yet part of the evaluated suite:
 Neither case appears in `ALL_CASES` in `src/contract_eval/cases.py`, so no score,
 certificate or robustness run includes them.
 
+`mycounsel/` holds the separate native My Counsel track, which is outside `ALL_CASES`
+and every certificate; see [its README](mycounsel/README.md).
+
 ## What is missing
 
 The answer sets in `candidates/expected/` are empty by design. The harness claims
@@ -23,4 +26,4 @@ following the structure of `expected/nda.json`.
 2. Move the contract to `data/<case>_sample.md` and the answer set to `expected/<case>.json`.
 3. Write `fixtures/<case>_stub.json` with deliberately imperfect output, as described in `data/README.md`.
 4. Add the case to `ALL_CASES`.
-5. Run `make test`, `make anchor-check` and `make certificate`, then review the changed certificate and web export before committing.
+5. Run `make test`, `make anchor-check`, `make certificate` and `make regression-baseline`, then review the changed certificate, regression baseline and web export before committing.

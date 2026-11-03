@@ -1,0 +1,35 @@
+{
+  "schema": "mycounsel.playbook.v1",
+  "entries": [
+    {
+      "id": "COM-FEES",
+      "category": "NEGOTIATED_PREFERENCE",
+      "requirement": "Require an agreed limit on fee changes, reasonable advance notice and an exit option if the change is rejected."
+    },
+    {
+      "id": "COM-RENEWAL",
+      "category": "NEGOTIATED_PREFERENCE",
+      "requirement": "Seek a shorter renewal period and a practical notice window; these are customer negotiation preferences."
+    },
+    {
+      "id": "COM-SLA",
+      "category": "COMMERCIAL_RISK",
+      "requirement": "Flag the lack of measurable availability and a practical remediation timetable as a service continuity risk."
+    },
+    {
+      "id": "COM-LIABILITY",
+      "category": "NEGOTIATED_PREFERENCE",
+      "requirement": "Seek a liability allocation proportionate to the service exposure; do not state that the preferred cap is mandated by law."
+    },
+    {
+      "id": "COM-SUSPENSION",
+      "category": "COMMERCIAL_RISK",
+      "requirement": "Seek notice, a cure period and protection against suspension for a reasonably disputed invoice."
+    },
+    {
+      "id": "COM-EXIT",
+      "category": "NEGOTIATED_PREFERENCE",
+      "requirement": "Seek a defined transition service with pricing and a customer-directed migration timetable."
+    }
+  ]
+}

@@ -33,22 +33,25 @@ run it. Everything else in `make check` must pass before a pull request; without
 sibling, run those targets directly:
 
 ```bash
-make test anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check \
-  capture-check replay-check live-run-check leaderboard-check schemas-check \
-  certificate-check certificate-verify robustness-check parity-check
+make test regression-check anchor-check gold-v2-check evidence-check adjudication-check \
+  campaign-v2-check capture-check replay-check live-run-check leaderboard-check \
+  schemas-check certificate-check certificate-verify robustness-check parity-check \
+  candidate-pack-check candidate-experiment-check
 ```
 
 ### Which targets mirror CI
 
-The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in order:
+Besides its setup steps (checkout, uv, Python and `uv sync --locked --all-extras --dev`),
+the `test-and-evaluate` job in `.github/workflows/ci.yml` runs these checks, in order:
 
 | CI step | Local equivalent |
 |---|---|
 | Lockfile up to date | `uv lock --check` (no Make target) |
 | Lint | `uv run ruff check src tests scripts` (no Make target) |
+| Type check | `uv run mypy` (no Make target) |
 | Unit tests | `make test` |
-| Baseline suite evaluation gate | `uv run python -m contract_eval evaluate --case all` (no Make target) |
-| Comparison regression test | `uv run python -m contract_eval compare`, after an evaluate run (no Make target) |
+| Baseline suite evaluation gate | `make regression-check` (its `evaluate` step) |
+| Comparison against the committed baseline | `make regression-check` |
 | JSON Schema drift | `make schemas-check` |
 | v2 obligation offsets | `make gold-v2-check` |
 | Candidate campaign | `make campaign-v2-check` |
@@ -59,8 +62,11 @@ The `test-and-evaluate` job in `.github/workflows/ci.yml` runs these steps, in o
 | Clause anchors | `make anchor-check` |
 | Committed release certificate | `make certificate-check` |
 | Recomputed release certificate | `make certificate-verify` |
-| Robustness campaign and its artifacts | `make robustness-check` |
+| Adversarial robustness campaign | `make robustness-check` (its `verify-robustness` step) |
+| Committed robustness artifacts | `make robustness-check` |
 | Web parity vectors | `make parity-check` |
+| Candidate annotation pack | `make candidate-pack-check` |
+| Candidate experiment reports | `make candidate-experiment-check` |
 
 `evidence-check` and `adjudication-check` re-run parts of the suite that `make test`
 already covers. Three CI jobs have no Make target: `python-compat` runs the suite and
@@ -73,10 +79,16 @@ If an output changes, regenerate the committed artifacts in `examples/` and comm
 with your change: `uv run python -m contract_eval evaluate --case nda --out examples` (add
 `--format json` for `scorecard.json`) for the committed scorecard, `make certificate` for
 the release certificate, `make robustness` for the adversarial report. Regenerate the
-parity vectors (`make parity-vectors`) only for an intended scoring change. `make demo`
-prints the NDA scorecard. It writes `scorecard.md` and `run-provenance.json` to the
-repository root and `history/run_<timestamp>.json`, all ignored and none committed. The
-metric definitions are in [docs/metrics.md](docs/metrics.md).
+parity vectors (`make parity-vectors`) only for an intended scoring change. Regenerate
+the regression baseline (`make regression-baseline`) only when a score moves on purpose
+or a case is added: `make test` and CI fail while any score differs from
+`examples/regression-baseline.json`, and `compare` fails a run in which a metric it tracks
+(clause precision, recall and F1, risk-flag accuracy, citation grounding, hallucination
+count) is worse. `make demo` prints the NDA scorecard.
+It writes `scorecard.md` and `run-provenance.json` to the repository root and
+`history/run_<timestamp>.json`, all ignored and none committed. Every evaluate run writes
+its `history/` under `--out`, so the scorecard command above also leaves an ignored
+`examples/history/`. The metric definitions are in [docs/metrics.md](docs/metrics.md).
 
 ## Path 1: add a case
 
@@ -92,11 +104,11 @@ are in the docstring of `src/contract_eval/cases.py`:
 5. One entry in `ALL_CASES` in `src/contract_eval/cases.py`. Every consumer derives its
    case list from it.
 
-Then run `make anchor-check`, `make certificate` and `make check`, review the changed
-certificate, and commit it. [docs/ANNOTATION_GUIDELINE.md](docs/ANNOTATION_GUIDELINE.md)
-explains how to write the agreement, choose clause types, assign severities, declare
-aliases and write anchors. [`candidates/`](candidates/README.md) shows two cases waiting
-for their answer sets.
+Then run `make anchor-check`, `make certificate`, `make regression-baseline` and
+`make check`, review the changed certificate and regression baseline, and commit them.
+[docs/ANNOTATION_GUIDELINE.md](docs/ANNOTATION_GUIDELINE.md) explains how to write the
+agreement, choose clause types, assign severities, declare aliases and write anchors.
+[`candidates/`](candidates/README.md) shows two cases waiting for their answer sets.
 
 ## Path 2: add an adapter
 
