@@ -2,7 +2,7 @@
 
 This project consists of two synchronized repositories designed to fulfill distinct roles within the legal AI contract evaluation lifecycle.
 
-Both repositories are public. [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web) has no hosted demo: the app runs locally, as its README describes.
+Both repositories are public. [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web) is deployed to Cloudflare Workers from its `main` branch, as its README describes; the README names no public URL.
 
 ```
                   +--------------------------------------------------+
@@ -27,7 +27,7 @@ Both repositories are public. [`contract-eval-web`](https://github.com/sebastian
                   |   - Next.js 16 / Vinext / React 19 / Cloudflare  |
                   |   - Interactive scenario toggling & comparisons  |
                   |   - In-memory session tracking & report exports  |
-                  |   - OpenAI Sites continuous hosting              |
+                  |   - Workers Builds deploys every push to main    |
                   +--------------------------------------------------+
 ```
 
@@ -39,7 +39,7 @@ Both repositories are public. [`contract-eval-web`](https://github.com/sebastian
 |---|---|---|
 | **Role** | Evaluation Engine & Ground Truth | Interactive Evidence Lab & Public Explorer |
 | **Language & Runtime** | Python 3.11+ (uv, Pydantic, pytest) | TypeScript (React 19, Next.js 16, Vinext) |
-| **Hosting & CI** | GitHub Actions / local CLI | OpenAI Sites / Cloudflare Workers |
+| **Hosting & CI** | GitHub Actions / local CLI | Cloudflare Workers (Workers Builds deploys every push to `main`) / GitHub Actions on pull requests |
 | **Authoritative Logic** | Definitive scoring, policy certification, v2 obligations | Deterministic browser-safe port of `score_review` |
 | **Data Access** | Offline synthetic contracts + optional `--live` adapters | Read-only static snapshot (`lib/benchmark.json`) |
 | **Integrity Checks** | SHA-256 bound certificates, robustness hashes, release hold | 32 automated parity tests against Python outputs |
@@ -63,7 +63,7 @@ Both repositories are public. [`contract-eval-web`](https://github.com/sebastian
 
 ## Why Separate Repositories?
 
-1. **Independent Hosting Lifecycle**: `contract-eval-web` is managed as an OpenAI Sites repository with Cloudflare Worker builds (`.openai/hosting.json`, `build/sites-vite-plugin.ts`, `.sites-runtime`). Merging directories into a mono-tree risks breaking Sites deploy automation.
+1. **Independent Hosting Lifecycle**: Cloudflare Workers Builds is connected to the `contract-eval-web` repository and deploys every push to its `main`, running `npm run build` and then `npx wrangler deploy` from the repository root; GitHub Actions runs lint, types, tests, the build and a local Worker API check on each pull request first. Merging directories into a mono-tree would move the app out of the root its build and deploy expect, and, as set up now, every harness push to `main` would also deploy the web app.
 2. **Distinct Security & Dependency Profiles**: The Python harness requires zero JavaScript dependencies and is completely deterministic and air-gapped by default. The web explorer requires Node.js tooling and modern web dependencies.
 3. **Focused Development**: Methodology, annotation adjudication, and model adapters evolve in the harness; UI/UX, visualization, and inspection features evolve in the web app.
 
@@ -72,6 +72,6 @@ Both repositories are public. [`contract-eval-web`](https://github.com/sebastian
 ## Future Monorepo Re-evaluation Criteria
 
 A physical repository merge may be reconsidered in the future under the following conditions:
-1. **Sites Multi-Directory Support**: When OpenAI Sites explicitly supports repository subfolder configurations (e.g. configuring `apps/web` as the root) without breaking deployment triggers.
+1. **Subfolder Deployment**: When the web app's build and deploy (`npm run build`, then `npx wrangler deploy`) are shown to work from a repository subfolder (e.g. `apps/web`) without a harness-only push to `main` deploying the app.
 2. **Coupled Adjudication Upgrades**: When the v2 second-annotator adjudication lands and the web UI requires continuous, simultaneous updates to visualize atomic obligation graphs and evidence spans.
 3. **Unified Monorepo Tooling**: When a single unified task runner (e.g. Turborepo or root Makefile) can coordinate both Python uv venv and Node environments in a single unified CI pipeline.
