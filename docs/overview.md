@@ -85,7 +85,7 @@ Optional live-model run (needs `uv sync --extra live` and `ANTHROPIC_API_KEY`; s
 - [Adversarial robustness report](../examples/adversarial-robustness-report.md) and its [HTML view](../examples/adversarial-robustness-report.html)
 - [Live-run snapshot, 2026-09-01](../examples/live-run-claude-opus-5-2026-09-01.md)
 - [Case study](../CASE_STUDY.md), [verification manifest](verification-manifest.json), [reviewer guide](reviewer-guide.md), [annotation guideline](ANNOTATION_GUIDELINE.md), [project architecture](PROJECT_ARCHITECTURE.md), [customer workflow](customer-workflow.md)
-- Web explorer (Evidence Lab): [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web), a separate public repository. It is deployed to Cloudflare Workers from its `main` branch, as its README describes; the README names no public URL. See [evidence-lab.md](evidence-lab.md).
+- Web explorer (Evidence Lab): [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web), a separate public repository. It is deployed to Cloudflare Workers from its `main` branch, as its README describes. The README gives no URL for the deployed app, and it also describes running the app locally. See [evidence-lab.md](evidence-lab.md).
 
 ## More detail
 

@@ -2,7 +2,7 @@
 
 This project consists of two synchronized repositories designed to fulfill distinct roles within the legal AI contract evaluation lifecycle.
 
-Both repositories are public. [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web) is deployed to Cloudflare Workers from its `main` branch, as its README describes; the README names no public URL.
+Both repositories are public. [`contract-eval-web`](https://github.com/sebastianfoerste/contract-eval-web) is deployed to Cloudflare Workers from its `main` branch, as its README describes; the README gives no URL for the deployed app.
 
 ```
                   +--------------------------------------------------+
@@ -39,7 +39,7 @@ Both repositories are public. [`contract-eval-web`](https://github.com/sebastian
 |---|---|---|
 | **Role** | Evaluation Engine & Ground Truth | Interactive Evidence Lab & Public Explorer |
 | **Language & Runtime** | Python 3.11+ (uv, Pydantic, pytest) | TypeScript (React 19, Next.js 16, Vinext) |
-| **Hosting & CI** | GitHub Actions / local CLI | Cloudflare Workers (Workers Builds deploys every push to `main`) / GitHub Actions on pull requests |
+| **Hosting & CI** | GitHub Actions / local CLI | Cloudflare Workers (Workers Builds deploys every push to `main`) / GitHub Actions on pull requests and pushes to `main` |
 | **Authoritative Logic** | Definitive scoring, policy certification, v2 obligations | Deterministic browser-safe port of `score_review` |
 | **Data Access** | Offline synthetic contracts + optional `--live` adapters | Read-only static snapshot (`lib/benchmark.json`) |
 | **Integrity Checks** | SHA-256 bound certificates, robustness hashes, release hold | 32 automated parity tests against Python outputs |
@@ -63,7 +63,7 @@ Both repositories are public. [`contract-eval-web`](https://github.com/sebastian
 
 ## Why Separate Repositories?
 
-1. **Independent Hosting Lifecycle**: Cloudflare Workers Builds is connected to the `contract-eval-web` repository and deploys every push to its `main`, running `npm run build` and then `npx wrangler deploy` from the repository root; GitHub Actions runs lint, types, tests, the build and a local Worker API check on each pull request first. Merging directories into a mono-tree would move the app out of the root its build and deploy expect, and, as set up now, every harness push to `main` would also deploy the web app.
+1. **Independent Hosting Lifecycle**: Cloudflare Workers Builds is connected to the `contract-eval-web` repository and deploys every push to its `main`, running `npm run build` and then `npx wrangler deploy` from the repository root; GitHub Actions runs lint, types, tests, the build and a local Worker API check on each pull request first. Merging directories into a mono-tree would move the app out of the root its build and deploy expect, and, as set up now, every harness push to `main` would also start a Workers Builds build and deploy of the web app.
 2. **Distinct Security & Dependency Profiles**: The Python harness requires zero JavaScript dependencies and is completely deterministic and air-gapped by default. The web explorer requires Node.js tooling and modern web dependencies.
 3. **Focused Development**: Methodology, annotation adjudication, and model adapters evolve in the harness; UI/UX, visualization, and inspection features evolve in the web app.
 
