@@ -1,0 +1,12 @@
+{
+  "schema": "contract-review-eval.matter-review.v1",
+  "conflicts": [],
+  "positions": [
+    {"finding_id": "p1", "summary": "Ten days is now too long.", "action": "negotiate", "materiality": "high", "playbook_rule": "TB-01", "evidence": ["c1", "c2"]}
+  ],
+  "escalations": [],
+  "citations": [
+    {"citation_id": "c1", "document_id": "supply", "quote": "deliver the widgets within ten (10) days of each order"},
+    {"citation_id": "c2", "document_id": "update", "quote": "needs delivery within five (5) days"}
+  ]
+}

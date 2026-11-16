@@ -1,0 +1,41 @@
+{
+  "schema": "contract-review-eval.matter-expected.v1",
+  "matter_id": "toy",
+  "round_id": "round2",
+  "status": {
+    "annotator_id": "test-fixture",
+    "annotation_status": "draft",
+    "adjudication_status": "not_started",
+    "legal_position_date": null
+  },
+  "comment": "TEST FIXTURE. The client update turns an accepted term into one to negotiate.",
+  "issues": [
+    {
+      "issue_id": "r2.delivery_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Delivery period after the client update",
+      "description": "Ten days no longer meets the five the client now needs.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "supply",
+          "quote": "within ten (10) days of each order",
+          "start": 173,
+          "end": 207
+        },
+        {
+          "document_id": "update",
+          "quote": "delivery within five (5) days",
+          "start": 136,
+          "end": 165
+        }
+      ],
+      "expected_action": "negotiate",
+      "playbook_rule": "TB-01",
+      "rationale": "The changed fact makes the agreed period too long.",
+      "source_category": "client_playbook",
+      "source_reference": "TB-01"
+    }
+  ]
+}
