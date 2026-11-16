@@ -1,0 +1,123 @@
+{
+  "schema": "contract-review-eval.matter-expected.v1",
+  "matter_id": "toy",
+  "round_id": "round1",
+  "status": {
+    "annotator_id": "test-fixture",
+    "annotation_status": "draft",
+    "adjudication_status": "not_started",
+    "legal_position_date": null
+  },
+  "comment": "TEST FIXTURE. These answers exercise the scorer and carry no legal judgment.",
+  "issues": [
+    {
+      "issue_id": "r1.delivery_conflict",
+      "task": "conflict",
+      "split": "dev",
+      "title": "Delivery period differs between agreement and schedule",
+      "description": "Ten days in the agreement, thirty in the schedule.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "supply",
+          "quote": "within ten (10) days of each order",
+          "start": 173,
+          "end": 207
+        },
+        {
+          "document_id": "schedule",
+          "quote": "within thirty (30) days of each order",
+          "start": 157,
+          "end": 194
+        }
+      ],
+      "rationale": "Both periods cannot apply to the same order.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.price_conflict",
+      "task": "conflict",
+      "split": "eval",
+      "title": "Fixed price against a surcharge right",
+      "description": "The agreement fixes the price; the schedule lets the supplier add to it.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "supply",
+          "quote": "fixed at five euros per widget for the first year",
+          "start": 236,
+          "end": 285
+        },
+        {
+          "document_id": "schedule",
+          "quote": "fuel surcharge of up to two euros per widget at any time",
+          "start": 237,
+          "end": 293
+        }
+      ],
+      "rationale": "A price cannot be fixed and increasable at once.",
+      "source_category": "legal_judgment"
+    },
+    {
+      "issue_id": "r1.surcharge_position",
+      "task": "position",
+      "split": "eval",
+      "title": "Surcharge",
+      "description": "Stance on the surcharge right.",
+      "materiality": "high",
+      "evidence": [
+        {
+          "document_id": "schedule",
+          "quote": "fuel surcharge of up to two euros per widget at any time",
+          "start": 237,
+          "end": 293
+        }
+      ],
+      "expected_action": "reject",
+      "playbook_rule": "TB-02",
+      "rationale": "The toy playbook rejects any surcharge in the first year.",
+      "source_category": "client_playbook",
+      "source_reference": "TB-02"
+    },
+    {
+      "issue_id": "r1.delivery_position",
+      "task": "position",
+      "split": "dev",
+      "title": "Delivery period in the agreement",
+      "description": "Stance on the ten day period.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "supply",
+          "quote": "within ten (10) days of each order",
+          "start": 173,
+          "end": 207
+        }
+      ],
+      "expected_action": "accept",
+      "playbook_rule": "TB-01",
+      "rationale": "Ten days is within the fourteen the toy playbook accepts.",
+      "source_category": "client_playbook",
+      "source_reference": "TB-01"
+    },
+    {
+      "issue_id": "r1.returns_annex",
+      "task": "escalation",
+      "split": "eval",
+      "title": "Annex R is not on the file",
+      "description": "The returns regime cannot be assessed without the annex.",
+      "materiality": "medium",
+      "evidence": [
+        {
+          "document_id": "supply",
+          "quote": "Returns are handled as set out in Annex R.",
+          "start": 303,
+          "end": 345
+        }
+      ],
+      "expected_action": "escalate",
+      "rationale": "The annex was not provided.",
+      "source_category": "legal_judgment"
+    }
+  ]
+}

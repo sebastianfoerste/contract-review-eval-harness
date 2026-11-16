@@ -1,4 +1,4 @@
-.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check site schemas schemas-check robustness robustness-check parity-vectors parity-check regression-baseline regression-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status web-check web-export check
+.PHONY: install test demo demo-live certificate certificate-check certificate-verify anchor-check gold-v2-check evidence-check adjudication-check campaign-v2 campaign-v2-check obligations-demo annotation-pack annotation-bundle migrate-gold-v2 capture-check replay-check live-run-report live-run-check leaderboard leaderboard-check site schemas schemas-check robustness robustness-check parity-vectors parity-check regression-baseline regression-check candidate-check candidate-pack candidate-pack-check candidate-bundle candidate-experiment-check candidate-budget-status matter-check matter-demo web-check web-export check
 
 install: ; uv sync
 test: ; uv run pytest -v
@@ -50,5 +50,10 @@ candidate-experiment-check: ; uv run python scripts/check_candidate_experiments.
 candidate-budget-status: ; uv run python -m contract_eval.candidate_budget status
 web-check: ; uv run python scripts/check_web_sync.py
 web-export: ; uv run python ../contract-eval-web/scripts/export-benchmark.py --repo .
-check: test regression-check anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check leaderboard-check schemas-check certificate-check certificate-verify robustness-check parity-check candidate-pack-check candidate-experiment-check web-check
+matter-check:
+	uv run python scripts/matter_sync.py
+	uv run python scripts/matter_sync.py --root tests/fixtures/mini_matter
+	uv run python -m contract_eval matter-check
+matter-demo: ; uv run python -m contract_eval matter-evaluate --root tests/fixtures/mini_matter --matter toy
+check: test regression-check anchor-check gold-v2-check evidence-check adjudication-check campaign-v2-check capture-check replay-check live-run-check leaderboard-check schemas-check certificate-check certificate-verify robustness-check parity-check candidate-pack-check candidate-experiment-check matter-check web-check
 
