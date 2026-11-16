@@ -74,6 +74,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Every `actions/checkout` step sets `persist-credentials: false`. Dependabot waits seven days before proposing a release (fourteen for a Python major) and groups minor and patch updates per ecosystem.
 - `SECURITY.md` points reporters to the repository's private vulnerability reporting (Security tab, "Report a vulnerability"), which the owner enabled on 2026-10-31. The interim advice to open an issue asking for a private channel is removed; a dependency advisory with no exploit may still be an ordinary issue.
 - `compare` exits 1 on a regression, also when run without flags, where it printed a warning and exited 0. `evaluate --out DIR` writes its run history to `DIR/history/` instead of `./history/`.
+- The package metadata and the Code of Conduct give the maintainer's ai-lawyers.com contact address in place of a private one. `tests/test_annotator_names.py` allows the maintainer's given name once in each of the two files, as it does for the copyright, citation and action notices.
 
 ### Removed
 
