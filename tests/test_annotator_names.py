@@ -8,8 +8,9 @@ anonymisation, because a guess can be checked against it.
 Annotator A also maintains the repository. The copyright notice, the citation metadata
 and the action's author field name the maintainer rather than an annotation, so those
 three files may carry that name, exactly as often as they do now. The maintainer's
-account handle in URLs, the package metadata and the contact address is one joined word
-and is deliberately not matched.
+contact address carries the given name once in the package metadata and once in the
+Code of Conduct, so those two files may too. The maintainer's account handle in URLs is
+one joined word and is deliberately not matched.
 
 Until the next revision of its answers, `matters/northwind-saas/expected/round1.json`
 also names Annotator A; see ALLOWED.
@@ -49,6 +50,9 @@ ALLOWED = {
     ("LICENSE", "Annotator A"): 2,
     ("CITATION.cff", "Annotator A"): 2,
     ("action.yml", "Annotator A"): 2,
+    # The maintainer's contact address: given name only.
+    ("pyproject.toml", "Annotator A"): 1,
+    ("CODE_OF_CONDUCT.md", "Annotator A"): 1,
     # Not a notice: round 1's matter answers still name their annotator. The held-out
     # check hashes each answers file whole, so editing round1.json would make every
     # later round 1 run that scores the evaluation split print Not held out. The role

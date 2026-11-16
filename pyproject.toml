@@ -5,7 +5,7 @@ description = "Evaluation harness that measures the quality of AI contract revie
 readme = "README.md"
 license = "MIT"
 authors = [
-    { name = "sebastianfoerste", email = "sebastianfoerste@gmail.com" }
+    { name = "sebastianfoerste", email = "sebastian@ai-lawyers.com" }
 ]
 requires-python = ">=3.11"
 keywords = [
