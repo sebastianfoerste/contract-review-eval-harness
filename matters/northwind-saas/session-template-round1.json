@@ -1,0 +1,177 @@
+{
+  "schema": "contract-review-eval.reviewer-session.v1",
+  "matter_id": "northwind-saas",
+  "round_id": "round1",
+  "review_sha256": "d06dbb0522acb6cf14def81ba24d825ff91268732360ee90a98966e83a4b5cfc",
+  "reviewer_id": "",
+  "reviewer_profile": "",
+  "evidence_class": "",
+  "minutes_to_reviewable_draft": null,
+  "review_minutes": null,
+  "decisions": [
+    {
+      "finding_id": "K1",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "K2",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "K3",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "K4",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "K5",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "K6",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "K7",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P1",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P2",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P3",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P4",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P5",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P6",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P7",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P8",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P9",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P10",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P11",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P12",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P13",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P14",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "P15",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "E1",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "E2",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "E3",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "E4",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    },
+    {
+      "finding_id": "E5",
+      "decision": "",
+      "usefulness": null,
+      "reason": ""
+    }
+  ],
+  "material_omissions": [],
+  "workflow_feedback": ""
+}
