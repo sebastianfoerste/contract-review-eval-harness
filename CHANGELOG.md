@@ -44,6 +44,8 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - CI's `python-compat` job also runs on 3.14 and 3.15, the current bugfix releases.
 - Project URLs, keywords and classifiers (Python 3.11 to 3.15, `Typing :: Typed`) in `pyproject.toml`, so the wheel's METADATA carries them.
 - `annotations/errata/2026-10-31-pack-erratum.md`, the erratum to the primary-law ledger of the annotation pack sent on 2026-09-06: Art. 34 and Art. 36 under Art. 28(3)(f), the Chapter V range to Art. 50, and EDPB Opinion 22/2024 as guidance, each with its Official Journal page or source and the date it was read. It records the same three corrections as `LEDGER_CORRECTIONS` in `scripts/build_annotation_pack.py`; the frozen pack under `annotations/pack/`, its manifest and `tests/test_annotation_pack.py` are unchanged.
+- `examples/regression-baseline.json`, a committed `evaluate --case all` run. CI's Python 3.13 job compares its fresh `evaluate --case all` run against it and fails when a metric that `compare` tracks is worse: clause precision, recall and F1, risk-flag accuracy, citation grounding and hallucination count. `make regression-check` runs the same comparison, and `make regression-baseline` regenerates the baseline after an intended score change.
+- The native My Counsel candidate track under `candidates/mycounsel/`, outside `ALL_CASES` and every certificate: scoring of one recording, a blind annotation pack, written adjudication between two annotations, preregistered experiments and a cumulative EUR spend ledger. CI verifies the pack against its hashes and checks that every experiment report reproduces.
 
 ### Changed
 
@@ -71,6 +73,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - pytest runs in strict mode with warnings as errors (`strict = true`, `filterwarnings = ["error"]`).
 - Every `actions/checkout` step sets `persist-credentials: false`. Dependabot waits seven days before proposing a release (fourteen for a Python major) and groups minor and patch updates per ecosystem.
 - `SECURITY.md` points reporters to the repository's private vulnerability reporting (Security tab, "Report a vulnerability"), which the owner enabled on 2026-10-31. The interim advice to open an issue asking for a private channel is removed; a dependency advisory with no exploit may still be an ordinary issue.
+- `compare` exits 1 on a regression, also when run without flags, where it printed a warning and exited 0. `evaluate --out DIR` writes its run history to `DIR/history/` instead of `./history/`.
 
 ### Removed
 
@@ -87,10 +90,12 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - Exported feedback items state `origin {"kind": "synthetic_fixture"}`, which the dashboard's feedback schema requires. (#34)
 - The NDA severity rationales for `term`, `permitted_disclosure`, `definition` and `notices` argue from the Disclosing Party's side, which the answer set's `review_context` names, and the case study no longer calls all three gold sets receiving-side reviews. The four rationales were drafted with AI assistance and await the maintainer's adoption. Severities, flags and scores are unchanged. (#41)
 - Documented figures match the harness output: severity accuracy (0.57 to 0.60 across the cases) replaces legacy risk-flag accuracy as the headline risk figure, and the NDA's clause precision is 0.92, not 0.83. (#41)
-- The README links the public `contract-eval-web` repository, which has no hosted demo. (#41)
+- `docs/overview.md` and `docs/evidence-lab.md` link the public `contract-eval-web` repository, which the docs called not public yet. (#41)
+- `docs/PROJECT_ARCHITECTURE.md` described `contract-eval-web` as hosted on OpenAI Sites, and it, `docs/overview.md` and `docs/evidence-lab.md` said the app had no hosted demo. Cloudflare Workers Builds deploys it to Cloudflare Workers on every push to its `main` (`npm run build`, then `npx wrangler deploy`), and GitHub Actions checks each pull request first. The architecture page now describes that deploy, and all three pages say the app is deployed to Cloudflare Workers from its `main`.
 - The CLI read and wrote some files (scorecards, history, replay and obligation results) in the platform's default encoding, which is not UTF-8 on Windows. Every read and write in `cli.py` is now UTF-8. A scorer test no longer depends on the working directory.
 - `evaluate`, `certify` and `evaluate-obligations` accepted any `--case`, and an unknown one ended in a `FileNotFoundError` traceback. They now accept only a bundled case or `all`, and exit 2 with a usage message that lists them. The help text, which named only `nda`, `saas` and `all`, is built from `ALL_CASES`.
 - `robustness/campaign.v2.candidate.json` recorded a stale `gold_sha256` for all three drafts. The values dated from the campaign's generation (#24), and the drafts have changed since (#26, #27 and the NDA rationale edits). Each now hashes the committed `annotations/drafts/<case>.candidate.v2.json` as the generator does: SHA-256 of its UTF-8 text. Scenarios, ids and offsets are unchanged, and regenerating them from the current gold reproduces all 75. `scripts/check_campaign_v2.py`, the CI step that says the campaign "matches its sources and gold", compared only the source hashes. It now also fails when a recorded gold hash differs from the committed draft, or when a draft has no recorded hash.
+- `evaluate` wrote `history/` to the working directory whatever `--out` said, so tests wrote into the checkout. `compare` took the newest history file, which straight after `evaluate` is the run just written, so CI compared that run with itself and passed even on a regression. `compare` now takes `--baseline` and `--candidate`, refuses to compare a file with itself and covers the cases the baseline recorded. `scripts/export_feedback.py` still reads `./history` by default and takes `--history` for a run made with another `--out`.
 
 ### Security
 

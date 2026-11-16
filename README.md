@@ -45,6 +45,7 @@ The one fabricated citation is a hard `REJECT`.
 
 - [Overview](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/overview.md): why this exists, what it checks, more commands, how it compares, limitations
 - [Metric reference](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/metrics.md)
+- [Legal engineering explainer](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/legal-engineering-explainer.md): the contracts, gold sets, metrics, design principles and likely interview questions
 - [Score your own tool](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/score-your-own-tool.md) and [gate CI on it](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/ci.md)
 - [Release certificate and robustness](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/certificate-and-robustness.md)
 - [Live runs, capture and replay](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/live-runs-and-capture.md) and the [leaderboard](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/examples/leaderboard.md)
