@@ -29,6 +29,9 @@ from typing import Any
 
 EXPERIMENTS_DIR = Path("experiments")
 LOG_SCHEMA = "contract-review-eval.matter-experiment-log.v1"
+# The source the stub adapter records (adapters.matter.STUB_MODEL). A score from the
+# committed fixtures is test data, not a measurement.
+FIXTURE_SOURCE = "stub-fixture"
 
 
 def _digest(payload: Any) -> str:
@@ -89,6 +92,7 @@ def eval_guard(
     condition_id: str,
     configuration: str,
     gold_sha256: str | None = None,
+    source: str | None = None,
 ) -> dict[str, Any]:
     """Has the evaluation split of this round already been looked at in a way that taints this run?
 
@@ -99,12 +103,17 @@ def eval_guard(
 
     Conditions are otherwise judged separately. Comparing the baseline with the
     matter condition on the evaluation split is the experiment itself.
+
+    A score from the committed fixtures never counts against a real result, whichever
+    log it was written to. A fixture run (`source` is FIXTURE_SOURCE) is still judged
+    against every entry.
     """
     in_round = [
         e for e in entries
         if e.get("matter_id") == matter_id
         and e.get("round_id") == round_id
         and e.get("split") in ("eval", "all")
+        and (source == FIXTURE_SOURCE or e.get("source") != FIXTURE_SOURCE)
     ]
     prior = [e for e in in_round if e.get("condition_id") == condition_id]
     others = sorted(

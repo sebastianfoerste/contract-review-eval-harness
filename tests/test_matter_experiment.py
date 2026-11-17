@@ -13,10 +13,15 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-from contract_eval.adapters.matter import LiveMatterAdapter, render_prompt
+from contract_eval.adapters.matter import STUB_MODEL, LiveMatterAdapter, render_prompt
 from contract_eval.matter import MatterReview, load_matter
 from contract_eval.matter_cli import evaluate_matter, render_matter
-from contract_eval.matter_experiment import default_log_path, eval_guard, read_log
+from contract_eval.matter_experiment import (
+    FIXTURE_SOURCE,
+    default_log_path,
+    eval_guard,
+    read_log,
+)
 from contract_eval.reviewer_sessions import (
     USEFULNESS_RUBRIC,
     ReviewerSession,
@@ -76,6 +81,25 @@ def test_development_runs_never_contaminate():
 def test_conditions_are_judged_separately():
     """Baseline against matter on the evaluation split is the experiment itself."""
     assert guard([entry("A", condition="baseline")])["contaminated"] is False
+
+
+def test_a_fixture_score_never_counts_against_a_real_result():
+    """A committed fixture is test data, whichever log its score was written to."""
+    fixture = {**entry("A"), "source": FIXTURE_SOURCE, "gold_sha256": "old"}
+    real = eval_guard(
+        [fixture], matter_id="toy", round_id="round1", condition_id="matter",
+        configuration="B", gold_sha256="new", source="some-model",
+    )
+    assert real["contaminated"] is False and real["prior_eval_runs"] == 0
+    stub = eval_guard(
+        [fixture], matter_id="toy", round_id="round1", condition_id="matter",
+        configuration="B", gold_sha256="new", source=FIXTURE_SOURCE,
+    )
+    assert stub["contaminated"] is True
+
+
+def test_the_guard_knows_the_stub_adapter_by_its_source():
+    assert FIXTURE_SOURCE == STUB_MODEL
 
 
 def test_a_prompt_change_is_a_configuration_change(toy_copy):
@@ -172,6 +196,16 @@ def test_a_development_run_is_logged_without_a_guard(toy_copy):
 def test_a_stub_run_writes_no_log_unless_asked(toy_copy):
     evaluate_matter("toy", "round1", root=toy_copy)
     assert not (toy_copy / "experiments").exists()
+
+
+def test_scoring_one_output_file_logs_only_that_condition(toy_copy):
+    """The documented way to score a capture scores the other conditions from fixtures."""
+    result = evaluate_matter("toy", "round1", root=toy_copy, reviews={"matter": FIXTURE})
+    by_id = {c["condition_id"]: c for c in result["conditions"]}
+    assert by_id["baseline"]["source"] == FIXTURE_SOURCE
+    assert "eval_guard" not in by_id["baseline"]
+    logged = read_log(default_log_path("toy", toy_copy))
+    assert [e["condition_id"] for e in logged] == ["matter"]
 
 
 # --------------------------------------------------------------------- live adapter

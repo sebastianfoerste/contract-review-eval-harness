@@ -180,8 +180,11 @@ and context selection are tuned on `dev` only.
 uv run python -m contract_eval matter-evaluate --split dev --log experiments/northwind-saas/log.jsonl
 ```
 
-Runs on the committed fixtures are logged only on request. Live runs and runs that
-score an output file are always logged, to `experiments/<matter>/log.jsonl`.
+Runs on the committed fixtures are logged only on request, with `--log`. Live runs and
+runs that score an output file are always logged, to `experiments/<matter>/log.jsonl`.
+A run that scores one condition from a file and the others from their fixtures logs
+only the first. The held-out check never counts a fixture score against a real result,
+whichever log holds it.
 
 Every logged run records a configuration id: a hash of the prompt as sent, which
 contains the documents shown, with the model and the reasoning effort. A live run and
