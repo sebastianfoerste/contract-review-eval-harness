@@ -25,17 +25,19 @@ def test_index_links_every_page(tmp_path):
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
     hrefs = set(re.findall(r'href="([^"]+)"', index))
     pages = [page.output for page in (*site.PAGES, *site.COPIED)]
-    assert len(pages) == 5
+    assert len(pages) == 6
     for name in pages:
         assert name in hrefs
         assert (tmp_path / name).is_file()
     assert sorted(path.name for path in written) == sorted(["index.html", *pages])
 
 
-def test_robustness_report_is_copied_byte_identical(tmp_path):
+def test_copied_pages_are_byte_identical(tmp_path):
     site.build(tmp_path)
-    source = ROOT / "examples" / "adversarial-robustness-report.html"
-    assert (tmp_path / "adversarial-robustness-report.html").read_bytes() == source.read_bytes()
+    sources = {page.source for page in site.COPIED}
+    assert {"examples/adversarial-robustness-report.html", "docs/beginners-guide.html"} <= sources
+    for page in site.COPIED:
+        assert (tmp_path / page.output).read_bytes() == (ROOT / page.source).read_bytes()
 
 
 def test_rendered_pages_turn_pipe_tables_into_tables(tmp_path):

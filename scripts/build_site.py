@@ -5,7 +5,8 @@
 
 The site is a reading copy of files CI already verifies, so it adds no claim of its
 own: each page is one committed Markdown file rendered to HTML, and the robustness
-report, already a self-contained HTML file, is copied byte for byte.
+report and the beginner's guide, already self-contained HTML files, are copied byte
+for byte.
 
 Only the standard library is used, because the build has to run offline and a
 Markdown package would be a new dependency for a handful of constructs. The
@@ -75,8 +76,15 @@ PAGES: tuple[Page, ...] = (
     ),
 )
 
-# Already a complete, self-contained page; copied as-is so its digest still matches.
+# Already complete, self-contained pages; copied as-is so the robustness report's
+# digest still matches and tests/test_beginners_guide.py checks what is served.
 COPIED: tuple[Page, ...] = (
+    Page(
+        "docs/beginners-guide.html",
+        "beginners-guide.html",
+        "Beginner's guide",
+        "What the harness does and how it grades a review, explained through the bundled NDA.",
+    ),
     Page(
         "examples/adversarial-robustness-report.html",
         "adversarial-robustness-report.html",
