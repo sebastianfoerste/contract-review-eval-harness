@@ -74,7 +74,9 @@ is visible in a document every condition sees, anchor it there.
 ## How a review is scored
 
 Scoring follows the evidence-bound path of the single-contract cases. Labels and
-summaries earn nothing.
+summaries earn nothing. Unlike the release policy for a case, it sets no three-word
+floor for a quote and gives no verdict: the scorecard reports the numbers, and
+`matter-evaluate` exits 0 whatever they are.
 
 1. Each citation names a document and quotes it. The quote is located in that
    document as whole words, ignoring case, punctuation and line breaks. It is
