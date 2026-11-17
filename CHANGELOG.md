@@ -99,6 +99,8 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - `evaluate` wrote `history/` to the working directory whatever `--out` said, so tests wrote into the checkout. `compare` took the newest history file, which straight after `evaluate` is the run just written, so CI compared that run with itself and passed even on a regression. `compare` now takes `--baseline` and `--candidate`, refuses to compare a file with itself and covers the cases the baseline recorded. `scripts/export_feedback.py` still reads `./history` by default and takes `--history` for a run made with another `--out`.
 - `matter-evaluate --review` scored a capture whose reply had stopped at the token limit, although the live run had refused that reply as truncated. It now refuses such a capture too.
 - A `--review` run scores the conditions it has no file for from their committed fixtures, and it logged those fixture scores to the matter's experiment log. A later real result for one of those conditions then printed **Not held out**. A fixture score now goes only into a log named with `--log`, and the held-out check never counts one against a real result.
+- `docs/legal-engineering-explainer.md` and `AGENTS.md` describe the matter path: what a matter capture holds and which captures `--review` scores, that matter scoring sets no word floor and gives no verdict, and where the matter experiment log lives. `AGENTS.md` gives the full path of the My Counsel dry run, which the log's top-level `experiments/` folder made ambiguous.
+- `tests/test_legal_currency.py` scans the matter's answers, documents, prompts and README, and reads both members of a slash-joined citation such as "Art. 28/32". The ledger points at the matter's citations.
 
 ### Security
 
