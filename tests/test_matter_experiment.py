@@ -245,6 +245,22 @@ def test_a_truncated_response_is_captured_and_never_scored(toy_copy):
     assert list((toy_copy / "captures" / "matters" / "toy").glob("*.json"))
 
 
+def test_a_complete_reply_cut_off_at_the_token_limit_is_never_scored_later(toy_copy):
+    """The live run refuses it, so scoring its capture afterwards refuses it too."""
+    client = fake_client(FIXTURE.read_text(), stop_reason="max_tokens")
+    with pytest.raises(RuntimeError, match="truncated"):
+        LiveMatterAdapter(model="m", client=client).review(
+            load_matter("toy", toy_copy), "round1", "matter"
+        )
+    capture = next((toy_copy / "captures" / "matters" / "toy").glob("*.json"))
+    assert json.loads(capture.read_text())["status"] == "returned"
+    with pytest.raises(ValueError, match="token limit"):
+        evaluate_matter(
+            "toy", "round1", root=toy_copy, conditions=["matter"],
+            reviews={"matter": capture},
+        )
+
+
 def test_a_call_that_raises_inside_the_sdk_still_leaves_a_capture(toy_copy):
     """The SDK validates against the schema inside the call, so nothing may come back."""
 

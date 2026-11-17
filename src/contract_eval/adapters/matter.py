@@ -65,6 +65,13 @@ def load_review_file(path: Path) -> tuple[MatterReview, dict[str, Any]]:
                 f"{path} records a failed attempt ({data.get('error_type')}); there "
                 "is no output to score"
             )
+        if data.get("stop_reason") == "max_tokens":
+            # The live run raised on this reply instead of scoring it, so scoring
+            # the capture now would count an attempt that run reported as truncated.
+            raise ValueError(
+                f"{path} records a reply cut off at the token limit; a truncated "
+                "review is never scored"
+            )
         meta = {k: v for k, v in data.items() if k != "raw_text"}
         return MatterReview.model_validate_json(data["raw_text"]), meta
     if isinstance(data, dict) and "raw_text" in data:
