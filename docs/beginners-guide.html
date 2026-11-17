@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A beginner's guide to the contract-review-eval-harness: how it grades an AI contract review against a lawyer's answer key, worked through on the bundled synthetic NDA. Not legal advice.">
+<title>Contract Review Eval Harness: a beginner's guide</title>
+<style>
+/* Self-contained: no external fonts, scripts or requests, so the file works offline.
+   Layout: one reading column on cool "paper"; three specimen blocks (the pipeline, the quote checker, the score sheet) break out to the full measure. Highlighter yellow is reserved for quotes found in the contract. */
+:root {
+  --paper: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #151d2b;
+  --muted: #566275;
+  --rule: #d8dee8;
+  --accent: #2443c4;
+  --accent-soft: #e7ecfb;
+  --hl: #fff09a;
+  --hl-ink: #151d2b;
+  --good: #1b7444;
+  --good-soft: #e1f2e8;
+  --bad: #bd3127;
+  --bad-soft: #fbe6e3;
+  --warn: #935500;
+  --warn-soft: #fbefd9;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-doc: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f141c;
+    --surface: #161d28;
+    --ink: #e5e9f0;
+    --muted: #9aa5b6;
+    --rule: #283345;
+    --accent: #93a9ff;
+    --accent-soft: #1d2747;
+    --hl: #5e4f0c;
+    --hl-ink: #fff5c9;
+    --good: #63cf91;
+    --good-soft: #15301f;
+    --bad: #ff7f72;
+    --bad-soft: #3a1a17;
+    --warn: #f1b75c;
+    --warn-soft: #362812;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f141c;
+  --surface: #161d28;
+  --ink: #e5e9f0;
+  --muted: #9aa5b6;
+  --rule: #283345;
+  --accent: #93a9ff;
+  --accent-soft: #1d2747;
+  --hl: #5e4f0c;
+  --hl-ink: #fff5c9;
+  --good: #63cf91;
+  --good-soft: #15301f;
+  --bad: #ff7f72;
+  --bad-soft: #3a1a17;
+  --warn: #f1b75c;
+  --warn-soft: #362812;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 56px 72px;
+  display: grid;
+  gap: 80px;
+}
+section { display: grid; gap: 20px; min-width: 0; }
+.prose { max-width: 66ch; }
+.prose p + p { margin-top: 0.75em; }
+p, h1, h2, h3, ul, ol, dl, dd, figure, pre { margin: 0; }
+
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.25rem, 5.2vw, 3.4rem); line-height: 1.05; font-weight: 700; }
+h2 { font-size: 1.875rem; line-height: 1.15; font-weight: 600; }
+h3 { font-size: 1.3rem; line-height: 1.25; font-weight: 600; }
+.eyebrow {
+  font-size: 0.8125rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent);
+}
+.muted { color: var(--muted); }
+.small { font-size: 0.9375rem; }
+code, .mono { font-family: var(--font-mono); font-size: 0.875em; }
+p code, li code, dd code, td code {
+  background: var(--accent-soft); color: var(--ink);
+  padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 48px; align-items: center; }
+.hero-text { display: grid; gap: 18px; min-width: 0; }
+.lede { font-size: 1.1875rem; line-height: 1.55; max-width: 34em; }
+.fine { font-size: 0.875rem; color: var(--muted); }
+.slip {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 20px 22px 26px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  display: grid; gap: 10px;
+  box-shadow: 0 1px 0 var(--rule), 0 12px 28px -18px rgba(20, 30, 60, 0.35);
+}
+.slip-head { color: var(--muted); border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+.slip dl { display: grid; gap: 6px; }
+.slip .row { display: flex; align-items: baseline; gap: 8px; }
+.slip dt { white-space: nowrap; }
+.slip .row::after { content: none; }
+.slip .lead { flex: 1; border-bottom: 1px dotted var(--rule); transform: translateY(-3px); min-width: 12px; }
+.slip dd { font-variant-numeric: tabular-nums; font-weight: 500; }
+.slip dd.bad { color: var(--bad); }
+.stamp {
+  justify-self: end;
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 1.5rem; letter-spacing: 0.14em;
+  color: var(--bad);
+  border: 3px solid var(--bad);
+  border-radius: 4px;
+  padding: 2px 12px 0;
+  transform: rotate(-7deg);
+}
+
+/* Pipeline */
+.flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+.step {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 18px;
+  display: grid; gap: 6px; align-content: start;
+  min-width: 0;
+}
+.step-num { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--muted); }
+.step-role { font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); }
+.step h3 { font-size: 1.125rem; }
+.step .path { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); overflow-wrap: anywhere; }
+.step p:last-child { font-size: 0.9375rem; }
+.step.grade { border-color: var(--accent); }
+.arrow { align-self: center; color: var(--muted); font-size: 1.25rem; }
+
+/* Three questions */
+.questions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.q { display: grid; gap: 10px; align-content: start; border-top: 2px solid var(--ink); padding-top: 16px; min-width: 0; }
+.q.key { border-top-color: var(--bad); }
+.q dl { display: grid; gap: 8px; font-size: 0.9375rem; }
+.q dt { font-weight: 600; }
+.q dd { color: var(--muted); }
+.tag {
+  display: inline-block; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
+  padding: 1px 7px; border-radius: 3px; letter-spacing: 0.04em; vertical-align: 1px;
+}
+.tag.bad { color: var(--bad); background: var(--bad-soft); }
+
+/* Quote checker */
+.checker { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 24px; align-items: start; }
+.quote-col { display: grid; gap: 12px; min-width: 0; }
+.quote-list { list-style: none; padding: 0; display: grid; gap: 6px; }
+.quote-btn {
+  width: 100%;
+  display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start;
+  text-align: left;
+  font: inherit; color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.quote-btn:hover { border-color: var(--muted); }
+.quote-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.quote-btn .mark-icon { font-weight: 700; line-height: 1.5; text-align: center; }
+.quote-btn .ok { color: var(--good); }
+.quote-btn .no { color: var(--bad); }
+.quote-btn .qtext { font-family: var(--font-doc); font-style: italic; font-size: 0.97rem; line-height: 1.4; }
+.quote-btn .qmeta { display: block; font-family: var(--font-mono); font-style: normal; font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+.verdict {
+  border-radius: 6px; padding: 12px 14px; font-size: 0.9375rem;
+  background: var(--good-soft); color: var(--ink);
+  border-left: 0;
+}
+.verdict.no { background: var(--bad-soft); }
+.verdict strong { color: var(--good); }
+.verdict.no strong { color: var(--bad); }
+
+.doc {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 24px 28px 32px;
+  font-family: var(--font-doc);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  max-height: 34rem;
+  overflow: auto;
+  display: grid; gap: 14px;
+  min-width: 0;
+}
+.doc-title { font-family: var(--font-doc); font-weight: 600; font-size: 1.2rem; }
+.doc-sec { display: grid; gap: 2px; padding: 8px 10px; margin: 0 -10px; border: 1.5px dashed transparent; border-radius: 4px; }
+.doc-sec.claimed { border-color: var(--bad); }
+.doc-sec h4 { margin: 0; font-family: var(--font-doc); font-weight: 600; font-size: 0.98rem; }
+.doc-sec .claim-note { font-family: var(--font-mono); font-size: 0.72rem; color: var(--bad); }
+.doc mark { background: var(--hl); color: var(--hl-ink); padding: 0.05em 0.1em; border-radius: 2px; }
+
+/* Risk table */
+.context {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
+  border: 1px solid var(--rule); border-radius: 6px; background: var(--surface);
+}
+.context div { padding: 12px 16px; border-left: 1px solid var(--rule); min-width: 0; }
+.context div:first-child { border-left: 0; }
+.context dt { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.context dd { font-size: 0.9375rem; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.9375rem; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); background: var(--paper); }
+td .sec { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-left: 4px; }
+.sev { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.sev i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor; display: inline-block; }
+.sev[data-level="3"] i,
+.sev[data-level="2"] i:nth-child(-n+2),
+.sev[data-level="1"] i:first-child { background: currentColor; }
+.sev b { font-weight: 500; margin-left: 6px; }
+.none { color: var(--muted); font-style: italic; }
+.result { font-weight: 600; white-space: nowrap; padding: 2px 8px; border-radius: 3px; font-size: 0.85rem; }
+.result.good { color: var(--good); background: var(--good-soft); }
+.result.warn { color: var(--warn); background: var(--warn-soft); }
+.result.bad { color: var(--bad); background: var(--bad-soft); }
+
+.compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.compare figure {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0;
+}
+.compare figcaption { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.compare blockquote { margin: 0; font-family: var(--font-doc); font-size: 1.05rem; line-height: 1.5; }
+
+/* Score sheet */
+.scores { display: grid; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+.score-group { padding: 6px 0; border-top: 1px solid var(--rule); }
+.score-group:first-child { border-top: 0; }
+.score-group h4 {
+  margin: 0; padding: 10px 20px 2px;
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
+}
+.srow {
+  display: grid; grid-template-columns: 190px 56px minmax(80px, 200px) minmax(0, 1fr);
+  gap: 16px; align-items: center; padding: 8px 20px;
+}
+.srow .name { font-weight: 500; }
+.srow .val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+.bar { height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.srow .why { color: var(--muted); font-size: 0.9375rem; }
+.srow.reject .val, .srow.reject .name { color: var(--bad); }
+.mini-stamp {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: 0.12em; font-size: 0.85rem;
+  color: var(--bad); border: 2px solid var(--bad); border-radius: 3px; padding: 1px 8px 0; justify-self: start;
+}
+
+/* Commands */
+.cmds { display: grid; gap: 14px; }
+.cmd { display: grid; gap: 6px; min-width: 0; }
+.cmd-label { font-size: 0.9375rem; font-weight: 500; }
+.cmd-box { position: relative; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; min-width: 0; }
+.cmd-box pre { overflow-x: auto; padding: 14px 92px 14px 16px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; }
+.copy {
+  position: absolute; top: 9px; right: 9px;
+  font: 500 0.8125rem var(--font-body);
+  color: var(--accent); background: var(--accent-soft);
+  border: 0; border-radius: 4px; padding: 4px 10px; cursor: pointer;
+}
+
+/* Rules + further */
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; }
+.rules div { display: grid; gap: 4px; min-width: 0; }
+.rules dt { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+.rules dd { color: var(--muted); }
+.further { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 32px; }
+.further div { display: grid; gap: 2px; min-width: 0; }
+.further dt { font-weight: 600; }
+.further dd { color: var(--muted); font-size: 0.9375rem; }
+.reading { list-style: none; padding: 0; display: grid; gap: 0; counter-reset: r; border-top: 1px solid var(--rule); }
+.reading li {
+  counter-increment: r;
+  display: grid; grid-template-columns: 36px minmax(0, 260px) minmax(0, 1fr); gap: 16px; align-items: baseline;
+  padding: 14px 0; border-bottom: 1px solid var(--rule);
+}
+.reading li::before { content: counter(r); font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; color: var(--accent); }
+.reading a { font-family: var(--font-mono); font-size: 0.875rem; overflow-wrap: anywhere; }
+
+footer { border-top: 1px solid var(--rule); padding-top: 20px; font-size: 0.875rem; color: var(--muted); display: grid; gap: 6px; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .slip { max-width: 340px; }
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .arrow { justify-self: center; transform: rotate(90deg); line-height: 1; }
+  .questions { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .checker { grid-template-columns: minmax(0, 1fr); }
+  .doc { max-height: 26rem; padding: 20px 18px 24px; }
+  .context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .context div:nth-child(3) { border-left: 0; }
+  .context div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  .further { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .srow { grid-template-columns: minmax(0, 1fr) 56px; gap: 4px 16px; }
+  .srow .bar { grid-column: 1 / -1; }
+  .srow .why { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .wrap { gap: 64px; padding-block: 36px 56px; }
+  h2 { font-size: 1.6rem; }
+  .compare, .rules, .further { grid-template-columns: minmax(0, 1fr); }
+  .context { grid-template-columns: minmax(0, 1fr); }
+  .context div { border-left: 0; }
+  .context div:nth-child(n+2) { border-top: 1px solid var(--rule); }
+  .reading li { grid-template-columns: 28px minmax(0, 1fr); }
+  .reading li span { grid-column: 2; }
+  .srow { padding: 8px 16px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">A beginner's guide</p>
+      <h1>Contract Review Eval Harness</h1>
+      <p class="lede">A grading machine for AI contract reviews. An AI model reads a contract and writes a review. The harness compares that review with an answer key written by a lawyer, then prints a scorecard.</p>
+      <p class="fine">Runs offline with no API key. Every contract is synthetic. Nothing here is legal advice.</p>
+    </div>
+    <aside class="slip" aria-label="Example result for the bundled NDA review">
+      <div class="slip-head">nda · bundled demo review</div>
+      <dl>
+        <div class="row"><dt>Clauses found</dt><span class="lead"></span><dd>11 / 11</dd></div>
+        <div class="row"><dt>Severity right</dt><span class="lead"></span><dd>3 / 5</dd></div>
+        <div class="row"><dt>Quotes found</dt><span class="lead"></span><dd>8 / 9</dd></div>
+        <div class="row"><dt>Invented quotes</dt><span class="lead"></span><dd class="bad">1</dd></div>
+      </dl>
+      <div class="stamp" aria-label="Verdict: reject">REJECT</div>
+    </aside>
+  </header>
+
+  <section aria-labelledby="idea">
+    <div class="prose">
+      <p class="eyebrow">The idea</p>
+      <h2 id="idea">An exam with an answer key</h2>
+    </div>
+    <p class="prose">Think of a teacher marking an exam. The harness needs the same four things, and each one is a file in the repository. It ships three practice contracts: a non-disclosure agreement (NDA), a software subscription (SaaS) agreement and a data processing agreement (DPA).</p>
+    <div class="flow">
+      <div class="step">
+        <span class="step-num">01</span>
+        <span class="step-role">Exam question</span>
+        <h3>The contract</h3>
+        <span class="path">data/nda_sample.md</span>
+        <p>A made-up NDA between two fictional companies, in eleven short sections.</p>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step">
+        <span class="step-num">02</span>
+        <span class="step-role">Student's answer</span>
+        <h3>The AI's review</h3>
+        <span class="path">fixtures/nda_stub.json</span>
+        <p>The clauses it found, the risks it flagged, and quotes from the contract as evidence.</p>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step">
+        <span class="step-num">03</span>
+        <span class="step-role">Answer key</span>
+        <h3>The gold set</h3>
+        <span class="path">expected/nda.json</span>
+        <p>Written by a lawyer: 11 clauses, 6 risks, and a severity with a reason for each.</p>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step grade">
+        <span class="step-num">04</span>
+        <span class="step-role">Grade</span>
+        <h3>The scorecard</h3>
+        <span class="path">scorecard.md</span>
+        <p>A score for each check, and a verdict.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="questions">
+    <div class="prose">
+      <p class="eyebrow">What it grades</p>
+      <h2 id="questions">Three questions about every review</h2>
+    </div>
+    <div class="questions">
+      <div class="q">
+        <h3>Did it find the clauses?</h3>
+        <p>A contract is made of sections such as term, governing law or assignment. The harness counts what the AI found.</p>
+        <dl>
+          <div><dt>Recall</dt><dd>Of the clauses that exist, how many did it find?</dd></div>
+          <div><dt>Precision</dt><dd>Of the clauses it listed, how many actually exist?</dd></div>
+          <div><dt>F1</dt><dd>One number that combines the two.</dd></div>
+        </dl>
+      </div>
+      <div class="q">
+        <h3>Did it judge the risks right?</h3>
+        <p>Finding a clause is the easy part. A good reviewer knows that a confidentiality duty with no end date is a serious problem, while a clause about how notices are sent is minor.</p>
+        <p>The harness checks which clauses the AI flagged as risky, and whether each severity (low, medium or high) matches the answer key.</p>
+      </div>
+      <div class="q key">
+        <h3>Are the quotes real?</h3>
+        <p>Every risk must be backed by a quote from the contract. AI models sometimes invent quotes that sound right but appear nowhere in the document.</p>
+        <p>The harness looks for each quote word for word, ignoring only capitals, punctuation and spacing. One invented quote means an automatic <span class="tag bad">REJECT</span>. In legal work a fake citation disqualifies the whole review.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="example">
+    <div class="prose">
+      <p class="eyebrow">Worked example</p>
+      <h2 id="example">Grading the bundled NDA review</h2>
+      <p style="margin-top:12px">The repository ships an AI review of the NDA that is wrong on purpose, so you can watch the grader catch each mistake. Everything below comes from the real files.</p>
+    </div>
+
+    <div class="prose" style="margin-top:12px">
+      <h3>Check the quotes yourself</h3>
+      <p class="muted small" style="margin-top:6px">The review gives nine quotes as evidence. Pick one to see where it appears in the contract.</p>
+    </div>
+    <div class="checker">
+      <div class="quote-col">
+        <ul class="quote-list" id="quote-list" aria-label="Quotes cited by the AI review"></ul>
+        <p class="verdict" id="verdict" aria-live="polite"></p>
+      </div>
+      <div class="doc" id="doc" aria-label="The synthetic NDA"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="risks">
+    <div class="prose">
+      <h3 id="risks">Compare the risk calls</h3>
+      <p style="margin-top:8px">How serious a clause is depends on whose side you are on. A clause that hurts one party can help the other. So every answer key records who the review is for.</p>
+    </div>
+    <dl class="context" aria-label="Review context in the NDA answer key">
+      <div><dt>Advising</dt><dd>Disclosing Party (Northwind Materials GmbH)</dd></div>
+      <div><dt>Governing law</dt><dd>Germany</dd></div>
+      <div><dt>Goal</dt><dd>Review before sharing technical information with a possible supplier</dd></div>
+      <div><dt>Risk appetite</dt><dd>Conservative</dd></div>
+    </dl>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Clause</th><th scope="col">Answer key</th><th scope="col">AI review</th><th scope="col">Result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Term <span class="sec">§3</span></td><td><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></td><td><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></td><td><span class="result good">Correct</span></td></tr>
+          <tr><td>Residual knowledge <span class="sec">§7</span></td><td><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></td><td><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></td><td><span class="result good">Correct</span></td></tr>
+          <tr><td>Definition <span class="sec">§1</span></td><td><span class="sev" data-level="2"><i></i><i></i><i></i><b>Medium</b></span></td><td><span class="sev" data-level="2"><i></i><i></i><i></i><b>Medium</b></span></td><td><span class="result good">Correct</span></td></tr>
+          <tr><td>Permitted disclosure <span class="sec">§6</span></td><td><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></td><td><span class="sev" data-level="2"><i></i><i></i><i></i><b>Medium</b></span></td><td><span class="result warn">Under-rated</span></td></tr>
+          <tr><td>Assignment <span class="sec">§10</span></td><td><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></td><td><span class="sev" data-level="1"><i></i><i></i><i></i><b>Low</b></span></td><td><span class="result warn">Under-rated</span></td></tr>
+          <tr><td>Notices <span class="sec">§11</span></td><td><span class="sev" data-level="1"><i></i><i></i><i></i><b>Low</b></span></td><td><span class="none">Not flagged</span></td><td><span class="result bad">Missed</span></td></tr>
+          <tr><td>Governing law <span class="sec">§5</span></td><td><span class="none">No risk</span></td><td><span class="sev" data-level="1"><i></i><i></i><i></i><b>Low</b></span></td><td><span class="result bad">False alarm</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose" style="margin-top:8px">
+      <p><strong>Same clause, different judgment.</strong> Both found the assignment clause in §10, which lets the other side hand the agreement to a competitor. Only one saw why that matters to the party being advised.</p>
+    </div>
+    <div class="compare">
+      <figure>
+        <figcaption><span>AI review</span><span class="sev" data-level="1"><i></i><i></i><i></i><b>Low</b></span></figcaption>
+        <blockquote>“Broad assignment rights are common in commercial agreements.”</blockquote>
+      </figure>
+      <figure>
+        <figcaption><span>Lawyer's answer key</span><span class="sev" data-level="3"><i></i><i></i><i></i><b>High</b></span></figcaption>
+        <blockquote>“Free assignment to a competitor of the disclosing party defeats the purpose of the agreement, since the counterparty can change to the one party the discloser would never have contracted with.”</blockquote>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="scorecard">
+    <div class="prose">
+      <h3 id="scorecard">The scorecard</h3>
+      <p style="margin-top:8px">Each mistake above shows up as a number. A score of 1.00 is perfect.</p>
+    </div>
+    <div class="scores">
+      <div class="score-group">
+        <h4>Finding clauses</h4>
+        <div class="srow"><span class="name">Clause recall</span><span class="val">1.00</span><div class="bar"><span style="width:100%"></span></div><span class="why">Found all 11 real clauses.</span></div>
+        <div class="srow"><span class="name">Clause precision</span><span class="val">0.92</span><div class="bar"><span style="width:92%"></span></div><span class="why">11 of the 12 clauses it listed exist. It invented an indemnification clause.</span></div>
+        <div class="srow"><span class="name">Clause F1</span><span class="val">0.96</span><div class="bar"><span style="width:96%"></span></div><span class="why">Recall and precision combined.</span></div>
+      </div>
+      <div class="score-group">
+        <h4>Judging risk</h4>
+        <div class="srow"><span class="name">Risk precision</span><span class="val">0.83</span><div class="bar"><span style="width:83%"></span></div><span class="why">5 of its 6 flags are real risks. Governing law is not.</span></div>
+        <div class="srow"><span class="name">Risk recall</span><span class="val">0.83</span><div class="bar"><span style="width:83%"></span></div><span class="why">Flagged 5 of the 6 real risks. It missed notices.</span></div>
+        <div class="srow"><span class="name">Severity accuracy</span><span class="val">0.60</span><div class="bar"><span style="width:60%"></span></div><span class="why">Right severity for 3 of the 5 risks both sides flagged.</span></div>
+      </div>
+      <div class="score-group">
+        <h4>Evidence</h4>
+        <div class="srow"><span class="name">Citation grounding</span><span class="val">0.89</span><div class="bar"><span style="width:89%"></span></div><span class="why">8 of its 9 quotes appear in the contract.</span></div>
+        <div class="srow reject"><span class="name">Invented quotes</span><span class="val">1</span><span class="mini-stamp">REJECT</span><span class="why">One quote cannot be found, so the whole review is rejected.</span></div>
+      </div>
+    </div>
+    <p class="prose">The clause coverage is nearly perfect, the risk judgment is weak, and one quote is invented. An overall average would hide both problems. That is why the harness reports each check on its own.</p>
+  </section>
+
+  <section aria-labelledby="try">
+    <div class="prose">
+      <p class="eyebrow">Try it</p>
+      <h2 id="try">Run it on your own machine</h2>
+      <p style="margin-top:12px">You need <a href="https://docs.astral.sh/uv/">uv</a>, which fetches a suitable Python for you. No API key is needed.</p>
+    </div>
+    <div class="cmds">
+      <div class="cmd">
+        <span class="cmd-label">Grade the bundled NDA review and write <code>scorecard.md</code></span>
+        <div class="cmd-box"><pre id="cmd-demo">git clone https://github.com/sebastianfoerste/contract-review-eval-harness
+cd contract-review-eval-harness
+uv sync
+uv run python -m contract_eval evaluate --case nda</pre><button class="copy" type="button" data-target="cmd-demo">Copy</button></div>
+      </div>
+      <div class="cmd">
+        <span class="cmd-label">Grade your own tool's review, saved as JSON in the <a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/schemas/review-output.schema.json">review format</a></span>
+        <div class="cmd-box"><pre id="cmd-score">uv run contract-eval score my-review.json --case nda</pre><button class="copy" type="button" data-target="cmd-score">Copy</button></div>
+      </div>
+    </div>
+    <p class="prose muted small">The second command exits with an error on a REJECT. A team can run it in their automated tests and block any change that makes their AI's reviews worse. To try it with nothing installed, use the <a href="https://sebastianfoerste.github.io/contract-review-eval-harness/playground/">browser playground</a>.</p>
+  </section>
+
+  <section aria-labelledby="rules">
+    <div class="prose">
+      <p class="eyebrow">Design choices</p>
+      <h2 id="rules">Ground rules</h2>
+    </div>
+    <dl class="rules">
+      <div><dt>Offline and repeatable</dt><dd>By default nothing goes over the internet and no API key is needed. The same review always gets the same score.</dd></div>
+      <div><dt>Synthetic contracts only</dt><dd>Every contract is made up. Real agreements and client data never go into the repository.</dd></div>
+      <div><dt>A lawyer writes the answers</dt><dd>Answer keys are written by hand and never generated by code. Every flagged risk and quote still needs a qualified lawyer before anyone relies on it.</dd></div>
+      <div><dt>Flawed on purpose</dt><dd>The bundled review contains planted mistakes. That proves the grader catches errors instead of handing out full marks.</dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="further">
+    <div class="prose">
+      <p class="eyebrow">Later</p>
+      <h2 id="further">Further in</h2>
+      <p style="margin-top:12px">Skip these until the basics make sense.</p>
+    </div>
+    <dl class="further">
+      <div><dt>Live models</dt><dd>Grade a real model instead of the stored review: Anthropic, any OpenAI-compatible API, or any program that prints review JSON. Always opt-in.</dd></div>
+      <div><dt>Browser playground</dt><dd>Paste a review into a web page and score it, with nothing installed.</dd></div>
+      <div><dt>GitHub Action</dt><dd>Let another project's automated checks fail when its reviews get worse.</dd></div>
+      <div><dt>Leaderboard and results site</dt><dd>Compare models across the three practice contracts.</dd></div>
+      <div><dt>Matters</dt><dd>Reviews that span several documents and negotiation rounds, scored document by document.</dd></div>
+      <div><dt>My Counsel track</dt><dd>A separate, stricter experiment setup with blind annotation, adjudication between two annotators and a spending ledger.</dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="reading">
+    <div class="prose">
+      <p class="eyebrow">Next step</p>
+      <h2 id="reading">Where to start reading</h2>
+    </div>
+    <ol class="reading">
+      <li><a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/data/nda_sample.md">data/nda_sample.md</a><span>The contract. Eleven short sections you can read in two minutes.</span></li>
+      <li><a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/expected/nda.json">expected/nda.json</a><span>The answer key. Read <code>severity_rationale</code> for the lawyer's reasoning on each risk.</span></li>
+      <li><a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/fixtures/nda_stub.json">fixtures/nda_stub.json</a><span>The flawed review. Its <code>_comment</code> lists every planted mistake.</span></li>
+      <li><a href="https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/src/contract_eval/scorer.py">src/contract_eval/scorer.py</a><span>The grading logic, written as small functions with tests.</span></li>
+    </ol>
+  </section>
+
+  <footer>
+    <p>Part of the <a href="https://github.com/sebastianfoerste/contract-review-eval-harness">contract-review-eval-harness</a> repository. The contract, the quotes and the scores come from <code>data/nda_sample.md</code>, <code>fixtures/nda_stub.json</code> and <code>examples/scorecard.md</code>.</p>
+    <p>All contracts are synthetic. This page explains a testing tool and is not legal advice.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SECTIONS = [
+    { n: 0, title: "", text: "This Mutual Non-Disclosure Agreement (\"Agreement\") is entered into between Northwind Materials GmbH (\"Disclosing Party\") and Cverbio Labs Inc. (\"Receiving Party\"). This document is fabricated for evaluation purposes and is not a real agreement." },
+    { n: 1, title: "Definition of Confidential Information", text: "Confidential Information means any and all information disclosed by either party to the other, whether oral, written, or electronic, whether or not marked as confidential." },
+    { n: 2, title: "Confidentiality Obligations", text: "The Receiving Party shall keep all Confidential Information secret and shall not disclose it to any third party without the prior written consent of the Disclosing Party." },
+    { n: 3, title: "Term", text: "This Agreement and the obligations of confidentiality set out herein shall remain in effect in perpetuity." },
+    { n: 4, title: "Return or Destruction", text: "Upon written request, the Receiving Party shall return or destroy all Confidential Information in its possession within thirty (30) days." },
+    { n: 5, title: "Governing Law", text: "This Agreement shall be governed by and construed in accordance with the laws of the Federal Republic of Germany." },
+    { n: 6, title: "Permitted Disclosures", text: "The Receiving Party may disclose Confidential Information where disclosure is required by law, court order, or a competent regulatory authority, provided that the Receiving Party first obtains the prior written consent of the Disclosing Party." },
+    { n: 7, title: "Residual Knowledge", text: "Nothing in this Agreement restricts the Receiving Party from using ideas, concepts, know-how, or techniques retained in the unaided memory of its personnel, including for the benefit of third parties." },
+    { n: 8, title: "No Licence", text: "Nothing in this Agreement grants the Receiving Party any licence or other right in respect of the Disclosing Party's intellectual property." },
+    { n: 9, title: "Injunctive Relief", text: "The parties acknowledge that damages may be an inadequate remedy for breach and that the Disclosing Party may seek injunctive relief in addition to any other remedy available at law." },
+    { n: 10, title: "Assignment", text: "The Receiving Party may assign this Agreement, in whole or in part, to any third party, including a competitor of the disclosing counterparty, and no consent is required for such an assignment." },
+    { n: 11, title: "Notices", text: "Notices under this Agreement are effective when sent by email to the address stated in the signature block." }
+  ];
+  var CLAUSE_SECTION = {
+    definition: 1, confidentiality: 2, term: 3, return_destruction: 4, governing_law: 5,
+    permitted_disclosure: 6, residual_knowledge: 7, no_license: 8, injunctive_relief: 9,
+    assignment: 10, notices: 11
+  };
+  var QUOTES = [
+    { quote: "whether or not marked as confidential", clause: "definition" },
+    { quote: "shall keep all Confidential Information secret", clause: "confidentiality" },
+    { quote: "shall remain in effect in perpetuity", clause: "term" },
+    { quote: "return or destroy all Confidential Information in its possession within thirty (30) days", clause: "return_destruction" },
+    { quote: "the laws of the Federal Republic of Germany", clause: "governing_law" },
+    { quote: "first obtains the prior written consent of the Disclosing Party", clause: "permitted_disclosure" },
+    { quote: "retained in the unaided memory of its personnel", clause: "residual_knowledge" },
+    { quote: "including a competitor of the disclosing counterparty", clause: "assignment" },
+    { quote: "notices shall be deemed received three business days after posting", clause: "notices" }
+  ];
+
+  // Same rule as normalize_text in scorer.py: lower-case, punctuation to spaces, collapse whitespace.
+  var PUNCT = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~“”‘’–—";
+  function normalizeWithMap(s) {
+    var out = "", map = [], pending = false;
+    for (var i = 0; i < s.length; i++) {
+      var ch = s[i];
+      if (PUNCT.indexOf(ch) !== -1 || /\s/.test(ch)) { if (out.length) pending = true; continue; }
+      if (pending) { out += " "; map.push(i); pending = false; }
+      out += ch.toLowerCase(); map.push(i);
+    }
+    return { out: out, map: map };
+  }
+  var normSections = SECTIONS.map(function (s) { return normalizeWithMap(s.text); });
+
+  QUOTES.forEach(function (q) {
+    var nq = normalizeWithMap(q.quote).out;
+    q.found = null;
+    for (var k = 0; k < SECTIONS.length; k++) {
+      var idx = normSections[k].out.indexOf(nq);
+      if (nq && idx !== -1) {
+        var m = normSections[k].map;
+        q.found = { sec: k, start: m[idx], end: m[idx + nq.length - 1] + 1 };
+        break;
+      }
+    }
+  });
+
+  var doc = document.getElementById("doc");
+  var list = document.getElementById("quote-list");
+  var verdict = document.getElementById("verdict");
+  var secEls = [], textEls = [], noteEls = [];
+
+  var title = document.createElement("div");
+  title.className = "doc-title";
+  title.textContent = "Mutual Non-Disclosure Agreement (SYNTHETIC)";
+  doc.appendChild(title);
+  SECTIONS.forEach(function (s, k) {
+    var wrap = document.createElement("div");
+    wrap.className = "doc-sec";
+    if (s.title) {
+      var h = document.createElement("h4");
+      h.textContent = s.n + ". " + s.title;
+      wrap.appendChild(h);
+    }
+    var note = document.createElement("span");
+    note.className = "claim-note";
+    note.hidden = true;
+    wrap.appendChild(note);
+    var p = document.createElement("p");
+    p.textContent = s.text;
+    wrap.appendChild(p);
+    doc.appendChild(wrap);
+    secEls.push(wrap); textEls.push(p); noteEls.push(note);
+  });
+
+  var buttons = [];
+  QUOTES.forEach(function (q, i) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "quote-btn";
+    b.setAttribute("aria-pressed", "false");
+    var icon = document.createElement("span");
+    icon.className = "mark-icon " + (q.found ? "ok" : "no");
+    icon.textContent = q.found ? "✓" : "✗";
+    icon.setAttribute("aria-label", q.found ? "Found" : "Not found");
+    var t = document.createElement("span");
+    t.className = "qtext";
+    t.textContent = "“" + q.quote + "”";
+    var meta = document.createElement("span");
+    meta.className = "qmeta";
+    meta.textContent = "cited for " + q.clause.replace(/_/g, " ");
+    t.appendChild(meta);
+    b.appendChild(icon); b.appendChild(t);
+    b.addEventListener("click", function () { select(i); });
+    li.appendChild(b); list.appendChild(li);
+    buttons.push(b);
+  });
+
+  function reset() {
+    SECTIONS.forEach(function (s, k) {
+      textEls[k].textContent = s.text;
+      secEls[k].classList.remove("claimed");
+      noteEls[k].hidden = true;
+    });
+  }
+  function scrollDocTo(el) {
+    doc.scrollTop = Math.max(0, el.offsetTop - 24);
+  }
+  function select(i) {
+    var q = QUOTES[i];
+    reset();
+    buttons.forEach(function (b, j) { b.setAttribute("aria-pressed", j === i ? "true" : "false"); });
+    verdict.textContent = "";
+    var strong = document.createElement("strong");
+    if (q.found) {
+      var s = SECTIONS[q.found.sec], text = s.text, p = textEls[q.found.sec];
+      p.textContent = "";
+      p.appendChild(document.createTextNode(text.slice(0, q.found.start)));
+      var mark = document.createElement("mark");
+      mark.textContent = text.slice(q.found.start, q.found.end);
+      p.appendChild(mark);
+      p.appendChild(document.createTextNode(text.slice(q.found.end)));
+      verdict.className = "verdict";
+      strong.textContent = "Found. ";
+      verdict.appendChild(strong);
+      verdict.appendChild(document.createTextNode(
+        "This quote appears word for word in " + (s.n ? "§" + s.n + " " + s.title : "the opening paragraph") + ", so it counts as grounded evidence."));
+      scrollDocTo(secEls[q.found.sec]);
+    } else {
+      var k = CLAUSE_SECTION[q.clause];
+      verdict.className = "verdict no";
+      strong.textContent = "Not in the contract. ";
+      verdict.appendChild(strong);
+      if (k) {
+        secEls[k].classList.add("claimed");
+        noteEls[k].textContent = "The review cited its quote from here. It is not in this text.";
+        noteEls[k].hidden = false;
+        verdict.appendChild(document.createTextNode(
+          "The AI attributed this to §" + k + " " + SECTIONS[k].title + ", which says something different. One invented quote is enough to REJECT the review."));
+        scrollDocTo(secEls[k]);
+      } else {
+        verdict.appendChild(document.createTextNode("No section of the contract contains this text. One invented quote is enough to REJECT the review."));
+      }
+    }
+  }
+  var firstMissing = QUOTES.findIndex(function (q) { return !q.found; });
+  select(firstMissing === -1 ? 0 : firstMissing);
+
+  Array.prototype.forEach.call(document.querySelectorAll(".copy"), function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = document.getElementById(btn.getAttribute("data-target"));
+      var done = function (label) { btn.textContent = label; setTimeout(function () { btn.textContent = "Copy"; }, 1800); };
+      var fallback = function () {
+        var r = document.createRange(); r.selectNodeContents(pre);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        done("Selected");
+      };
+      try {
+        navigator.clipboard.writeText(pre.textContent).then(function () { done("Copied"); }, fallback);
+      } catch (e) { fallback(); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
