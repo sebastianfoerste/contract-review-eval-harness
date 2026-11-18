@@ -43,6 +43,7 @@ The one fabricated citation is a hard `REJECT`.
 
 ## Links
 
+- [Beginner's guide](https://sebastianfoerste.github.io/contract-review-eval-harness/beginners-guide.html): what the harness does and how it grades a review, shown on the NDA demo
 - [Overview](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/overview.md): why this exists, what it checks, more commands, how it compares, limitations
 - [Metric reference](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/metrics.md)
 - [Legal engineering explainer](https://github.com/sebastianfoerste/contract-review-eval-harness/blob/main/docs/legal-engineering-explainer.md): the contracts, gold sets, metrics, design principles and likely interview questions

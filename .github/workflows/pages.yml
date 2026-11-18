@@ -1,8 +1,8 @@
 name: pages
 
 # Publishes the committed evidence as a static site: the scorecard, the release
-# certificate, the dated live-run report, the leaderboard and the adversarial
-# robustness report. scripts/build_site.py renders them with the standard library
+# certificate, the dated live-run report, the leaderboard, the adversarial
+# robustness report and the beginner's guide. scripts/build_site.py renders them with the standard library
 # only, so the build needs no network beyond installing uv. The site also carries the
 # playground (playground/), which installs the wheel built here into Pyodide and
 # scores a pasted review in the visitor's browser.
