@@ -1,6 +1,6 @@
 # Legal engineering explainer
 
-A complete walk-through of this repository for a reader preparing to explain and defend it: what the harness does, which contracts went into it, how every score is computed, which design principles it follows, what it has found, and where it stops. It closes with likely interview questions and a glossary. Matter evaluation, which scores the review of several documents read for one client, has [its own page](MATTER_EVALUATION.md).
+A complete walk-through of this repository for a reader preparing to explain and defend it: what the harness does, which contracts went into it, how every score is computed, which design principles it follows, what it has found, and where it stops. It closes with likely interview questions and a glossary. Matter evaluation, which scores the review of several documents read for one client, has [its own page](MATTER_EVALUATION.md). The My Counsel candidate track, a separate engineering track outside the scored suite, is summarised in section 4.4 and documented in [its README](../candidates/mycounsel/README.md).
 
 Every figure below comes from a committed file in this repository and can be reproduced offline with the commands named next to it. Where this page and the code disagree, the code is right.
 
@@ -121,9 +121,11 @@ The clause types follow Art. 28(3) lit. a to h GDPR in the regulation's own orde
 
 Ten clause types, five risk flags, five clean clauses.
 
-### 4.4 Candidate contracts, not yet scored
+### 4.4 Candidate contracts outside the scored suite
 
 [`candidates/`](../candidates/README.md) holds two further synthetic contracts: a German-language NDA reviewed for the disclosing party, and an English-language share purchase agreement (SPA) excerpt under German law reviewed for the purchaser. Their gold sets are deliberately empty, because the harness claims hand-authored gold and those sets have not been written. They answer one criticism of existing legal AI benchmarks: the lack of civil-law and non-English material.
+
+[`candidates/mycounsel/`](../candidates/mycounsel/README.md) holds a separate track that evaluates the My Counsel candidate's own prompt, schema and validators on one synthetic English-language ICT services agreement under German law. The agreement comes in three variants: the base text, a changed text that repairs only the data-location clause, and an injection text with hostile reviewer instructions appended. Two playbooks of six entries each drive the review, one with commercial preferences and one with six points from the EU's Digital Operational Resilience Act (DORA). Everything recorded so far is a hand-authored replay, and the track claims no model run, no independent annotation and no gain in legal quality. It is outside `ALL_CASES` and every certificate; section 12 names its code.
 
 ## 5. Anatomy of a gold set
 
@@ -238,7 +240,9 @@ The asymmetry is the core legal judgment of the policy. A wrong severity or a mi
 
 ### 7.2 The regression gate
 
-`make test` runs a separate, looser gate (`demo-regression-policy.v2`) calibrated to the deliberately imperfect stub: clause F1 at least 0.85, legacy risk accuracy at least 0.45, grounding at least 0.75, at most one hallucination. Its job is to detect that something changed unexpectedly. The stub passes this gate and is still rejected by the release policy. The two gates are kept apart on purpose. A green CI run means the code still behaves as before, and only the release certificate says whether an output is acceptable.
+`evaluate` applies a separate, looser gate (`demo-regression-policy.v2`) calibrated to the deliberately imperfect stub: clause F1 at least 0.85, legacy risk accuracy at least 0.45, grounding at least 0.75, at most one hallucination. Its job is to detect that something changed unexpectedly. The stub passes this gate and is still rejected by the release policy. The two gates are kept apart on purpose. A green CI run means the code still behaves as before, and only the release certificate says whether an output is acceptable.
+
+The gate sets floors, so a score can fall and still clear them. The committed baseline [`examples/regression-baseline.json`](../examples/regression-baseline.json) catches such a fall. It records an `evaluate --case all` run, and the CI step "Compare the fresh run against the committed baseline" runs `compare` with that file as the baseline and the run CI has just written as the candidate. `compare` exits 1 when clause precision, recall or F1, risk-flag accuracy or citation grounding falls, or the hallucination count rises, for any case the baseline records. Two tests in `tests/test_cli.py` keep the baseline current: one requires it to record every case in `ALL_CASES`, the other requires its scores to equal the current offline scores, so a change that moves a score on purpose must regenerate the baseline with `make regression-baseline` in the same diff. `make regression-check` runs the same comparison locally.
 
 ### 7.3 Current results
 
@@ -319,7 +323,7 @@ A second lesson came from an earlier report. The 2026-08-28 table was transcribe
 8. **The instrument must fail on its own baseline.** The stub carries exactly one fabricated citation and realistic severity errors, so the demo always shows the harness catching something. Fixtures are never tuned to clear a threshold.
 9. **Separate regression from release.** A passing test suite says the code is unchanged. Only the release certificate decides fitness.
 10. **Evidence before parsing.** Every live adapter call is written to a capture file (request, raw response, parsed output, hashes, latency, optional cost) before it is parsed. Truncated or failed calls leave evidence and are never scored. A captured case output can be re-scored offline with `score-output`. Every live matter attempt that returns or raises an error also leaves a capture, in `captures/matters/<matter>/`. The SDK checks the reply against the schema inside the call, so a failed attempt, a reply cut off mid-JSON included, records the matter, round, condition, model, effort, prompt hash and the error, while a returned one adds the stop reason, the token counts and the raw reply. `matter-evaluate --review <condition>=<file>` scores a returned capture and refuses a failed one or one that stopped at the token limit.
-11. **Integrity by hashing.** Certificates, robustness reports, the leaderboard and parity vectors carry SHA-256 digests and are regenerated and compared in CI. A score that cannot be reproduced from committed inputs fails the build.
+11. **Integrity by hashing.** Certificates, robustness reports, the leaderboard and parity vectors carry SHA-256 digests and are regenerated and compared in CI, so a score in one of them that its committed inputs no longer reproduce fails the build. Two published scores sit outside that check. The live run of 29 June 2026 (`examples/live-run-claude-opus-4-8-2026-06-29.md`) publishes a scorecard with no raw provider response committed, and the round 1 scores in `experiments/northwind-saas/log.jsonl` identify their review only by its SHA-256 hash, and no capture of that review is committed.
 12. **Synthetic data only.** It allows the repository to be public and removes any confidentiality question.
 13. **Offline by default.** The default path needs no network and no API key; live adapters are opt-in and import their SDKs lazily.
 14. **Human in the loop.** No verdict authorises autonomous reliance. Every flag and citation must be confirmed by a qualified lawyer.
@@ -344,7 +348,7 @@ The current gold sets (schema v1) are one reviewer's judgment. The repository is
 
 | Component | Location | Role |
 |---|---|---|
-| Data models | `src/contract_eval/models.py` | Pydantic models for a review and a gold set; the single source of truth for both shapes |
+| Data models | `src/contract_eval/models.py`, `gold_v2.py`, `review_v2.py`, `candidates.py`, `matter.py` | Pydantic models. `models.py` holds the v1 case review and gold set; the v2 gold set is in `gold_v2.py`, the v2 review in `review_v2.py`, the My Counsel track's playbooks, runs and reference in `candidates.py`, and the matter manifest, answers and review in `matter.py` |
 | Scorer | `src/contract_eval/scorer.py` | Pure, unit-tested functions for each metric |
 | Python API | `src/contract_eval/api.py` | `load_case`, `score_review`, `evaluate_review`, `Verdict`; the CLI, pytest plugin and notebook all call it, so they reproduce the same numbers |
 | CLI | `src/contract_eval/cli.py` | `contract-eval evaluate`, `compare`, `certify`, `robustness`, `score`, `score-output`; maintainer commands under `contract-eval dev`: `evaluate-obligations`, `verify-*`, `reference-*` and the `matter-*` commands |
@@ -352,6 +356,7 @@ The current gold sets (schema v1) are one reviewer's judgment. The repository is
 | Release certificate | `src/contract_eval/release_certificate.py` | Requirement registry, decision, hashing, verification |
 | Robustness lab | `src/contract_eval/robustness.py` | Applies mutations, evaluates scenarios, aggregates metrics |
 | Matter evaluation | `src/contract_eval/matter.py`, `matter_scorer.py`, `matter_experiment.py`, `matter_cli.py`, `reviewer_sessions.py`; `matters/<id>/` | Several documents read for one client, scored on conflicts, positions and escalations, with every citation bound to the document it quotes. Runs from a checkout; see [matter evaluation](MATTER_EVALUATION.md) |
+| My Counsel candidate track | `src/contract_eval/candidates.py`, `candidate_annotation.py`, `candidate_adjudication.py`, `candidate_experiment.py`, `candidate_budget.py`; `candidates/mycounsel/` | Scores one recording of the My Counsel candidate, builds the blind annotation pack and compiles an annotation, adjudicates between two annotations, holds preregistered experiments and keeps the cumulative EUR spend ledger. Outside `ALL_CASES` and every certificate; see [its README](../candidates/mycounsel/README.md) |
 | JSON Schemas | `schemas/` | Generated from the models so that other tools can produce compliant reviews; CI rejects drift |
 | pytest plugin | `src/contract_eval/pytest_plugin.py` | `assert_review_passes` lets a product team gate its own test suite |
 | GitHub Action | `action.yml` | Fails another repository's CI job on `REJECT` |
