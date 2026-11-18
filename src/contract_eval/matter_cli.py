@@ -135,6 +135,8 @@ def evaluate_matter(
 
     # Anything other than the committed fixtures is a real result and is logged, or
     # scoring captures after the answers are written would bypass the guard entirely.
+    # A condition scored from its fixture goes only into a log the caller names.
+    log_named = log_path is not None
     if log_path is None and gold.authored and (live or reviews):
         log_path = default_log_path(matter_id, root)
     log = read_log(log_path) if log_path else []
@@ -225,12 +227,13 @@ def evaluate_matter(
             )
         entry["reviewer_usefulness"] = summarise_sessions(matching)
 
-        if log_path:
+        from_fixture = condition_id not in reviews and not live
+        if log_path and (log_named or not from_fixture):
             if result["split"] in ("eval", "all"):
                 entry["eval_guard"] = eval_guard(
                     log, matter_id=matter_id, round_id=round_id,
                     condition_id=condition_id, configuration=configuration,
-                    gold_sha256=gold_sha256,
+                    gold_sha256=gold_sha256, source=source,
                 )
             append_entry(log_path, {
                 "matter_id": matter_id,
@@ -478,8 +481,9 @@ def add_parsers(add: Callable[[str, str], argparse.ArgumentParser]) -> None:
     )
     evaluate.add_argument(
         "--log", default=None, type=Path,
-        help="experiment log to read and append to; a live run, or one scored with "
-             "--review, uses experiments/<matter>/log.jsonl",
+        help="experiment log to read and append to, which also takes scores from "
+             "committed fixtures; without it, a live run or one scored with --review "
+             "logs what it scored live or from a file to experiments/<matter>/log.jsonl",
     )
     evaluate.add_argument("--out", default=None, type=Path, help="output directory")
 

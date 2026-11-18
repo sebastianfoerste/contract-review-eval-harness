@@ -3,7 +3,8 @@
 The gold sets are human legal judgement, and their rationales cite provisions. Nothing
 used to record when, or against what, a citation was last checked. The ledger does;
 this test keeps it complete: a citation added to a gold set, a draft, a fixture, the
-robustness campaign, a contract or a guide without a ledger row fails here.
+robustness campaign, a contract, a guide or a matter's answers, documents, prompts and
+README without a ledger row fails here.
 
 Model output under examples/ is not a repository claim and is not scanned. Nothing
 here touches the network: the ledger's URLs are checked by a reader, not by code.
@@ -32,6 +33,10 @@ SCANNED_GLOBS = (
     "robustness/*.json",
     "data/*.md",
     "candidates/data/*.md",
+    "matters/*/README.md",
+    "matters/*/documents/*.md",
+    "matters/*/expected/*.json",
+    "matters/*/prompts/*.md",
     "docs/*.md",
     "CASE_STUDY.md",
     "CHANGELOG.md",
@@ -47,11 +52,12 @@ EXCLUDED = {LEDGER}
 
 # One pattern per citation style found in the repository. Each has a `kind` group so
 # the normaliser knows how to spell it. An article citation may continue as an
-# enumeration or a range ("Art. 28(2) and 28(3)(d)", "Art. 44 to 49", "Articles 32 to
-# 36"), and every member is extracted. Not recognised, because the repository does
-# not use them: "Art 28" without a stop, "Sec. 311", "para." pinpoints.
+# enumeration, a slash pair or a range ("Art. 28(2) and 28(3)(d)", "Art. 28/32",
+# "Art. 44 to 49", "Articles 32 to 36"), and every member is extracted. Not
+# recognised, because the repository does not use them: "Art 28" without a stop,
+# "Sec. 311", "para." pinpoints.
 _PINPOINT = r"\d+(?:\s?\(\d+\))*(?:\s?\([a-z]\))?"
-_CONTINUATION = rf"(?:(?:,|\sand|\sto|\sthrough)\s(?:Arts?\.\s?|Articles?\s)?{_PINPOINT})*"
+_CONTINUATION = rf"(?:(?:,\s|\s?/\s?|\sand\s|\sto\s|\sthrough\s)(?:Arts?\.\s?|Articles?\s)?{_PINPOINT})*"
 PATTERNS = (
     # Art. 28, Art. 28(3), Art. 28(3)(d), Art. 28 (3) (d), Arts. 44 to 49.
     re.compile(rf"(?P<art>Arts?\.\s?{_PINPOINT}{_CONTINUATION})"),
@@ -243,15 +249,17 @@ def test_the_guard_bites_on_an_unlisted_citation() -> None:
     """Probe the extractor and the matcher on a string, not on a tracked file."""
     provisions = ledger_provisions(LEDGER.read_text(encoding="utf-8"))
     sample = (
-        "Art. 28(3)(d) requires this; Article 99 and § 999(1) BGB and Chapter XIV, "
+        "Art. 28(3)(d) requires this; Art. 28/98 too; Article 99 and § 999(1) BGB and Chapter XIV, "
         "section 311 (1) of the German Civil Code (BGB), Guidelines 07/2020, lit. a to c."
     )
     citations = extract_citations(sample)
     assert citations == [
-        "Art. 28(3)(d)", "Art. 99", "Chapter XIV", "§ 999(1) BGB", "§ 311(1) BGB",
-        "Guidelines 07/2020", "Art. 28(3)(a)", "Art. 28(3)(b)", "Art. 28(3)(c)",
+        "Art. 28(3)(d)", "Art. 28", "Art. 98", "Art. 99", "Chapter XIV", "§ 999(1) BGB",
+        "§ 311(1) BGB", "Guidelines 07/2020", "Art. 28(3)(a)", "Art. 28(3)(b)", "Art. 28(3)(c)",
     ]
-    assert missing_from_ledger(citations, provisions) == ["Art. 99", "Chapter XIV", "§ 999(1) BGB"]
+    assert missing_from_ledger(citations, provisions) == [
+        "Art. 98", "Art. 99", "Chapter XIV", "§ 999(1) BGB",
+    ]
     # Enumerations, ranges, spaced pinpoints and the long form keep every member.
     assert extract_citations("Art. 28(2) and 28(3)(d); Art. 44 to 49; Articles 32 to 36") == [
         "Art. 28(2)", "Art. 28(3)(d)", "Art. 44", "Art. 49", "Art. 32", "Art. 36",
