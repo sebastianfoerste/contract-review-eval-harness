@@ -98,6 +98,15 @@ def test_a_fixture_score_never_counts_against_a_real_result():
     assert stub["contaminated"] is True
 
 
+def test_a_fixture_run_is_judged_against_every_entry():
+    """Tuning between fixture runs is still flagged, and so is one after a real result."""
+    judged = eval_guard(
+        [{**entry("A"), "source": "some-model"}], matter_id="toy", round_id="round1",
+        condition_id="matter", configuration="B", source=FIXTURE_SOURCE,
+    )
+    assert judged["contaminated"] is True and judged["prior_eval_runs"] == 1
+
+
 def test_the_guard_knows_the_stub_adapter_by_its_source():
     assert FIXTURE_SOURCE == STUB_MODEL
 
@@ -328,6 +337,9 @@ def test_a_live_run_and_the_later_scoring_of_its_capture_are_one_configuration(t
     live = evaluate_matter(
         "toy", "round1", root=toy_copy, conditions=["matter"], split="eval", live=True
     )
+    # A live result is real, so it is guarded and logged without --log.
+    assert "eval_guard" in live["conditions"][0]
+    assert [e["source"] for e in read_log(default_log_path("toy", toy_copy))] == ["fake-model"]
     capture = next((toy_copy / "captures" / "matters" / "toy").glob("*.json"))
     replayed = evaluate_matter(
         "toy", "round1", root=toy_copy, conditions=["matter"], split="eval",
