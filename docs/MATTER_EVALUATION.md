@@ -225,9 +225,7 @@ tool's matter review is scored from a file with `--review`, as shown below.
 Every attempt that returns or raises an error leaves a file in `captures/matters/<id>/`:
 the raw response when one came back, or a record of the failure when the call raised,
 so failed attempts can be counted. A capture is scored only as the matter, round and
-condition it was made for, and can be scored later without calling the model again.
-The capture of a failed attempt, or of a reply that stopped at the token limit, is
-refused:
+condition it was made for, and can be scored later without calling the model again:
 
 ```bash
 uv run python -m contract_eval matter-evaluate --round round1 \
@@ -235,7 +233,8 @@ uv run python -m contract_eval matter-evaluate --round round1 \
 ```
 
 This allows outputs to be captured before the answers are written and scored
-afterwards, which keeps the answers independent of the outputs.
+afterwards, which keeps the answers independent of the outputs. The capture of a failed
+attempt, or of a reply that stopped at the token limit, is refused.
 
 `captures/` is not committed. A matter capture kept in the repository goes under
 `matters/<id>/captures/`, never in `examples/captures/`: the leaderboard reads every

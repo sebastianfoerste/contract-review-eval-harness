@@ -8,12 +8,13 @@ answer: a row that needs a decision says so, and the decision stays with the own
 
 `tests/test_legal_currency.py` keeps the table complete. It extracts every statutory
 citation from the files its `SCANNED_GLOBS` lists: the gold sets and candidate gold
-sets, the candidate drafts, the annotation pack and the two scripts that build and
-migrate it, the stub fixtures, the robustness campaigns, the contracts, a matter's
-answers, documents, prompts and README, the guides under `docs/`, the case study, the
-changelog, the README, CONTRIBUTING, SECURITY, PRIVACY and AGENTS files, and the
-annotation and candidate READMEs. It fails when one has no row here. Model output
-under `examples/` is not a repository claim and is not scanned.
+sets, the candidate drafts and the script that derives them from the gold sets, the
+annotation pack and the script that builds it, the stub fixtures, the robustness
+campaigns and replay spec, the contracts, a matter's answers, documents, prompts and
+README, the guides under `docs/`, the case study, the changelog, the README,
+CONTRIBUTING, SECURITY, PRIVACY and AGENTS files, and the annotation, candidate and
+data READMEs. It fails when one has no row here. Model output under `examples/` is not
+a repository claim and is not scanned.
 
 How to read a row:
 
