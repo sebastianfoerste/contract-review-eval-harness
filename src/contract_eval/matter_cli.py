@@ -481,8 +481,9 @@ def add_parsers(add: Callable[[str, str], argparse.ArgumentParser]) -> None:
     )
     evaluate.add_argument(
         "--log", default=None, type=Path,
-        help="experiment log to read and append to; a live run, or one scored with "
-             "--review, uses experiments/<matter>/log.jsonl",
+        help="experiment log to read and append to, which also takes scores from "
+             "committed fixtures; without it, a live run or one scored with --review "
+             "logs what it scored live or from a file to experiments/<matter>/log.jsonl",
     )
     evaluate.add_argument("--out", default=None, type=Path, help="output directory")
 

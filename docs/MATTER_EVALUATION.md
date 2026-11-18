@@ -182,11 +182,12 @@ and context selection are tuned on `dev` only.
 uv run python -m contract_eval matter-evaluate --split dev --log experiments/northwind-saas/log.jsonl
 ```
 
-Runs on the committed fixtures are logged only on request, with `--log`. Live runs and
-runs that score an output file are always logged, to `experiments/<matter>/log.jsonl`.
-A run that scores one condition from a file and the others from their fixtures logs
-only the first. The held-out check never counts a fixture score against a real result,
-whichever log holds it.
+Once a round's answers are written, live runs and runs that score an output file are
+logged to `experiments/<matter>/log.jsonl`; the conditions such a run scores from their
+fixtures are not. A run on the committed fixtures alone is logged only on request, with
+`--log PATH`. A named log takes the place of the default one for reading and writing,
+and receives every scored condition, fixture ones included. The held-out check never
+counts a fixture score against a real result, whichever log holds it.
 
 Every logged run records a configuration id: a hash of the prompt as sent, which
 contains the documents shown, with the model and the reasoning effort. A live run and
@@ -221,10 +222,12 @@ uv run python -m contract_eval matter-evaluate --round round1 --live
 and command adapters return a case review and have no matter counterpart. Another
 tool's matter review is scored from a file with `--review`, as shown below.
 
-Every attempt leaves a file in `captures/matters/<id>/`: the raw response when one
-came back, or a record of the failure when the call raised, so failed attempts can be
-counted. A capture is scored only as the matter, round and condition it was made for,
-and can be scored later without calling the model again:
+Every attempt that returns or raises an error leaves a file in `captures/matters/<id>/`:
+the raw response when one came back, or a record of the failure when the call raised,
+so failed attempts can be counted. A capture is scored only as the matter, round and
+condition it was made for, and can be scored later without calling the model again.
+The capture of a failed attempt, or of a reply that stopped at the token limit, is
+refused:
 
 ```bash
 uv run python -m contract_eval matter-evaluate --round round1 \
@@ -251,7 +254,8 @@ uv run python -m contract_eval matter-review-template --round round1 \
 
 The template names the output by hash and does not name the condition. A capture made
 for another matter or round is refused, because a session counts only for the round it
-names. The reviewer records, for each finding, `accepted`, `corrected` or `rejected`, a
+names, and so is the capture of a failed attempt or of a reply that stopped at the
+token limit. The reviewer records, for each finding, `accepted`, `corrected` or `rejected`, a
 usefulness score and, unless accepted, a reason. They also record review time, the time
 until the draft was reviewable, and any material issue the output missed.
 

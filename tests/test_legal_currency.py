@@ -3,8 +3,8 @@
 The gold sets are human legal judgement, and their rationales cite provisions. Nothing
 used to record when, or against what, a citation was last checked. The ledger does;
 this test keeps it complete: a citation added to a gold set, a draft, a fixture, the
-robustness campaign, a contract, a guide or a matter's answers, documents and prompts
-without a ledger row fails here.
+robustness campaign, a contract, a guide or a matter's answers, documents, prompts and
+README without a ledger row fails here.
 
 Model output under examples/ is not a repository claim and is not scanned. Nothing
 here touches the network: the ledger's URLs are checked by a reader, not by code.
@@ -53,8 +53,9 @@ EXCLUDED = {LEDGER}
 # One pattern per citation style found in the repository. Each has a `kind` group so
 # the normaliser knows how to spell it. An article citation may continue as an
 # enumeration, a slash pair or a range ("Art. 28(2) and 28(3)(d)", "Art. 28/32",
-# "Art. 44 to 49", "Articles 32 to 36"), and every member is extracted. Not recognised, because the repository does
-# not use them: "Art 28" without a stop, "Sec. 311", "para." pinpoints.
+# "Art. 44 to 49", "Articles 32 to 36"), and every member is extracted. Not
+# recognised, because the repository does not use them: "Art 28" without a stop,
+# "Sec. 311", "para." pinpoints.
 _PINPOINT = r"\d+(?:\s?\(\d+\))*(?:\s?\([a-z]\))?"
 _CONTINUATION = rf"(?:(?:,\s|\s?/\s?|\sand\s|\sto\s|\sthrough\s)(?:Arts?\.\s?|Articles?\s)?{_PINPOINT})*"
 PATTERNS = (
