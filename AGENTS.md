@@ -5,7 +5,7 @@ for show. A model runs through an adapter, its output is scored against a hand-a
 answer set, and a scorecard is emitted. Synthetic contracts only; deterministic by default.
 
 ## Layout
-- `src/contract_eval/models.py` — Pydantic models: `ReviewOutput` (clauses, risk flags, citations) and `ExpectedAnswer`. Single source of truth for shapes.
+- `src/contract_eval/models.py` — Pydantic models for the v1 case review and gold set: `ReviewOutput` (clauses, risk flags, citations) and `ExpectedAnswer`. The other shapes have their own modules: the v2 gold set in `gold_v2.py`, the v2 review in `review_v2.py`, the My Counsel track's playbooks, runs and reference in `candidates.py`, and the matter manifest, answers and review in `matter.py`.
 - `src/contract_eval/adapters/` — `Adapter` protocol, `StubAdapter` (fixtures), lazy `LiveAdapter` (Anthropic), `OpenAICompatibleAdapter` (stdlib HTTP), `CommandAdapter` (any program: contract on stdin, review JSON on stdout); `get_adapter(live, model, choice)` behind `--adapter` (`--live` stays an alias for `--adapter anthropic`).
 - `src/contract_eval/scorer.py` — pure scoring functions: clause P/R/F1, risk-flag accuracy, citation grounding, hallucination count. Unit-tested.
 - `src/contract_eval/api.py` — the Python API: `score_review`, `load_case`, `evaluate_review`, `Verdict`; exported from `contract_eval/__init__.py`. The CLI and the pytest plugin call it, so all three reach the same numbers.
