@@ -141,7 +141,8 @@ def contract_eval_gate(case: str = "nda"):
 
 ## Already have a captured review?
 
-A live run captures every adapter attempt in an envelope with integrity hashes.
-Verify and re-score such a capture with
+A captured review holds one adapter attempt in an envelope with integrity hashes.
+`capture_attempt` in `contract_eval.capture_runner` writes it; no command calls that
+function yet, so `evaluate --live` leaves no capture. Verify and re-score such a capture with
 `contract-eval score-output --input <capture>.json` instead;
 see [live-runs-and-capture.md](live-runs-and-capture.md).

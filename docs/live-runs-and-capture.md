@@ -97,10 +97,13 @@ stub fixture.
 
 A captured run against a frontier model is committed in the examples folder as a dated snapshot. Live output is non-deterministic; the committed file is not a stable benchmark. Any published comparison must name the model, the date and the harness version, because a score without those three is not reproducible.
 
-Every adapter attempt is now captured before it is parsed. A capture embeds the source
-and gold snapshots, the sanitized request, the raw response and the parsed output, each
-hashed, and is written atomically before the provider is called. Truncated, malformed,
-interrupted and provider-error attempts leave evidence and are never scored.
+`capture_attempt` in `contract_eval.capture_runner` captures a case attempt before it is
+parsed. A capture embeds the source and gold snapshots, the sanitized request, the raw
+response and the parsed output, each hashed, and is written atomically before the
+provider is called. Truncated, malformed, interrupted and provider-error attempts leave
+evidence and are never scored. No command calls `capture_attempt` yet: `evaluate`,
+`robustness` and `evaluate-obligations` write no capture, even with `--live`. The commands
+below verify and re-score a capture file.
 
 ```bash
 uv run python -m contract_eval verify-capture --input captures/<run>/<capture>.json
