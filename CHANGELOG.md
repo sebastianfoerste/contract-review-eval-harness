@@ -74,7 +74,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - pytest runs in strict mode with warnings as errors (`strict = true`, `filterwarnings = ["error"]`).
 - Every `actions/checkout` step sets `persist-credentials: false`. Dependabot waits seven days before proposing a release (fourteen for a Python major) and groups minor and patch updates per ecosystem.
 - `SECURITY.md` points reporters to the repository's private vulnerability reporting (Security tab, "Report a vulnerability"), which the owner enabled on 2026-10-31. The interim advice to open an issue asking for a private channel is removed; a dependency advisory with no exploit may still be an ordinary issue.
-- `compare` exits 1 on a regression, also when run without flags, where it printed a warning and exited 0. `evaluate --out DIR` writes its run history to `DIR/history/` instead of `./history/`.
+- `compare` exits 1 on a regression, also when run without flags, where it printed a warning and exited 0.
 - The package metadata and the Code of Conduct give the maintainer's ai-lawyers.com contact address in place of a private one. `tests/test_annotator_names.py` allows the maintainer's given name once in each of the two files, as it does for the copyright, citation and action notices.
 
 ### Removed
@@ -102,6 +102,7 @@ The Python package version for v0.7.0-rc1 is `0.7.0rc1` (PEP 440).
 - A `--review` run scores the conditions it has no file for from their committed fixtures, and it logged those fixture scores to the matter's experiment log. A later real result for one of those conditions then printed **Not held out**. A fixture score now goes only into a log named with `--log`, and the held-out check never counts one against a real result.
 - `docs/legal-engineering-explainer.md` and `AGENTS.md` describe the matter path: what a matter capture holds and which captures `--review` scores, that matter scoring sets no word floor and gives no verdict, and where the matter experiment log lives. `AGENTS.md` gives the full path of the My Counsel dry run, which the log's top-level `experiments/` folder made ambiguous.
 - `tests/test_legal_currency.py` scans the matter's answers, documents, prompts and README, and reads both members of a slash-joined citation such as "Art. 28/32". The ledger points at the matter's citations.
+- `docs/legal-engineering-explainer.md` and `AGENTS.md` claimed more than the repository holds. Principle 11 limits its reproducibility guarantee to the artifacts CI regenerates and names the two published scores outside it. `models.py` is described as the home of the v1 case review and gold set, beside the modules that hold the other shapes. Section 7.2 names `evaluate` as the command that applies the regression gate and describes the committed regression baseline, its two tests and CI's comparison step. Section 4.4, the introduction and the architecture table cover the My Counsel track.
 
 ### Security
 
