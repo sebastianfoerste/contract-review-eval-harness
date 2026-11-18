@@ -646,6 +646,28 @@ def test_a_review_template_refuses_a_capture_of_another_round(tmp_path, capsys):
     assert json.loads(out.read_text())["round_id"] == "round1"
 
 
+def test_a_review_template_refuses_a_failed_or_truncated_capture(tmp_path, capsys):
+    """Neither capture holds a review that the live run would have scored."""
+    from contract_eval.adapters.matter import CAPTURE_SCHEMA
+    from contract_eval.cli import build_parser
+    from contract_eval.matter_cli import run
+
+    raw = (TOY / "matters" / "toy" / "fixtures" / "round1.matter.json").read_text()
+    base = {"schema": CAPTURE_SCHEMA, "matter_id": "toy", "round_id": "round1", "condition_id": "matter"}
+    for record, message in (
+        ({**base, "status": "returned", "stop_reason": "max_tokens", "raw_text": raw}, "token limit"),
+        ({**base, "status": "failed", "error_type": "ValidationError", "error": "cut off"}, "failed attempt"),
+    ):
+        capture = tmp_path / "capture.json"
+        capture.write_text(json.dumps(record))
+        out = tmp_path / "template.json"
+        argv = ["matter-review-template", "--root", str(TOY), "--matter", "toy",
+                "--round", "round1", "--review", str(capture), "--out", str(out)]
+        assert run(build_parser().parse_args(argv)) == 1
+        assert message in capsys.readouterr().out
+        assert not out.exists()
+
+
 def test_the_matter_path_offers_only_its_own_adapters():
     from contract_eval.cli import build_parser
 

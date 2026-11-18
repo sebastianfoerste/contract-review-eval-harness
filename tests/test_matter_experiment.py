@@ -101,10 +101,11 @@ def test_a_fixture_score_never_counts_against_a_real_result():
 def test_a_fixture_run_is_judged_against_every_entry():
     """Tuning between fixture runs is still flagged, and so is one after a real result."""
     judged = eval_guard(
-        [{**entry("A"), "source": "some-model"}], matter_id="toy", round_id="round1",
-        condition_id="matter", configuration="B", source=FIXTURE_SOURCE,
+        [{**entry("A"), "source": FIXTURE_SOURCE}, {**entry("C"), "source": "some-model"}],
+        matter_id="toy", round_id="round1", condition_id="matter", configuration="B",
+        source=FIXTURE_SOURCE,
     )
-    assert judged["contaminated"] is True and judged["prior_eval_runs"] == 1
+    assert judged["prior_eval_runs"] == 2 and judged["other_configurations"] == ["A", "C"]
 
 
 def test_the_guard_knows_the_stub_adapter_by_its_source():
@@ -215,6 +216,24 @@ def test_scoring_one_output_file_logs_only_that_condition(toy_copy):
     assert "eval_guard" not in by_id["baseline"]
     logged = read_log(default_log_path("toy", toy_copy))
     assert [e["condition_id"] for e in logged] == ["matter"]
+
+
+def test_a_named_log_takes_the_place_of_the_default_one(toy_copy, tmp_path):
+    """It is the only log read and written, and it also takes the fixture scores."""
+    default = default_log_path("toy", toy_copy)
+    default.parent.mkdir(parents=True)
+    default.write_text(json.dumps({**entry("A"), "source": "some-model"}) + "\n")
+    named = tmp_path / "named.jsonl"
+    result = evaluate_matter(
+        "toy", "round1", root=toy_copy, split="eval", reviews={"matter": FIXTURE},
+        log_path=named,
+    )
+    by_id = {c["condition_id"]: c for c in result["conditions"]}
+    assert by_id["matter"]["eval_guard"]["contaminated"] is False
+    assert len(read_log(default)) == 1
+    assert [(e["condition_id"], e["source"]) for e in read_log(named)] == [
+        ("baseline", FIXTURE_SOURCE), ("matter", "review-file"),
+    ]
 
 
 # --------------------------------------------------------------------- live adapter
@@ -348,6 +367,24 @@ def test_a_live_run_and_the_later_scoring_of_its_capture_are_one_configuration(t
     assert live["adapter"] == replayed["adapter"] == "fake-model"
     assert live["conditions"][0]["configuration_id"] == replayed["conditions"][0]["configuration_id"]
     assert replayed["conditions"][0]["eval_guard"]["contaminated"] is False
+
+
+def test_a_live_run_is_judged_against_the_log(toy_copy, monkeypatch):
+    """A live result that read no log could never print Not held out."""
+    evaluate_matter(
+        "toy", "round1", root=toy_copy, conditions=["matter"], split="eval",
+        reviews={"matter": toy_copy / "matters" / "toy" / "fixtures" / "round1.baseline.json"},
+    )
+    client = fake_client(FIXTURE.read_text())
+    monkeypatch.setattr(
+        "contract_eval.matter_cli.get_matter_adapter",
+        lambda live, model=None: LiveMatterAdapter(model="fake-model", client=client),
+    )
+    live = evaluate_matter(
+        "toy", "round1", root=toy_copy, conditions=["matter"], split="eval", live=True
+    )
+    judged = live["conditions"][0]["eval_guard"]
+    assert judged["prior_eval_runs"] == 1 and judged["contaminated"] is True
 
 
 def test_a_capture_is_only_scored_as_what_it_was_captured_for(toy_copy):
