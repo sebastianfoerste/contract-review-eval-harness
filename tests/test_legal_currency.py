@@ -3,11 +3,15 @@
 The gold sets are human legal judgement, and their rationales cite provisions. Nothing
 used to record when, or against what, a citation was last checked. The ledger does;
 this test keeps it complete: a citation added to a gold set, a draft, a fixture, the
-robustness campaign, a contract, a guide or a matter's answers, documents, prompts and
-README without a ledger row fails here.
+robustness campaign, a contract, a guide, a matter's answers, documents, prompts and
+README, or the My Counsel track's README, guides, playbooks, documents and fixture
+builder without a ledger row fails here.
 
-Model output under examples/ is not a repository claim and is not scanned. Nothing
-here touches the network: the ledger's URLs are checked by a reader, not by code.
+Model output under examples/ is not a repository claim and is not scanned. Neither are
+the My Counsel track's source register and its Official Journal snapshot: the snapshot
+is the official text itself, and the register cites provisions beyond the playbook's six
+points that have no row. Nothing here touches the network: the ledger's URLs are
+checked by a reader, not by code.
 """
 
 from __future__ import annotations
@@ -37,6 +41,11 @@ SCANNED_GLOBS = (
     "matters/*/documents/*.md",
     "matters/*/expected/*.json",
     "matters/*/prompts/*.md",
+    "candidates/mycounsel/**/*.md",
+    "candidates/mycounsel/commercial.json",
+    "candidates/mycounsel/dora.json",
+    "candidates/mycounsel/annotation-pack/playbooks/*.json",
+    "candidates/mycounsel/build_fixtures.py",
     "docs/*.md",
     "CASE_STUDY.md",
     "CHANGELOG.md",
