@@ -45,7 +45,7 @@ SCRIPT = ROOT / "scripts" / "check_candidate_experiments.py"
 REPLAY = (CORPUS / "replay-run.json").read_text(encoding="utf-8")
 
 # shasum -a 256 candidates/mycounsel/manifest.json
-MANIFEST_SHA = "528c537edf925703248347463e4d7b5d4d41072491a121bfbdfaa2ba452e196e"
+MANIFEST_SHA = "50dee9ed79f1a59e3771dc4b6be87203d5c5795abd5da99507f02a1fcf932b76"
 # jq -rj .instructions candidates/mycounsel/manifest.json | shasum -a 256
 INSTRUCTIONS_SHA = "a93297836440ebbb8cb08d17fb84064a26fca3995a8ebdb697cd9d99b5bf3be0"
 

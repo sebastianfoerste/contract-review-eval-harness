@@ -96,7 +96,10 @@ Article 30(2)(b), (d), (f) and 30(3)(a), (e), (f). They are not quotations. The
 audit entry repeats points (i) to (iv) of Article 30(3)(e) with "customer" and
 "provider" in place of the defined terms, a reordered opening and one added
 article in point (iii). The other five condense their points and leave words
-out; which omissions matter is part of the lawyer review.
+out; which omissions matter is part of the lawyer review. The return entry for
+Article 30(2)(d) first left out "processed by the financial entity" and so reached
+any data; on 18 November 2026, before the pack was sent, the maintainer restored the
+qualifier as "processed by the customer".
 
 The register's status is `SOURCE_CHECKED_NOT_LAWYER_REVIEWED`. Open for the
 lawyer review, among others: whether a rate card satisfies "a cost that is

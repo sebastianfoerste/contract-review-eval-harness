@@ -1,8 +1,8 @@
 {
   "schema": "mycounsel.candidate-experiment-report.v1",
   "experimentId": "replay-dry-run",
-  "experimentSha256": "736188d941a94c9a0e2d03b522b21d0ae3e128d86a12dd2c4ab6cacf5e910bec",
-  "corpusManifestSha256": "528c537edf925703248347463e4d7b5d4d41072491a121bfbdfaa2ba452e196e",
+  "experimentSha256": "dcb461389701d28fca820d731f0b982bc42919c30880d8099d637e92603a8cf8",
+  "corpusManifestSha256": "50dee9ed79f1a59e3771dc4b6be87203d5c5795abd5da99507f02a1fcf932b76",
   "design": {
     "mode": "REPLAY",
     "playbooks": [
