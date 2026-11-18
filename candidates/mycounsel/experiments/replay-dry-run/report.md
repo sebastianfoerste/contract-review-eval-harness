@@ -1,6 +1,6 @@
 # Candidate experiment replay-dry-run
 
-Design: REPLAY, 2 playbooks x 3 variants x 2 repetitions per arm. Experiment file SHA-256 `736188d941a94c9a0e2d03b522b21d0ae3e128d86a12dd2c4ab6cacf5e910bec`.
+Design: REPLAY, 2 playbooks x 3 variants x 2 repetitions per arm. Experiment file SHA-256 `dcb461389701d28fca820d731f0b982bc42919c30880d8099d637e92603a8cf8`.
 
 Injection variants: injection. Declared repaired: changed: DORA-LOCATIONS.
 
